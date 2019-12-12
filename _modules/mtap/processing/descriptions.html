@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>mtap.processing.descriptions &#8212; MTAP 0.1.0 documentation</title>
+    <title>mtap.processing.descriptions &#8212; MTAP 0.2.0rc0 documentation</title>
     <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -45,7 +45,11 @@
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
 <span class="sd">&quot;&quot;&quot;Descriptors for processor functionality.&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">import</span> <span class="nn">typing</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+
+<span class="k">if</span> <span class="n">typing</span><span class="o">.</span><span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">mtap.processing.base</span> <span class="kn">import</span> <span class="n">EventProcessor</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s1">&#39;PropertyDescription&#39;</span><span class="p">,</span>
@@ -73,7 +77,8 @@
 
 
 <div class="viewcode-block" id="label_property"><a class="viewcode-back" href="../../../mtap.html#mtap.label_property">[docs]</a><span class="k">def</span> <span class="nf">label_property</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                   <span class="o">*</span><span class="p">,</span> <span class="n">nullable</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                   <span class="o">*</span><span class="p">,</span>
+                   <span class="n">nullable</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                    <span class="n">description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                    <span class="n">data_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PropertyDescription</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Creates a description for a property on a label.</span>
@@ -95,6 +100,7 @@
 
 <span class="n">LabelDescription</span> <span class="o">=</span> <span class="n">NamedTuple</span><span class="p">(</span><span class="s1">&#39;LabelDescription&#39;</span><span class="p">,</span>
                               <span class="p">[(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span>
+                               <span class="p">(</span><span class="s1">&#39;reference&#39;</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]),</span>
                                <span class="p">(</span><span class="s1">&#39;name_from_parameter&#39;</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]),</span>
                                <span class="p">(</span><span class="s1">&#39;optional&#39;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">),</span>
                                <span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]),</span>
@@ -112,7 +118,9 @@
 
 
 <div class="viewcode-block" id="label_index"><a class="viewcode-back" href="../../../mtap.html#mtap.label_index">[docs]</a><span class="k">def</span> <span class="nf">label_index</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                <span class="o">*</span><span class="p">,</span> <span class="n">optional</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="o">*</span><span class="p">,</span>
+                <span class="n">reference</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">optional</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                 <span class="n">name_from_parameter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                 <span class="n">description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                 <span class="n">properties</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">PropertyDescription</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LabelDescription</span><span class="p">:</span>
@@ -122,6 +130,10 @@
 <span class="sd">        name (str): The label index name.</span>
 
 <span class="sd">    Keyword Args:</span>
+<span class="sd">        reference (~typing.Optional[str]):</span>
+<span class="sd">            If this is an output of another processor, that processor&#39;s name followed by a slash</span>
+<span class="sd">            and the default output name of the index go here.</span>
+<span class="sd">            Example: &quot;sentence-detector/sentences&quot;.</span>
 <span class="sd">        optional (bool): Whether this label index is an optional input or output.</span>
 <span class="sd">        name_from_parameter (~typing.Optional[str]):</span>
 <span class="sd">            If the label index gets its name from a processor parameter, the name of the parameter.</span>
@@ -132,9 +144,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        LabelDescription: An object describing a label index.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">properties</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">properties</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">return</span> <span class="n">LabelDescription</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">name_from_parameter</span><span class="p">,</span> <span class="n">optional</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">properties</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">LabelDescription</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">reference</span><span class="p">,</span> <span class="n">name_from_parameter</span><span class="p">,</span> <span class="n">optional</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">properties</span><span class="p">)</span></div>
 
 
 <span class="n">ParameterDescription</span> <span class="o">=</span> <span class="n">NamedTuple</span><span class="p">(</span><span class="s1">&#39;ParameterDescription&#39;</span><span class="p">,</span>
@@ -152,7 +162,8 @@
 
 
 <div class="viewcode-block" id="parameter"><a class="viewcode-back" href="../../../mtap.html#mtap.parameter">[docs]</a><span class="k">def</span> <span class="nf">parameter</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-              <span class="o">*</span><span class="p">,</span> <span class="n">required</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+              <span class="o">*</span><span class="p">,</span>
+              <span class="n">required</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
               <span class="n">data_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
               <span class="n">description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ParameterDescription</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;A description of one of the processor&#39;s parameters.</span>
@@ -174,32 +185,14 @@
                                 <span class="n">required</span><span class="o">=</span><span class="n">required</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">_desc_to_dict</span><span class="p">(</span><span class="n">description</span><span class="p">:</span> <span class="n">LabelDescription</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-    <span class="k">return</span> <span class="p">{</span>
-        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">description</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-        <span class="s1">&#39;name_from_parameter&#39;</span><span class="p">:</span> <span class="n">description</span><span class="o">.</span><span class="n">name_from_parameter</span><span class="p">,</span>
-        <span class="s1">&#39;optional&#39;</span><span class="p">:</span> <span class="n">description</span><span class="o">.</span><span class="n">optional</span><span class="p">,</span>
-        <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">description</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
-        <span class="s1">&#39;properties&#39;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="p">{</span>
-                <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
-                <span class="s1">&#39;data_type&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">data_type</span><span class="p">,</span>
-                <span class="s1">&#39;nullable&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">nullable</span>
-            <span class="p">}</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">description</span><span class="o">.</span><span class="n">properties</span>
-        <span class="p">]</span>
-    <span class="p">}</span>
-
-
 <div class="viewcode-block" id="processor"><a class="viewcode-back" href="../../../mtap.html#mtap.processor">[docs]</a><span class="k">def</span> <span class="nf">processor</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
               <span class="o">*</span><span class="p">,</span>
+              <span class="n">human_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
               <span class="n">description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-              <span class="n">entry_point</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-              <span class="n">language</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;python&#39;</span><span class="p">,</span>
               <span class="n">parameters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">ParameterDescription</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
               <span class="n">inputs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">LabelDescription</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
               <span class="n">outputs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">LabelDescription</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-              <span class="n">additional_metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+              <span class="o">**</span><span class="n">additional_metadata</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Decorator which attaches a service name and metadata to a processor. Which then can be used</span>
 <span class="sd">    for runtime reflection of how the processor works.</span>
 
@@ -213,17 +206,18 @@
 <span class="sd">            runtime via the `identifier` option on :func:`processor_parser`.</span>
 
 <span class="sd">    Keyword Args:</span>
+<span class="sd">        human_name (~typing.Optional[str]): An option human name for the processor.</span>
 <span class="sd">        description (~typing.Optional[str]): A short description of the processor and what it does.</span>
-<span class="sd">        entry_point (~typing.Optional[str]):</span>
-<span class="sd">            The processor&#39;s entry point / main module. Will be added by reflection if not specified.</span>
-<span class="sd">        language (str): The processor&#39;s language. Defaults to &#39;python&#39;.</span>
 <span class="sd">        parameters (~typing.Optional[~typing.List[ParameterDescription]]):</span>
 <span class="sd">            The processor&#39;s parameters.</span>
-<span class="sd">        inputs (~typing.Optional[~typing.List[LabelDescription]]):</span>
-<span class="sd">            The label indices this processor uses as inputs.</span>
+<span class="sd">        inputs (~typing.Optional[~typing.List[str]]):</span>
+<span class="sd">            String identifiers for the output from a processor that this processor uses as an input.</span>
+
+<span class="sd">            Takes the format &quot;[processor-name]/[output]&quot;. Examples would be &quot;tagger:pos_tags&quot; or</span>
+<span class="sd">            &quot;sentence-detector:sentences&quot;.</span>
 <span class="sd">        outputs (~typing.Optional[~typing.List[LabelDescription]]):</span>
 <span class="sd">            The label indices this processor outputs.</span>
-<span class="sd">        additional_metadata (~typing.Optional[~typing.Dict[str, Any]]):</span>
+<span class="sd">        **additional_metadata (~typing.Any):</span>
 <span class="sd">            Any other data that should be added to the processor&#39;s metadata, should be serializable</span>
 <span class="sd">            to yaml and json.</span>
 
@@ -248,7 +242,8 @@
 
 <span class="sd">        &gt;&gt;&gt; from mtap.processing import DocumentProcessor</span>
 <span class="sd">        &gt;&gt;&gt; @processor(&#39;mtap-example-processor-python&#39;,</span>
-<span class="sd">        &gt;&gt;&gt;            description=&#39;counts the number of times the letters a and b occur in a document&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;            human_name=&quot;Python Example Processor&quot;,</span>
+<span class="sd">        &gt;&gt;&gt;            description=&quot;counts the number of times the letters a and b occur in a document&quot;,</span>
 <span class="sd">        &gt;&gt;&gt;            parameters=[</span>
 <span class="sd">        &gt;&gt;&gt;                parameter(&#39;do_work&#39;, required=True, data_type=&#39;bool&#39;,</span>
 <span class="sd">        &gt;&gt;&gt;                          description=&quot;Whether the processor should do anything.&quot;)</span>
@@ -263,31 +258,67 @@
 
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">parameters</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">parameters</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">if</span> <span class="n">inputs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">inputs</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">if</span> <span class="n">outputs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">outputs</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="s1">&#39;EventProcessor&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Type</span><span class="p">[</span><span class="s1">&#39;EventProcessor&#39;</span><span class="p">]:</span>
         <span class="n">f</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;human_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">human_name</span>
         <span class="n">f</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">description</span>
-        <span class="n">f</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;entry_point&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">entry_point</span>
-        <span class="n">f</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;language&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">language</span>
-        <span class="n">f</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;parameters&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[{</span>
-            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
-            <span class="s1">&#39;data_type&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">data_type</span><span class="p">,</span>
-            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">required</span>
-        <span class="p">}</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">]</span>
-        <span class="n">f</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;inputs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">_desc_to_dict</span><span class="p">(</span><span class="n">desc</span><span class="p">)</span> <span class="k">for</span> <span class="n">desc</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">]</span>
-        <span class="n">f</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;outputs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">_desc_to_dict</span><span class="p">(</span><span class="n">desc</span><span class="p">)</span> <span class="k">for</span> <span class="n">desc</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;parameters&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">_parameter_to_map</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">inputs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;inputs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">_desc_to_dict</span><span class="p">(</span><span class="n">desc</span><span class="p">)</span> <span class="k">for</span> <span class="n">desc</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">outputs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;outputs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">_desc_to_dict</span><span class="p">(</span><span class="n">desc</span><span class="p">)</span> <span class="k">for</span> <span class="n">desc</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">additional_metadata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">additional_metadata</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;implementation_lang&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">metadata</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;implementation_lang&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Python&#39;</span>
         <span class="k">return</span> <span class="n">f</span>
 
     <span class="k">return</span> <span class="n">decorator</span></div>
+
+
+<span class="k">def</span> <span class="nf">_desc_to_dict</span><span class="p">(</span><span class="n">description</span><span class="p">:</span> <span class="n">LabelDescription</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">description</span><span class="o">.</span><span class="n">name</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">description</span><span class="o">.</span><span class="n">name_from_parameter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">m</span><span class="p">[</span><span class="s1">&#39;name_from_parameter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">description</span><span class="o">.</span><span class="n">name_from_parameter</span>
+    <span class="k">if</span> <span class="n">description</span><span class="o">.</span><span class="n">reference</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">m</span><span class="p">[</span><span class="s1">&#39;reference&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">description</span><span class="o">.</span><span class="n">reference</span>
+    <span class="k">if</span> <span class="n">description</span><span class="o">.</span><span class="n">optional</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">m</span><span class="p">[</span><span class="s1">&#39;optional&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">description</span><span class="o">.</span><span class="n">optional</span>
+    <span class="k">if</span> <span class="n">description</span><span class="o">.</span><span class="n">description</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">m</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">description</span><span class="o">.</span><span class="n">description</span>
+    <span class="k">if</span> <span class="n">description</span><span class="o">.</span><span class="n">properties</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">m</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">_prop_to_dict</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">description</span><span class="o">.</span><span class="n">properties</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">m</span>
+
+
+<span class="k">def</span> <span class="nf">_prop_to_dict</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="n">PropertyDescription</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">name</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">description</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">m</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">description</span>
+    <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">data_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">m</span><span class="p">[</span><span class="s1">&#39;data_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">data_type</span>
+    <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">nullable</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">m</span><span class="p">[</span><span class="s1">&#39;nullable&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">nullable</span>
+    <span class="k">return</span> <span class="n">m</span>
+
+
+<span class="k">def</span> <span class="nf">_parameter_to_map</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="n">ParameterDescription</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">name</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">description</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">m</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">description</span>
+    <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">data_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">m</span><span class="p">[</span><span class="s1">&#39;data_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">data_type</span>
+    <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">required</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">m</span><span class="p">[</span><span class="s1">&#39;required&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">required</span>
+    <span class="k">return</span> <span class="n">m</span>
 </pre></div>
 
           </div>
@@ -329,7 +360,7 @@
       &copy;2019, Regents of the University of Minnesota..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
