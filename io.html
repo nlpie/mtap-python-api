@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>mtap.io &#8212; MTAP 0.2.0rc0 documentation</title>
+    <title>mtap.io &#8212; MTAP 0.3.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -66,7 +66,7 @@ representations of events.</p>
 
 <dl class="class">
 <dt id="mtap.io.serialization.SerializationProcessor">
-<em class="property">class </em><code class="sig-prename descclassname">mtap.io.serialization.</code><code class="sig-name descname">SerializationProcessor</code><span class="sig-paren">(</span><em class="sig-param">ser</em>, <em class="sig-param">output_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/io/serialization.html#SerializationProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.io.serialization.SerializationProcessor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mtap.io.serialization.</code><code class="sig-name descname">SerializationProcessor</code><span class="sig-paren">(</span><em class="sig-param">ser</em>, <em class="sig-param">output_dir</em>, <em class="sig-param">include_label_text=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/io/serialization.html#SerializationProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.io.serialization.SerializationProcessor" title="Permalink to this definition">¶</a></dt>
 <dd><p>An MTAP <code class="xref py py-obj docutils literal notranslate"><span class="pre">EventProcessor</span></code> that serializes events to a specific directory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -95,13 +95,15 @@ representations of events.</p>
 
 <dl class="method">
 <dt id="mtap.io.serialization.Serializer.event_to_file">
-<em class="property">abstract </em><code class="sig-name descname">event_to_file</code><span class="sig-paren">(</span><em class="sig-param">event</em>, <em class="sig-param">f</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/io/serialization.html#Serializer.event_to_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.io.serialization.Serializer.event_to_file" title="Permalink to this definition">¶</a></dt>
+<em class="property">abstract </em><code class="sig-name descname">event_to_file</code><span class="sig-paren">(</span><em class="sig-param">event</em>, <em class="sig-param">f</em>, <em class="sig-param">*</em>, <em class="sig-param">include_label_text=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/io/serialization.html#Serializer.event_to_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.io.serialization.Serializer.event_to_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes the event to a file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>event</strong> (<a class="reference internal" href="mtap.html#mtap.Event" title="mtap.Event"><em>Event</em></a>) – The event object to serialize.</p></li>
 <li><p><strong>f</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>Path</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/io.html#io.IOBase" title="(in Python v3.8)"><em>IOBase</em></a><em>]</em>) – A file or a path to a file to write the event to.</p></li>
+<li><p><strong>include_label_text</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Whether, when serializing, to include the text that each label covers with the rest
+of the label.</p></li>
 </ul>
 </dd>
 </dl>
@@ -113,16 +115,16 @@ representations of events.</p>
 <dd><p>Loads an event from a serialized file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>f</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>Path</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/io.html#io.IOBase" title="(in Python v3.8)"><em>IOBase</em></a><em>]</em>) – The file to load from.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>Path</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/io.html#io.IOBase" title="(in Python v3.8)"><em>IOBase</em></a><em>]</em>) – The file to load from.</p></li>
+<li><p><strong>client</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="mtap.html#mtap.EventsClient" title="mtap.EventsClient"><em>EventsClient</em></a><em>]</em>) – The events service to load the event into.</p></li>
+</ul>
 </dd>
-<dt class="field-even">Keyword Arguments</dt>
-<dd class="field-even"><p><strong>client</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference internal" href="mtap.html#mtap.EventsClient" title="mtap.EventsClient"><em>EventsClient</em></a><em>]</em>) – The events service to load the event into.</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The loaded event object.</p>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The loaded event object.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="mtap.html#mtap.Event" title="mtap.Event">Event</a></p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="mtap.html#mtap.Event" title="mtap.Event">Event</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -133,51 +135,60 @@ representations of events.</p>
 <h3><a class="toc-backref" href="#id3">Serialization Helpers</a><a class="headerlink" href="#serialization-helpers" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="mtap.io.serialization.event_to_dict">
-<code class="sig-prename descclassname">mtap.io.serialization.</code><code class="sig-name descname">event_to_dict</code><span class="sig-paren">(</span><em class="sig-param">event</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/io/serialization.html#event_to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.io.serialization.event_to_dict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">mtap.io.serialization.</code><code class="sig-name descname">event_to_dict</code><span class="sig-paren">(</span><em class="sig-param">event</em>, <em class="sig-param">*</em>, <em class="sig-param">include_label_text=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/io/serialization.html#event_to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.io.serialization.event_to_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper method that turns an event into a python dictionary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>event</strong> (<a class="reference internal" href="mtap.html#mtap.Event" title="mtap.Event"><em>Event</em></a>) – The event object.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A dictionary object suitable for serialization.</p>
+<dt class="field-even">Keyword Arguments</dt>
+<dd class="field-even"><p><strong>include_label_text</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Whether to include the text labels cover with the labels.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a></p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A dictionary object suitable for serialization.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="mtap.io.serialization.document_to_dict">
-<code class="sig-prename descclassname">mtap.io.serialization.</code><code class="sig-name descname">document_to_dict</code><span class="sig-paren">(</span><em class="sig-param">document</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/io/serialization.html#document_to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.io.serialization.document_to_dict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">mtap.io.serialization.</code><code class="sig-name descname">document_to_dict</code><span class="sig-paren">(</span><em class="sig-param">document</em>, <em class="sig-param">*</em>, <em class="sig-param">include_label_text=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/io/serialization.html#document_to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.io.serialization.document_to_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper method that turns a document into a python dictionary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>document</strong> (<a class="reference internal" href="mtap.html#mtap.Document" title="mtap.Document"><em>Document</em></a>) – The document object.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A dictionary object suitable for serialization.</p>
+<dt class="field-even">Keyword Arguments</dt>
+<dd class="field-even"><p><strong>include_label_text</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Whether to include the text labels cover with the labels.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a></p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A dictionary object suitable for serialization.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="mtap.io.serialization.label_index_to_dict">
-<code class="sig-prename descclassname">mtap.io.serialization.</code><code class="sig-name descname">label_index_to_dict</code><span class="sig-paren">(</span><em class="sig-param">label_index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/io/serialization.html#label_index_to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.io.serialization.label_index_to_dict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">mtap.io.serialization.</code><code class="sig-name descname">label_index_to_dict</code><span class="sig-paren">(</span><em class="sig-param">label_index</em>, <em class="sig-param">*</em>, <em class="sig-param">include_label_text=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/io/serialization.html#label_index_to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.io.serialization.label_index_to_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper method that turns a label index into a python dictionary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>label_index</strong> (<a class="reference internal" href="mtap.html#mtap.label_indices.LabelIndex" title="mtap.label_indices.LabelIndex"><em>LabelIndex</em></a><em>[</em><a class="reference internal" href="mtap.html#mtap.GenericLabel" title="mtap.GenericLabel"><em>GenericLabel</em></a><em>]</em>) – The label index itself.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A dictionary representing the label index.</p>
+<dt class="field-even">Keyword Arguments</dt>
+<dd class="field-even"><p><strong>include_label_text</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Whether to include the text labels cover with the labels.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a></p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A dictionary representing the label index.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -191,16 +202,16 @@ representations of events.</p>
 <dd><p>Turns a serialized dictionary into an Event.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>d</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a>) – The dictionary representation of the event.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a>) – The dictionary representation of the event.</p></li>
+<li><p><strong>client</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="mtap.html#mtap.EventsClient" title="mtap.EventsClient"><em>EventsClient</em></a><em>]</em>) – An events service to create the event on.</p></li>
+</ul>
 </dd>
-<dt class="field-even">Keyword Arguments</dt>
-<dd class="field-even"><p><strong>client</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference internal" href="mtap.html#mtap.EventsClient" title="mtap.EventsClient"><em>EventsClient</em></a><em>]</em>) – An events service to create the event on.</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The deserialized event object.</p>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The deserialized event object.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="mtap.html#mtap.Event" title="mtap.Event">Event</a></p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="mtap.html#mtap.Event" title="mtap.Event">Event</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -214,16 +225,14 @@ representations of events.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>document_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The name identifier of the document on the event.</p></li>
 <li><p><strong>d</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a>) – The dictionary representation of the document.</p></li>
+<li><p><strong>event</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="mtap.html#mtap.Event" title="mtap.Event"><em>Event</em></a><em>]</em>) – An event that the document should be added to.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Keyword Arguments</dt>
-<dd class="field-even"><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference internal" href="mtap.html#mtap.Event" title="mtap.Event"><em>Event</em></a><em>]</em>) – An event that the document should be added to.</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The deserialized Document object.</p>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The deserialized Document object.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="mtap.html#mtap.Document" title="mtap.Document">Document</a></p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="mtap.html#mtap.Document" title="mtap.Document">Document</a></p>
 </dd>
 </dl>
 </dd></dl>

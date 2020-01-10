@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>mtap.io.serialization &#8212; MTAP 0.2.0rc0 documentation</title>
+    <title>mtap.io.serialization &#8212; MTAP 0.3.0 documentation</title>
     <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -55,22 +55,26 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span>
 
 <span class="kn">from</span> <span class="nn">mtap.events</span> <span class="kn">import</span> <span class="n">Event</span><span class="p">,</span> <span class="n">Document</span><span class="p">,</span> <span class="n">LabelIndexType</span><span class="p">,</span> <span class="n">EventsClient</span>
 <span class="kn">from</span> <span class="nn">mtap.label_indices</span> <span class="kn">import</span> <span class="n">LabelIndex</span><span class="p">,</span> <span class="n">label_index</span>
 <span class="kn">from</span> <span class="nn">mtap.labels</span> <span class="kn">import</span> <span class="n">GenericLabel</span>
 <span class="kn">from</span> <span class="nn">mtap.processing</span> <span class="kn">import</span> <span class="n">EventProcessor</span><span class="p">,</span> <span class="n">processor</span>
+<span class="kn">from</span> <span class="nn">mtap.processing.base</span> <span class="kn">import</span> <span class="n">Stopwatch</span><span class="p">,</span> <span class="n">Processor</span>
 <span class="kn">from</span> <span class="nn">mtap.processing.descriptions</span> <span class="kn">import</span> <span class="n">parameter</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="event_to_dict"><a class="viewcode-back" href="../../../io.html#mtap.io.serialization.event_to_dict">[docs]</a><span class="k">def</span> <span class="nf">event_to_dict</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<div class="viewcode-block" id="event_to_dict"><a class="viewcode-back" href="../../../io.html#mtap.io.serialization.event_to_dict">[docs]</a><span class="k">def</span> <span class="nf">event_to_dict</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">include_label_text</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;A helper method that turns an event into a python dictionary.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        event (Event): The event object.</span>
+
+<span class="sd">    Keyword Args:</span>
+<span class="sd">        include_label_text (bool): Whether to include the text labels cover with the labels.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        dict: A dictionary object suitable for serialization.</span>
@@ -84,15 +88,19 @@
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">d</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
     <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">documents</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;documents&#39;</span><span class="p">][</span><span class="n">doc</span><span class="o">.</span><span class="n">document_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">document_to_dict</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;documents&#39;</span><span class="p">][</span><span class="n">doc</span><span class="o">.</span><span class="n">document_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">document_to_dict</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span>
+                                                             <span class="n">include_label_text</span><span class="o">=</span><span class="n">include_label_text</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">d</span></div>
 
 
-<div class="viewcode-block" id="document_to_dict"><a class="viewcode-back" href="../../../io.html#mtap.io.serialization.document_to_dict">[docs]</a><span class="k">def</span> <span class="nf">document_to_dict</span><span class="p">(</span><span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<div class="viewcode-block" id="document_to_dict"><a class="viewcode-back" href="../../../io.html#mtap.io.serialization.document_to_dict">[docs]</a><span class="k">def</span> <span class="nf">document_to_dict</span><span class="p">(</span><span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">include_label_text</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;A helper method that turns a document into a python dictionary.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        document (Document): The document object.</span>
+
+<span class="sd">    Keyword Args:</span>
+<span class="sd">        include_label_text (bool): Whether to include the text labels cover with the labels.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        dict: A dictionary object suitable for serialization.</span>
@@ -111,22 +119,28 @@
             <span class="p">)</span>
             <span class="k">continue</span>
         <span class="n">d</span><span class="p">[</span><span class="s1">&#39;label_indices&#39;</span><span class="p">][</span><span class="n">index_info</span><span class="o">.</span><span class="n">index_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">label_index_to_dict</span><span class="p">(</span>
-            <span class="n">document</span><span class="o">.</span><span class="n">get_label_index</span><span class="p">(</span><span class="n">index_info</span><span class="o">.</span><span class="n">index_name</span><span class="p">)</span>
+            <span class="n">document</span><span class="o">.</span><span class="n">get_label_index</span><span class="p">(</span><span class="n">index_info</span><span class="o">.</span><span class="n">index_name</span><span class="p">),</span>
+            <span class="n">include_label_text</span><span class="o">=</span><span class="n">include_label_text</span>
         <span class="p">)</span>
     <span class="k">return</span> <span class="n">d</span></div>
 
 
-<div class="viewcode-block" id="label_index_to_dict"><a class="viewcode-back" href="../../../io.html#mtap.io.serialization.label_index_to_dict">[docs]</a><span class="k">def</span> <span class="nf">label_index_to_dict</span><span class="p">(</span><span class="n">label_index</span><span class="p">:</span> <span class="n">LabelIndex</span><span class="p">[</span><span class="n">GenericLabel</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<div class="viewcode-block" id="label_index_to_dict"><a class="viewcode-back" href="../../../io.html#mtap.io.serialization.label_index_to_dict">[docs]</a><span class="k">def</span> <span class="nf">label_index_to_dict</span><span class="p">(</span><span class="n">label_index</span><span class="p">:</span> <span class="n">LabelIndex</span><span class="p">[</span><span class="n">GenericLabel</span><span class="p">],</span>
+                        <span class="o">*</span><span class="p">,</span> <span class="n">include_label_text</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;A helper method that turns a label index into a python dictionary.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        label_index (LabelIndex[GenericLabel]): The label index itself.</span>
 
+<span class="sd">    Keyword Args:</span>
+<span class="sd">        include_label_text (bool): Whether to include the text labels cover with the labels.</span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        dict: A dictionary representing the label index.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">d</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;json_labels&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">label</span><span class="o">.</span><span class="n">fields</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">label_index</span><span class="p">],</span>
+        <span class="s1">&#39;json_labels&#39;</span><span class="p">:</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">fields</span><span class="p">,</span> <span class="n">_text</span><span class="o">=</span><span class="n">label</span><span class="o">.</span><span class="n">text</span><span class="p">)</span> <span class="k">if</span> <span class="n">include_label_text</span> <span class="k">else</span> <span class="n">label</span><span class="o">.</span><span class="n">fields</span>
+                        <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">label_index</span><span class="p">],</span>
         <span class="s1">&#39;distinct&#39;</span><span class="p">:</span> <span class="n">label_index</span><span class="o">.</span><span class="n">distinct</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="n">d</span></div>
@@ -137,8 +151,6 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        d (dict): The dictionary representation of the event.</span>
-
-<span class="sd">    Keyword Args:</span>
 <span class="sd">        client (~typing.Optional[EventsClient]): An events service to create the event on.</span>
 
 <span class="sd">    Returns:</span>
@@ -158,8 +170,6 @@
 <span class="sd">    Args:</span>
 <span class="sd">        document_name (str): The name identifier of the document on the event.</span>
 <span class="sd">        d (dict): The dictionary representation of the document.</span>
-
-<span class="sd">    Keyword Args:</span>
 <span class="sd">        event (~typing.Optional[Event]): An event that the document should be added to.</span>
 
 <span class="sd">    Returns:</span>
@@ -185,7 +195,8 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        LabelIndex: The deserialized label index.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">label_index</span><span class="p">([</span><span class="n">GenericLabel</span><span class="p">(</span><span class="o">**</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;json_labels&#39;</span><span class="p">]],</span> <span class="n">distinct</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;distinct&#39;</span><span class="p">])</span></div>
+    <span class="k">return</span> <span class="n">label_index</span><span class="p">([</span><span class="n">GenericLabel</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)})</span>
+                        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;json_labels&#39;</span><span class="p">]],</span> <span class="n">distinct</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;distinct&#39;</span><span class="p">])</span></div>
 
 
 <div class="viewcode-block" id="Serializer"><a class="viewcode-back" href="../../../io.html#mtap.io.serialization.Serializer">[docs]</a><span class="k">class</span> <span class="nc">Serializer</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
@@ -199,13 +210,17 @@
         <span class="o">...</span>
 
 <div class="viewcode-block" id="Serializer.event_to_file"><a class="viewcode-back" href="../../../io.html#mtap.io.serialization.Serializer.event_to_file">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">event_to_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">IOBase</span><span class="p">]):</span>
+    <span class="k">def</span> <span class="nf">event_to_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">IOBase</span><span class="p">],</span>
+                      <span class="o">*</span><span class="p">,</span> <span class="n">include_label_text</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Writes the event to a file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            event (Event): The event object to serialize.</span>
 <span class="sd">            f (~typing.Union[~pathlib.Path, str, ~io.IOBase]):</span>
 <span class="sd">                A file or a path to a file to write the event to.</span>
+<span class="sd">            include_label_text (bool):</span>
+<span class="sd">                Whether, when serializing, to include the text that each label covers with the rest</span>
+<span class="sd">                of the label.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="o">...</span></div>
 
@@ -216,8 +231,6 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            f (~typing.Union[~pathlib.Path, str, ~io.IOBase]): The file to load from.</span>
-
-<span class="sd">        Keyword Args:</span>
 <span class="sd">            client (~typing.Optional[EventsClient]): The events service to load the event into.</span>
 
 <span class="sd">        Returns:</span>
@@ -239,14 +252,15 @@
 <span class="sd">        output_dir (str): The output_directory.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ser</span><span class="p">:</span> <span class="n">Serializer</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ser</span><span class="p">:</span> <span class="n">Serializer</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">include_label_text</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">serializer</span> <span class="o">=</span> <span class="n">ser</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">output_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_label_text</span> <span class="o">=</span> <span class="n">include_label_text</span>
 
     <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
         <span class="n">name</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;filename&#39;</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">event_id</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">serializer</span><span class="o">.</span><span class="n">extension</span><span class="p">)</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">serializer</span><span class="o">.</span><span class="n">event_to_file</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">serializer</span><span class="o">.</span><span class="n">event_to_file</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">include_label_text</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">include_label_text</span><span class="p">)</span></div>
 
 
 <span class="k">class</span> <span class="nc">_JsonSerializer</span><span class="p">(</span><span class="n">Serializer</span><span class="p">):</span>
@@ -256,37 +270,118 @@
     <span class="k">def</span> <span class="nf">extension</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;.json&#39;</span>
 
-    <span class="k">def</span> <span class="nf">event_to_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">event_to_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">include_label_text</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="kn">import</span> <span class="nn">json</span>
-        <span class="n">d</span> <span class="o">=</span> <span class="n">event_to_dict</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-            <span class="n">f</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="k">with</span> <span class="n">f</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-                <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">Processor</span><span class="o">.</span><span class="n">started_stopwatch</span><span class="p">(</span><span class="s1">&#39;transform&#39;</span><span class="p">):</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">event_to_dict</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">include_label_text</span><span class="o">=</span><span class="n">include_label_text</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">Processor</span><span class="o">.</span><span class="n">started_stopwatch</span><span class="p">(</span><span class="s1">&#39;io&#39;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="n">f</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">with</span> <span class="n">f</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">file_to_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">IOBase</span><span class="p">],</span>
                       <span class="n">client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EventsClient</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Event</span><span class="p">:</span>
         <span class="kn">import</span> <span class="nn">json</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">d</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                <span class="n">f</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-            <span class="k">with</span> <span class="n">f</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">Processor</span><span class="o">.</span><span class="n">started_stopwatch</span><span class="p">(</span><span class="s1">&#39;io&#39;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
                 <span class="n">d</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">dict_to_event</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="n">f</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                <span class="k">with</span> <span class="n">f</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">d</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">Processor</span><span class="o">.</span><span class="n">started_stopwatch</span><span class="p">(</span><span class="s1">&#39;transform&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">dict_to_event</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_YamlSerializer</span><span class="p">(</span><span class="n">Serializer</span><span class="p">):</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">extension</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;.yml&#39;</span>
+
+    <span class="k">def</span> <span class="nf">event_to_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">IOBase</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span>
+                      <span class="n">include_label_text</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">yaml</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">yaml</span> <span class="kn">import</span> <span class="n">CDumper</span> <span class="k">as</span> <span class="n">Dumper</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">yaml</span> <span class="kn">import</span> <span class="n">Dumper</span>
+        <span class="k">with</span> <span class="n">Processor</span><span class="o">.</span><span class="n">started_stopwatch</span><span class="p">(</span><span class="s1">&#39;transform&#39;</span><span class="p">):</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">event_to_dict</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">include_label_text</span><span class="o">=</span><span class="n">include_label_text</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">Processor</span><span class="o">.</span><span class="n">started_stopwatch</span><span class="p">(</span><span class="s1">&#39;io&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">IOBase</span><span class="p">):</span>
+                <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">Dumper</span><span class="o">=</span><span class="n">Dumper</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">f</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                <span class="k">with</span> <span class="n">f</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">Dumper</span><span class="o">=</span><span class="n">Dumper</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">file_to_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">IOBase</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span>
+                      <span class="n">client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EventsClient</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Event</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">yaml</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">yaml</span> <span class="kn">import</span> <span class="n">CLoader</span> <span class="k">as</span> <span class="n">Loader</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">yaml</span> <span class="kn">import</span> <span class="n">Loader</span>
+        <span class="k">with</span> <span class="n">Processor</span><span class="o">.</span><span class="n">started_stopwatch</span><span class="p">(</span><span class="s1">&#39;io&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">IOBase</span><span class="p">):</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">Loader</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">Path</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">()</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">d</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">Loader</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">Processor</span><span class="o">.</span><span class="n">started_stopwatch</span><span class="p">(</span><span class="s1">&#39;transform&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">dict_to_event</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_PickleSerializer</span><span class="p">(</span><span class="n">Serializer</span><span class="p">):</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">extension</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;.pickle&#39;</span>
+
+    <span class="k">def</span> <span class="nf">event_to_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">IOBase</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span>
+                      <span class="n">include_label_text</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">pickle</span>
+        <span class="k">with</span> <span class="n">Processor</span><span class="o">.</span><span class="n">started_stopwatch</span><span class="p">(</span><span class="s1">&#39;transform&#39;</span><span class="p">):</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">event_to_dict</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">include_label_text</span><span class="o">=</span><span class="n">include_label_text</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">Processor</span><span class="o">.</span><span class="n">started_stopwatch</span><span class="p">(</span><span class="s1">&#39;io&#39;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">Path</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">file_to_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">IOBase</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span>
+                      <span class="n">client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EventsClient</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Event</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">pickle</span>
+        <span class="k">with</span> <span class="n">Processor</span><span class="o">.</span><span class="n">started_stopwatch</span><span class="p">(</span><span class="s1">&#39;io&#39;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">Path</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">d</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">Processor</span><span class="o">.</span><span class="n">started_stopwatch</span><span class="p">(</span><span class="s1">&#39;transform&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">dict_to_event</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">)</span>
 
 
 <span class="n">JsonSerializer</span> <span class="o">=</span> <span class="n">_JsonSerializer</span><span class="p">()</span>
+<span class="n">YamlSerializer</span> <span class="o">=</span> <span class="n">_YamlSerializer</span><span class="p">()</span>
+<span class="n">PickleSerializer</span> <span class="o">=</span> <span class="n">_PickleSerializer</span><span class="p">()</span>
+
+<span class="n">standard_serializers</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;json&#39;</span><span class="p">:</span> <span class="n">JsonSerializer</span><span class="p">,</span>
+    <span class="s1">&#39;yml&#39;</span><span class="p">:</span> <span class="n">YamlSerializer</span><span class="p">,</span>
+    <span class="s1">&#39;pickle&#39;</span><span class="p">:</span> <span class="n">PickleSerializer</span>
+<span class="p">}</span>
 
 
 <span class="k">def</span> <span class="nf">get_serializer</span><span class="p">(</span><span class="n">identifier</span><span class="p">):</span>
-    <span class="k">return</span> <span class="p">{</span>
-        <span class="s1">&#39;json&#39;</span><span class="p">:</span> <span class="n">JsonSerializer</span>
-    <span class="p">}[</span><span class="n">identifier</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">standard_serializers</span><span class="p">[</span><span class="n">identifier</span><span class="p">]</span>
 </pre></div>
 
           </div>
