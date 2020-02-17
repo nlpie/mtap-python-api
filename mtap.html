@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>mtap &#8212; MTAP 0.3.0 documentation</title>
+    <title>mtap &#8212; MTAP 0.4.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -35,7 +35,7 @@
   <div class="section" id="module-mtap">
 <span id="mtap"></span><h1><a class="toc-backref" href="#id1">mtap</a><a class="headerlink" href="#module-mtap" title="Permalink to this headline">¶</a></h1>
 <div class="contents topic" id="contents">
-<p class="topic-title first">Contents</p>
+<p class="topic-title">Contents</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="#module-mtap" id="id1">mtap</a></p>
 <ul>
@@ -105,7 +105,7 @@ client gRPC stub to use.</p></li>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">EventsClient</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s1">&#39;localhost:50000&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">,</span> \
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">EventsClient</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s1">&#39;localhost:50000&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">,</span> \
 <span class="gp">&gt;&gt;&gt; </span>     <span class="n">Event</span><span class="p">(</span><span class="n">event_id</span><span class="o">=</span><span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">)</span> <span class="k">as</span> <span class="n">event</span><span class="p">:</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">document</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">create_document</span><span class="p">(</span><span class="n">document_name</span><span class="o">=</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span>
 <span class="gp">&gt;&gt;&gt; </span>                                     <span class="n">text</span><span class="o">=</span><span class="s1">&#39;The quick brown fox jumps over the lazy dog.&#39;</span><span class="p">)</span>
@@ -129,7 +129,7 @@ can be used to access document data from the events server.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">EventsClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">,</span> <span class="n">Event</span><span class="p">(</span><span class="n">event_id</span><span class="o">=</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">)</span> <span class="k">as</span> <span class="n">event</span><span class="p">:</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">EventsClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">,</span> <span class="n">Event</span><span class="p">(</span><span class="n">event_id</span><span class="o">=</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">)</span> <span class="k">as</span> <span class="n">event</span><span class="p">:</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="c1"># use event</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="o">...</span>
 </pre></div>
@@ -265,11 +265,11 @@ document.</p></li>
 </dl>
 <p class="rubric">Examples</p>
 <p>Local document:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s1">&#39;Some document text.&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s1">&#39;Some document text.&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Existing distributed object:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">EventsClient</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s1">&#39;localhost:8080&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">,</span> \
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">EventsClient</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s1">&#39;localhost:8080&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">,</span> \
 <span class="gp">&gt;&gt;&gt; </span>     <span class="n">Event</span><span class="p">(</span><span class="n">event_id</span><span class="o">=</span><span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">)</span> <span class="k">as</span> <span class="n">event</span><span class="p">:</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">document</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="s1">&#39;plaintext&#39;</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">document</span><span class="o">.</span><span class="n">text</span>
@@ -277,14 +277,14 @@ document.</p></li>
 </pre></div>
 </div>
 <p>New distributed object:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">EventsClient</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s1">&#39;localhost:8080&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">,</span> \
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">EventsClient</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s1">&#39;localhost:8080&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">,</span> \
 <span class="gp">&gt;&gt;&gt; </span>     <span class="n">Event</span><span class="p">(</span><span class="n">event_id</span><span class="o">=</span><span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">)</span> <span class="k">as</span> <span class="n">event</span><span class="p">:</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s1">&#39;Some document text.&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">event</span><span class="o">.</span><span class="n">add_document</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>or</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">EventsClient</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s1">&#39;localhost:8080&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">,</span> \
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">EventsClient</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s1">&#39;localhost:8080&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">,</span> \
 <span class="gp">&gt;&gt;&gt; </span>     <span class="n">Event</span><span class="p">(</span><span class="n">event_id</span><span class="o">=</span><span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">)</span> <span class="k">as</span> <span class="n">event</span><span class="p">:</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">document</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">create_document</span><span class="p">(</span><span class="s1">&#39;plaintext&#39;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s1">&#39;Some document text.&#39;</span><span class="p">)</span>
 </pre></div>
@@ -396,7 +396,7 @@ handle uploading any added labels to the server.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">document</span><span class="o">.</span><span class="n">get_labeler</span><span class="p">(</span><span class="s1">&#39;sentences&#39;</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">labeler</span><span class="p">:</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">document</span><span class="o">.</span><span class="n">get_labeler</span><span class="p">(</span><span class="s1">&#39;sentences&#39;</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">labeler</span><span class="p">:</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">labeler</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="n">sentence_type</span><span class="o">=</span><span class="s1">&#39;STANDARD&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">sentence</span> <span class="o">=</span> <span class="n">labeler</span><span class="p">(</span><span class="mi">26</span><span class="p">,</span> <span class="mi">34</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">sentence</span><span class="o">.</span><span class="n">sentence_type</span> <span class="o">=</span> <span class="s1">&#39;FRAGMENT&#39;</span>
@@ -466,7 +466,7 @@ to a label index on a document.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">labeler</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="n">some_field</span><span class="o">=</span><span class="s1">&#39;some_value&#39;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">labeler</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="n">some_field</span><span class="o">=</span><span class="s1">&#39;some_value&#39;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="go">GenericLabel(start_index=0, end_index=25, some_field=&#39;some_value&#39;, x=3)</span>
 </pre></div>
 </div>
@@ -699,13 +699,13 @@ json-serializable.</p></li>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pos_tag</span> <span class="o">=</span> <span class="n">pos_tag_labeler</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pos_tag</span> <span class="o">=</span> <span class="n">pos_tag_labeler</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pos_tag</span><span class="o">.</span><span class="n">tag</span> <span class="o">=</span> <span class="s1">&#39;NNS&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pos_tag</span><span class="o">.</span><span class="n">tag</span>
 <span class="go">&#39;NNS&#39;</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pos_tag2</span> <span class="o">=</span> <span class="n">pos_tag_labeler</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="s1">&#39;VB&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pos_tag2</span> <span class="o">=</span> <span class="n">pos_tag_labeler</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="s1">&#39;VB&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pos_tag2</span><span class="o">.</span><span class="n">tag</span>
 <span class="go">&#39;VB&#39;</span>
 </pre></div>
@@ -767,7 +767,7 @@ json-serializable.</p></li>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">label_index</span><span class="p">,</span> <span class="n">label</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">label_index</span><span class="p">,</span> <span class="n">label</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">index</span> <span class="o">=</span> <span class="n">label_index</span><span class="p">([</span><span class="n">label</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
 <span class="gp">... </span>                     <span class="n">label</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
 <span class="gp">... </span>                     <span class="n">label</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
@@ -798,6 +798,24 @@ non-overlapping.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="mtap.label_indices.LabelIndex.filter">
+<em class="property">abstract </em><code class="sig-name descname">filter</code><span class="sig-paren">(</span><em class="sig-param">fn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/label_indices.html#LabelIndex.filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.label_indices.LabelIndex.filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filters the label index according to a filter function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fn</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#mtap.labels.Label" title="mtap.labels.Label"><em>Label</em></a><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a><em>]</em>) – A filter function, returns <code class="docutils literal notranslate"><span class="pre">true</span></code> if the label
+should be included, <code class="docutils literal notranslate"><span class="pre">false</span></code> if it should not be included</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A view of this label index.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#mtap.label_indices.LabelIndex" title="mtap.label_indices.LabelIndex">LabelIndex</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="mtap.label_indices.LabelIndex.at">
 <em class="property">abstract </em><code class="sig-name descname">at</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">end=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/label_indices.html#LabelIndex.at"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.label_indices.LabelIndex.at" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the labels at the specified location in text.</p>
@@ -818,7 +836,7 @@ not been specified by a label.</p></li>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">label_index</span><span class="p">,</span> <span class="n">label</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">label_index</span><span class="p">,</span> <span class="n">label</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">index</span> <span class="o">=</span> <span class="n">label_index</span><span class="p">([</span><span class="n">label</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
 <span class="gp">... </span>                     <span class="n">label</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
 <span class="gp">... </span>                     <span class="n">label</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">)])</span>
@@ -849,7 +867,7 @@ not been specified by a label.</p></li>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">label_index</span><span class="p">,</span> <span class="n">label</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">label_index</span><span class="p">,</span> <span class="n">label</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">index</span> <span class="o">=</span> <span class="n">label_index</span><span class="p">([</span><span class="n">label</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
 <span class="gp">... </span>                     <span class="n">label</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
 <span class="gp">... </span>                     <span class="n">label</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
@@ -883,7 +901,7 @@ not been specified by a label.</p></li>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">label_index</span><span class="p">,</span> <span class="n">label</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">label_index</span><span class="p">,</span> <span class="n">label</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">index</span> <span class="o">=</span> <span class="n">label_index</span><span class="p">([</span><span class="n">label</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
 <span class="gp">... </span>                     <span class="n">label</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
 <span class="gp">... </span>                     <span class="n">label</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
@@ -918,7 +936,7 @@ not been specified by a label.</p></li>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">label_index</span><span class="p">,</span> <span class="n">label</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">label_index</span><span class="p">,</span> <span class="n">label</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">index</span> <span class="o">=</span> <span class="n">label_index</span><span class="p">([</span><span class="n">label</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
 <span class="gp">... </span>                     <span class="n">label</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
 <span class="gp">... </span>                     <span class="n">label</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
@@ -952,7 +970,7 @@ not been specified by a label.</p></li>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">label_index</span><span class="p">,</span> <span class="n">label</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">label_index</span><span class="p">,</span> <span class="n">label</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">index</span> <span class="o">=</span> <span class="n">label_index</span><span class="p">([</span><span class="n">label</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
 <span class="gp">... </span>                     <span class="n">label</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
 <span class="gp">... </span>                     <span class="n">label</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
@@ -983,7 +1001,7 @@ be used, or a float index in text.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">label_index</span><span class="p">,</span> <span class="n">label</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">label_index</span><span class="p">,</span> <span class="n">label</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">index</span> <span class="o">=</span> <span class="n">label_index</span><span class="p">([</span><span class="n">label</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
 <span class="gp">... </span>                     <span class="n">label</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
 <span class="gp">... </span>                     <span class="n">label</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
@@ -1014,7 +1032,7 @@ be used, or a float index in text.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">label_index</span><span class="p">,</span> <span class="n">label</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">label_index</span><span class="p">,</span> <span class="n">label</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">index</span> <span class="o">=</span> <span class="n">label_index</span><span class="p">([</span><span class="n">label</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
 <span class="gp">... </span>                     <span class="n">label</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
 <span class="gp">... </span>                     <span class="n">label</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
@@ -1040,7 +1058,7 @@ be used, or a float index in text.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">label_index</span><span class="p">,</span> <span class="n">label</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">label_index</span><span class="p">,</span> <span class="n">label</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">index</span> <span class="o">=</span> <span class="n">label_index</span><span class="p">([</span><span class="n">label</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
 <span class="gp">... </span>                     <span class="n">label</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
 <span class="gp">... </span>                     <span class="n">label</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
@@ -1066,7 +1084,7 @@ be used, or a float index in text.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">label_index</span><span class="p">,</span> <span class="n">label</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">label_index</span><span class="p">,</span> <span class="n">label</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">index</span> <span class="o">=</span> <span class="n">label_index</span><span class="p">([</span><span class="n">label</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
 <span class="gp">... </span>                     <span class="n">label</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
 <span class="gp">... </span>                     <span class="n">label</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
@@ -1198,7 +1216,7 @@ at creation.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># In a process method</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># In a process method</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">started_stopwatch</span><span class="p">(</span><span class="s1">&#39;key&#39;</span><span class="p">):</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="c1"># do work</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="o">...</span>
@@ -1223,7 +1241,7 @@ at creation.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># In a process method</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># In a process method</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">unstarted_stopwatch</span><span class="p">(</span><span class="s1">&#39;key&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">stopwatch</span><span class="p">:</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
 <span class="gp">&gt;&gt;&gt; </span>        <span class="c1"># work you don&#39;t want timed</span>
@@ -1243,7 +1261,7 @@ at creation.</p>
 <em class="property">class </em><code class="sig-prename descclassname">mtap.processing.</code><code class="sig-name descname">EventProcessor</code><a class="reference internal" href="_modules/mtap/processing/base.html#EventProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.processing.EventProcessor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Abstract base class for an event processor.</p>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">ExampleProcessor</span><span class="p">(</span><span class="n">EventProcessor</span><span class="p">):</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">ExampleProcessor</span><span class="p">(</span><span class="n">EventProcessor</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
 <span class="gp">... </span>         <span class="c1"># do work on the event</span>
 <span class="gp">... </span>         <span class="o">...</span>
@@ -1284,13 +1302,13 @@ by the framework after it’s done with the processor.</p>
 <em class="property">class </em><code class="sig-prename descclassname">mtap.processing.</code><code class="sig-name descname">DocumentProcessor</code><a class="reference internal" href="_modules/mtap/processing/base.html#DocumentProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.processing.DocumentProcessor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Abstract base class for a document processor.</p>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">ExampleProcessor</span><span class="p">(</span><span class="n">DocumentProcessor</span><span class="p">):</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">ExampleProcessor</span><span class="p">(</span><span class="n">DocumentProcessor</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
 <span class="gp">... </span>        <span class="c1"># do processing on document</span>
 <span class="gp">... </span>        <span class="o">...</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">ExampleProcessor</span><span class="p">(</span><span class="n">DocumentProcessor</span><span class="p">):</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">ExampleProcessor</span><span class="p">(</span><span class="n">DocumentProcessor</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
 <span class="gp">... </span>         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">started_stopwatch</span><span class="p">(</span><span class="s1">&#39;key&#39;</span><span class="p">):</span>
 <span class="gp">... </span>              <span class="c1"># use stopwatch on something</span>
@@ -1344,12 +1362,12 @@ processor’s results.</p>
 </dd></dl>
 
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># in an EventProcessor or DocumentProcessor process method call</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># in an EventProcessor or DocumentProcessor process method call</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">started_stopwatch</span><span class="p">(</span><span class="s1">&#39;key&#39;</span><span class="p">):</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">timed_routine</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># in an EventProcessor or DocumentProcessor process method call</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># in an EventProcessor or DocumentProcessor process method call</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">unstarted_stopwatch</span><span class="p">(</span><span class="s1">&#39;key&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">stopwatch</span><span class="p">:</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
 <span class="gp">&gt;&gt;&gt; </span>        <span class="c1"># work you don&#39;t want timed</span>
@@ -1411,21 +1429,21 @@ decorator attaches the metadata so it can be reflected at runtime.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap.processing</span> <span class="kn">import</span> <span class="n">EventProcessor</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap.processing</span> <span class="kn">import</span> <span class="n">EventProcessor</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nd">@processor</span><span class="p">(</span><span class="s1">&#39;example-text-converter&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">TextConverter</span><span class="p">(</span><span class="n">EventProcessor</span><span class="p">):</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="o">...</span>
 </pre></div>
 </div>
 <p>or</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap.processing</span> <span class="kn">import</span> <span class="n">DocumentProcessor</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap.processing</span> <span class="kn">import</span> <span class="n">DocumentProcessor</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nd">@processor</span><span class="p">(</span><span class="s1">&#39;example-sentence-detector&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">SentenceDetector</span><span class="p">(</span><span class="n">DocumentProcessor</span><span class="p">):</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="o">...</span>
 </pre></div>
 </div>
 <p>From our own example processor:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap.processing</span> <span class="kn">import</span> <span class="n">DocumentProcessor</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mtap.processing</span> <span class="kn">import</span> <span class="n">DocumentProcessor</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nd">@processor</span><span class="p">(</span><span class="s1">&#39;mtap-example-processor-python&#39;</span><span class="p">,</span>
 <span class="gp">&gt;&gt;&gt; </span>           <span class="n">human_name</span><span class="o">=</span><span class="s2">&quot;Python Example Processor&quot;</span><span class="p">,</span>
 <span class="gp">&gt;&gt;&gt; </span>           <span class="n">description</span><span class="o">=</span><span class="s2">&quot;counts the number of times the letters a and b occur in a document&quot;</span><span class="p">,</span>
@@ -1539,7 +1557,7 @@ Example: “sentence-detector/sentences”.</p></li>
 </dl>
 <p class="rubric">Examples</p>
 <p>Using this as a parent parser:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="p">[</span><span class="n">processor_parser</span><span class="p">()])</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="p">[</span><span class="n">processor_parser</span><span class="p">()])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--my-arg-1&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--my-arg-2&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
@@ -1568,11 +1586,11 @@ returned by <a class="reference internal" href="#mtap.processor_parser" title="m
 </dl>
 <p class="rubric">Examples</p>
 <p>Will automatically parse arguments:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">run_processor</span><span class="p">(</span><span class="n">MyProcessor</span><span class="p">())</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">run_processor</span><span class="p">(</span><span class="n">MyProcessor</span><span class="p">())</span>
 </pre></div>
 </div>
 <p>Manual arguments:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">run_processor</span><span class="p">(</span><span class="n">MyProcessor</span><span class="p">(),</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="s1">&#39;8080&#39;</span><span class="p">])</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">run_processor</span><span class="p">(</span><span class="n">MyProcessor</span><span class="p">(),</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="s1">&#39;8080&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1724,7 +1742,7 @@ a pipeline can be modified after creation using this functionality.</p>
 </dl>
 <p class="rubric">Examples</p>
 <p>Remote pipeline with name discovery:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">mtap</span><span class="o">.</span><span class="n">Events</span><span class="p">()</span> <span class="k">as</span> <span class="n">events</span><span class="p">,</span> <span class="n">mtap</span><span class="o">.</span><span class="n">Pipeline</span><span class="p">(</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">mtap</span><span class="o">.</span><span class="n">Events</span><span class="p">()</span> <span class="k">as</span> <span class="n">events</span><span class="p">,</span> <span class="n">mtap</span><span class="o">.</span><span class="n">Pipeline</span><span class="p">(</span>
 <span class="gp">&gt;&gt;&gt; </span>        <span class="n">RemoteProcessor</span><span class="p">(</span><span class="s1">&#39;processor-1-id&#39;</span><span class="p">),</span>
 <span class="gp">&gt;&gt;&gt; </span>        <span class="n">RemoteProcessor</span><span class="p">(</span><span class="s1">&#39;processor-2-id&#39;</span><span class="p">),</span>
 <span class="gp">&gt;&gt;&gt; </span>        <span class="n">RemoteProcessor</span><span class="p">(</span><span class="s1">&#39;processor-3-id&#39;</span><span class="p">)</span>
@@ -1736,7 +1754,7 @@ a pipeline can be modified after creation using this functionality.</p>
 </pre></div>
 </div>
 <p>Remote pipeline using addresses:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">mtap</span><span class="o">.</span><span class="n">Events</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s1">&#39;localhost:50051&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">events</span><span class="p">,</span> <span class="n">mtap</span><span class="o">.</span><span class="n">Pipeline</span><span class="p">(</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">mtap</span><span class="o">.</span><span class="n">Events</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s1">&#39;localhost:50051&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">events</span><span class="p">,</span> <span class="n">mtap</span><span class="o">.</span><span class="n">Pipeline</span><span class="p">(</span>
 <span class="gp">&gt;&gt;&gt; </span>        <span class="n">RemoteProcessor</span><span class="p">(</span><span class="s1">&#39;processor-1-name&#39;</span><span class="p">,</span> <span class="n">address</span><span class="o">=</span><span class="s1">&#39;localhost:50052&#39;</span><span class="p">),</span>
 <span class="gp">&gt;&gt;&gt; </span>        <span class="n">RemoteProcessor</span><span class="p">(</span><span class="s1">&#39;processor-2-id&#39;</span><span class="p">,</span> <span class="n">address</span><span class="o">=</span><span class="s1">&#39;localhost:50053&#39;</span><span class="p">),</span>
 <span class="gp">&gt;&gt;&gt; </span>        <span class="n">RemoteProcessor</span><span class="p">(</span><span class="s1">&#39;processor-3-id&#39;</span><span class="p">,</span> <span class="n">address</span><span class="o">=</span><span class="s1">&#39;localhost:50054&#39;</span><span class="p">)</span>
@@ -1748,7 +1766,7 @@ a pipeline can be modified after creation using this functionality.</p>
 </pre></div>
 </div>
 <p>Modifying pipeline</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">RemoteProcessor</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="n">address</span><span class="o">=</span><span class="s1">&#39;localhost:50000&#39;</span><span class="p">),</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">RemoteProcessor</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="n">address</span><span class="o">=</span><span class="s1">&#39;localhost:50000&#39;</span><span class="p">),</span>
 <span class="go">                        RemoteProcessor(&#39;bar&#39;, address=&#39;localhost:50000&#39;))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span>
 <span class="go">Pipeline(RemoteProcessor(processor_id=&#39;foo&#39;, address=&#39;localhost:50000&#39;, component_id=None, params=None),</span>
@@ -1787,10 +1805,10 @@ a pipeline can be modified after creation using this functionality.</p>
 
 <dl class="method">
 <dt id="mtap.Pipeline.run_multithread">
-<code class="sig-name descname">run_multithread</code><span class="sig-paren">(</span><em class="sig-param">source</em>, <em class="sig-param">*</em>, <em class="sig-param">params=None</em>, <em class="sig-param">progress=True</em>, <em class="sig-param">total=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/processing/pipeline.html#Pipeline.run_multithread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.Pipeline.run_multithread" title="Permalink to this definition">¶</a></dt>
-<dd><p>Uses a generator to create</p>
-<p>This method will ensure that the event remains open on the Event service until the
-asynchronous processing of the event through the entire pipeline is completed.</p>
+<code class="sig-name descname">run_multithread</code><span class="sig-paren">(</span><em class="sig-param">source</em>, <em class="sig-param">*</em>, <em class="sig-param">params=None</em>, <em class="sig-param">progress=True</em>, <em class="sig-param">total=None</em>, <em class="sig-param">close_events=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/processing/pipeline.html#Pipeline.run_multithread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.Pipeline.run_multithread" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs this pipeline on a source which provides multiple documents / events.</p>
+<p>Concurrency is per-event, with each event being provided a thread which runs it through the
+pipeline.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1801,6 +1819,8 @@ the contents of this dict.</p></li>
 <li><p><strong>progress</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Whether to print a progress bar using tqdm.</p></li>
 <li><p><strong>total</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>]</em>) – An optional argument indicating the total number of events / documents that will be
 provided by the iterable, for the progress bar.</p></li>
+<li><p><strong>close_events</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Whether the pipeline should close events after they have been fully processed
+through all components.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1812,7 +1832,7 @@ all the processors and the event that was processed.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">docs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s1">&#39;abc/&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;*.txt&#39;</span><span class="p">))</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">docs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s1">&#39;abc/&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;*.txt&#39;</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">document_source</span><span class="p">():</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">docs</span><span class="p">:</span>
 <span class="gp">&gt;&gt;&gt; </span>        <span class="k">with</span> <span class="n">path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -1848,11 +1868,11 @@ the contents of this dict.</p></li>
 </dl>
 <p class="rubric">Examples</p>
 <p>The statement</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>with a document parameter is an alias for</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">event</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;document_name&#39;</span><span class="p">:</span> <span class="n">document</span><span class="o">.</span><span class="n">document_name</span><span class="p">})</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">event</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;document_name&#39;</span><span class="p">:</span> <span class="n">document</span><span class="o">.</span><span class="n">document_name</span><span class="p">})</span>
 </pre></div>
 </div>
 <p>The ‘document_name’ param is used to indicate to <a class="reference internal" href="#mtap.processing.DocumentProcessor" title="mtap.processing.DocumentProcessor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DocumentProcessor</span></code></a>
@@ -2320,7 +2340,7 @@ that config object.</p>
       &copy;2019, Regents of the University of Minnesota..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

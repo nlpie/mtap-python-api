@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>mtap.processing.service &#8212; MTAP 0.3.0 documentation</title>
+    <title>mtap.processing.service &#8212; MTAP 0.4.0 documentation</title>
     <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -354,8 +354,8 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            threading.Event: A shutdown event for the server.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Shutting down processor server with id: &quot;</span><span class="si">%s</span><span class="s1">&quot;  on address: &quot;</span><span class="si">%s</span><span class="s1">:</span><span class="si">%d</span><span class="s1">&quot;&#39;</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">processor_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Shutting down processor server with id: &quot;</span><span class="si">{}</span><span class="s1">&quot;  on address: &quot;</span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">processor_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_servicer</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
         <span class="n">shutdown_event</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="n">grace</span><span class="o">=</span><span class="n">grace</span><span class="p">)</span>
         <span class="n">shutdown_event</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span></div></div>
@@ -400,7 +400,7 @@
       &copy;2019, Regents of the University of Minnesota..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>mtap._events_service &#8212; MTAP 0.3.0 documentation</title>
+    <title>mtap._events_service &#8212; MTAP 0.4.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -124,7 +124,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            threading.Event: A shutdown event for the server.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Stopping events server on address: </span><span class="si">%s</span><span class="s2">:</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_port</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Stopping events server on address: </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_port</span><span class="p">))</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_deregister</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
@@ -324,7 +324,7 @@
                 <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">label</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;document&quot;</span><span class="p">,</span> <span class="s2">&quot;location&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">]:</span>
                         <span class="n">_set_error_context</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">grpc</span><span class="o">.</span><span class="n">StatusCode</span><span class="o">.</span><span class="n">INVALID_ARGUMENT</span><span class="p">,</span>
-                                           <span class="s2">&quot;Label included a reserved key: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+                                           <span class="s2">&quot;Label included a reserved key: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
                         <span class="k">return</span> <span class="n">empty_pb2</span><span class="o">.</span><span class="n">Empty</span><span class="p">()</span>
         <span class="n">document</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">request</span><span class="o">.</span><span class="n">index_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels</span>
         <span class="k">return</span> <span class="n">events_pb2</span><span class="o">.</span><span class="n">AddLabelsResponse</span><span class="p">()</span>
@@ -337,7 +337,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">labels_type</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">request</span><span class="o">.</span><span class="n">index_name</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Event: &#39;</span><span class="si">{}</span><span class="s2">&#39; document: &#39;</span><span class="si">{}</span><span class="s2"> does not have label index: </span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Event: &#39;</span><span class="si">{}</span><span class="s2">&#39; document: &#39;</span><span class="si">{}</span><span class="s2"> does not have label index: </span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                 <span class="n">request</span><span class="o">.</span><span class="n">event_id</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">document_name</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">index_name</span><span class="p">)</span>
             <span class="n">_set_error_context</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">grpc</span><span class="o">.</span><span class="n">StatusCode</span><span class="o">.</span><span class="n">NOT_FOUND</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">empty_pb2</span><span class="o">.</span><span class="n">Empty</span><span class="p">()</span>
@@ -411,7 +411,7 @@
       &copy;2019, Regents of the University of Minnesota..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
