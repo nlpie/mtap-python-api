@@ -1,17 +1,17 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>mtap.label_indices &#8212; MTAP 0.4.0 documentation</title>
+    <title>mtap.label_indices &#8212; MTAP 0.5.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
    
@@ -48,9 +48,13 @@
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span> <span class="nn">bisect</span> <span class="kn">import</span> <span class="n">bisect_left</span><span class="p">,</span> <span class="n">bisect_right</span>
 <span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">attrgetter</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> \
+    <span class="n">TYPE_CHECKING</span>
 
 <span class="kn">from</span> <span class="nn">mtap.labels</span> <span class="kn">import</span> <span class="n">Label</span><span class="p">,</span> <span class="n">Location</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">mtap.events</span> <span class="kn">import</span> <span class="n">ProtoLabelAdapter</span>
 
 <span class="n">L</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;L&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">Label</span><span class="p">)</span>
 
@@ -72,6 +76,11 @@
         <span class="sd">&quot;&quot;&quot;bool: Whether this label index is distinct, i.e. all of the labels in it are</span>
 <span class="sd">            non-overlapping.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="o">...</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">adapter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="s1">&#39;ProtoLabelAdapter&#39;</span><span class="p">]:</span>
         <span class="o">...</span>
 
 <div class="viewcode-block" id="LabelIndex.filter"><a class="viewcode-back" href="../../mtap.html#mtap.LabelIndex.filter">[docs]</a>    <span class="nd">@abstractmethod</span>
@@ -324,12 +333,15 @@
         <span class="o">...</span></div></div>
 
 
-<div class="viewcode-block" id="label_index"><a class="viewcode-back" href="../../mtap.html#mtap.label_index">[docs]</a><span class="k">def</span> <span class="nf">label_index</span><span class="p">(</span><span class="n">labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">L</span><span class="p">],</span> <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LabelIndex</span><span class="p">[</span><span class="n">L</span><span class="p">]:</span>
+<div class="viewcode-block" id="label_index"><a class="viewcode-back" href="../../mtap.html#mtap.label_index">[docs]</a><span class="k">def</span> <span class="nf">label_index</span><span class="p">(</span><span class="n">labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">L</span><span class="p">],</span>
+                <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="n">adapter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s1">&#39;ProtoLabelAdapter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LabelIndex</span><span class="p">[</span><span class="n">L</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;Creates a label index from labels.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        labels (~typing.List[L]): Zero or more labels to create a label index from.</span>
 <span class="sd">        distinct (bool): Whether the label index is distinct or not.</span>
+<span class="sd">        adapter (ProtoLabelAdapter): The label adapter for these labels.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        LabelIndex: The newly created label index.</span>
@@ -347,13 +359,15 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">labels</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">attrgetter</span><span class="p">(</span><span class="s1">&#39;location&#39;</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">presorted_label_index</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">distinct</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">presorted_label_index</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">distinct</span><span class="p">,</span> <span class="n">adapter</span><span class="o">=</span><span class="n">adapter</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">presorted_label_index</span><span class="p">(</span><span class="n">labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">L</span><span class="p">],</span> <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LabelIndex</span><span class="p">[</span><span class="n">L</span><span class="p">]:</span>
+<span class="k">def</span> <span class="nf">presorted_label_index</span><span class="p">(</span><span class="n">labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">L</span><span class="p">],</span>
+                          <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                          <span class="n">adapter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s1">&#39;ProtoLabelAdapter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LabelIndex</span><span class="p">[</span><span class="n">L</span><span class="p">]:</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">EMPTY</span><span class="p">[</span><span class="n">distinct</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">_LabelIndex</span><span class="p">(</span><span class="n">distinct</span><span class="p">,</span> <span class="n">_Ascending</span><span class="p">(</span><span class="n">labels</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">_Empty</span><span class="p">(</span><span class="n">distinct</span><span class="p">,</span> <span class="n">adapter</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_LabelIndex</span><span class="p">(</span><span class="n">distinct</span><span class="p">,</span> <span class="n">_Ascending</span><span class="p">(</span><span class="n">labels</span><span class="p">),</span> <span class="n">adapter</span><span class="o">=</span><span class="n">adapter</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">_View</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
@@ -549,16 +563,26 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
                  <span class="n">view</span><span class="p">:</span> <span class="n">_View</span><span class="p">,</span>
                  <span class="n">ascending</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-                 <span class="n">reversed_index</span><span class="p">:</span> <span class="s1">&#39;_LabelIndex[L]&#39;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+                 <span class="n">reversed_index</span><span class="p">:</span> <span class="s1">&#39;_LabelIndex[L]&#39;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">adapter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s1">&#39;ProtoLabelAdapter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_distinct</span> <span class="o">=</span> <span class="n">distinct</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_view</span> <span class="o">=</span> <span class="n">view</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ascending</span> <span class="o">=</span> <span class="n">ascending</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_adapter</span> <span class="o">=</span> <span class="n">adapter</span>
         <span class="k">if</span> <span class="n">reversed_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__reversed</span> <span class="o">=</span> <span class="n">reversed_index</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">distinct</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distinct</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">adapter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;ProtoLabelAdapter[L]&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_adapter</span>
+
+    <span class="nd">@adapter</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">adapter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="s1">&#39;ProtoLabelAdapter[L]&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_adapter</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Label</span><span class="p">],</span> <span class="nb">bool</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s1">&#39;LabelIndex[L]&#39;</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filtered_or_empty</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
@@ -579,7 +603,7 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_view</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">_LabelIndex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distinct</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_view</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">_LabelIndex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distinct</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_view</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">adapter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapter</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Index must be int or slice.&quot;</span><span class="p">)</span>
 
@@ -677,20 +701,25 @@
             <span class="n">bounded_view</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_view</span><span class="o">.</span><span class="n">bound</span><span class="p">(</span><span class="n">min_start</span><span class="o">=</span><span class="n">min_start</span><span class="p">,</span> <span class="n">max_start</span><span class="o">=</span><span class="n">max_start</span><span class="p">,</span>
                                             <span class="n">min_end</span><span class="o">=</span><span class="n">min_end</span><span class="p">,</span> <span class="n">max_end</span><span class="o">=</span><span class="n">max_end</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">EMPTY</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">distinct</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">_LabelIndex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distinct</span><span class="p">,</span> <span class="n">bounded_view</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">_Empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distinct</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">adapter</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_LabelIndex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distinct</span><span class="p">,</span> <span class="n">bounded_view</span><span class="p">,</span> <span class="n">adapter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapter</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_filtered_or_empty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Label</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">filtered_view</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_view</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">EMPTY</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">distinct</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">_LabelIndex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distinct</span><span class="p">,</span> <span class="n">filtered_view</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">_Empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distinct</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">adapter</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_LabelIndex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distinct</span><span class="p">,</span> <span class="n">filtered_view</span><span class="p">,</span> <span class="n">adapter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adapter</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">_Empty</span><span class="p">(</span><span class="n">LabelIndex</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distinct</span><span class="p">):</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">adapter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="s1">&#39;ProtoLabelAdapter&#39;</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_adapter</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distinct</span><span class="p">,</span> <span class="n">adapter</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_distinct</span> <span class="o">=</span> <span class="n">distinct</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_adapter</span> <span class="o">=</span> <span class="n">adapter</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">distinct</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -755,12 +784,6 @@
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;label_index([], distinct=</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distinct</span><span class="p">)</span>
-
-
-<span class="n">EMPTY</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="kc">True</span><span class="p">:</span> <span class="n">_Empty</span><span class="p">(</span><span class="kc">True</span><span class="p">),</span>
-    <span class="kc">False</span><span class="p">:</span> <span class="n">_Empty</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
-<span class="p">}</span>
 </pre></div>
 
           </div>
@@ -793,7 +816,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -802,7 +825,7 @@
       &copy;2019, Regents of the University of Minnesota..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

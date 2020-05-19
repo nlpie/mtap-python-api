@@ -29,24 +29,3 @@ Serialization
 
 .. autoclass:: mtap.io.serialization.Serializer
 
-Serialization Helpers
-^^^^^^^^^^^^^^^^^^^^^
-
-.. autofunction:: mtap.io.serialization.event_to_dict
-
-.. autofunction:: mtap.io.serialization.document_to_dict
-
-.. autofunction:: mtap.io.serialization.label_index_to_dict
-
-Deserialization Helpers
-^^^^^^^^^^^^^^^^^^^^^^^
-
-.. autofunction:: mtap.io.serialization.dict_to_event
-
-.. autofunction:: mtap.io.serialization.dict_to_document
-
-.. autofunction:: mtap.io.serialization.dict_to_label_index
-
-BRAT
-----
-

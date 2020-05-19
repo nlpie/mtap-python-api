@@ -1,17 +1,17 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>mtap.processing.pipeline &#8212; MTAP 0.4.0 documentation</title>
+    <title>mtap.processing.pipeline &#8212; MTAP 0.5.0 documentation</title>
     <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
    
@@ -46,7 +46,7 @@
 <span class="c1"># limitations under the License.</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">Future</span><span class="p">,</span> <span class="n">wait</span>
+<span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">Future</span>
 <span class="kn">from</span> <span class="nn">concurrent.futures.thread</span> <span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Lock</span><span class="p">,</span> <span class="n">Condition</span>
@@ -57,7 +57,7 @@
 <span class="kn">from</span> <span class="nn">mtap._config</span> <span class="kn">import</span> <span class="n">Config</span>
 <span class="kn">from</span> <span class="nn">mtap.events</span> <span class="kn">import</span> <span class="n">Event</span><span class="p">,</span> <span class="n">Document</span><span class="p">,</span> <span class="n">EventsClient</span>
 <span class="kn">from</span> <span class="nn">mtap.processing._runners</span> <span class="kn">import</span> <span class="n">ProcessorRunner</span><span class="p">,</span> <span class="n">RemoteRunner</span><span class="p">,</span> <span class="n">ProcessingTimesCollector</span><span class="p">,</span> \
-    <span class="n">ProcessingComponent</span>
+    <span class="n">ProcessingComponent</span><span class="p">,</span> <span class="n">ProcessingError</span>
 <span class="kn">from</span> <span class="nn">mtap.processing.base</span> <span class="kn">import</span> <span class="n">EventProcessor</span><span class="p">,</span> <span class="n">ProcessingResult</span><span class="p">,</span> <span class="n">AggregateTimingInfo</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -197,11 +197,11 @@
 
 
 <span class="k">def</span> <span class="nf">_cancel_callback</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">read_ahead</span><span class="p">,</span> <span class="n">cd</span><span class="p">,</span> <span class="n">close_events</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">fn</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">fn</span><span class="p">(</span><span class="n">future</span><span class="p">:</span> <span class="n">Future</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">close_events</span><span class="p">:</span>
             <span class="n">event</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="n">read_ahead</span><span class="o">.</span><span class="n">task_completed</span><span class="p">()</span>
-        <span class="n">cd</span><span class="o">.</span><span class="n">count_down</span><span class="p">()</span>
+        <span class="n">cd</span><span class="o">.</span><span class="n">count_down</span><span class="p">(</span><span class="n">future</span><span class="o">.</span><span class="n">exception</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">fn</span>
 
@@ -280,16 +280,12 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">components</span><span class="p">:</span> <span class="n">ComponentDescriptor</span><span class="p">,</span>
                  <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Config</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">n_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
-                 <span class="n">read_ahead</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+                 <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Config</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">config</span> <span class="ow">or</span> <span class="n">Config</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_component_ids</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="s1">&#39;pipeline&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_components</span> <span class="o">=</span> <span class="p">[</span><span class="n">desc</span><span class="o">.</span><span class="n">create_pipeline_component</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_component_ids</span><span class="p">)</span>
                             <span class="k">for</span> <span class="n">desc</span> <span class="ow">in</span> <span class="n">components</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_n_threads</span> <span class="o">=</span> <span class="n">n_threads</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_read_ahead</span> <span class="o">=</span> <span class="n">_ReadAhead</span><span class="p">(</span><span class="n">n_threads</span><span class="p">,</span> <span class="n">read_ahead</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_times_collector</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -299,20 +295,15 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">__times_collector</span> <span class="o">=</span> <span class="n">ProcessingTimesCollector</span><span class="p">()</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__times_collector</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">_executor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__executor</span>
-        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__executor</span> <span class="o">=</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_threads</span><span class="p">)</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__executor</span>
-
 <div class="viewcode-block" id="Pipeline.run_multithread"><a class="viewcode-back" href="../../../mtap.html#mtap.Pipeline.run_multithread">[docs]</a>    <span class="k">def</span> <span class="nf">run_multithread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                         <span class="n">source</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="n">Event</span><span class="p">]],</span> <span class="o">*</span><span class="p">,</span>
                         <span class="n">params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                         <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                         <span class="n">total</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                        <span class="n">close_events</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">ProcessingResult</span><span class="p">]]:</span>
+                        <span class="n">close_events</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                        <span class="n">max_failures</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="n">n_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+                        <span class="n">read_ahead</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">ProcessingResult</span><span class="p">]]:</span>
         <span class="sd">&quot;&quot;&quot;Runs this pipeline on a source which provides multiple documents / events.</span>
 
 <span class="sd">        Concurrency is per-event, with each event being provided a thread which runs it through the</span>
@@ -333,6 +324,12 @@
 <span class="sd">            close_events (bool)</span>
 <span class="sd">                Whether the pipeline should close events after they have been fully processed</span>
 <span class="sd">                through all components.</span>
+<span class="sd">            max_failures (int)</span>
+<span class="sd">                The maximum number of failures</span>
+<span class="sd">            n_threads (int)</span>
+<span class="sd">                The number of threads to process documents on.</span>
+<span class="sd">            read_ahead</span>
+<span class="sd">                The number of source documents to read ahead into memory before processing.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Future:</span>
@@ -345,40 +342,17 @@
 <span class="sd">            &gt;&gt;&gt;     for path in docs:</span>
 <span class="sd">            &gt;&gt;&gt;         with path.open(&#39;r&#39;) as f:</span>
 <span class="sd">            &gt;&gt;&gt;             txt = f.read()</span>
-<span class="sd">            &gt;&gt;&gt;         event = Event(event_id=path.name, client=client)</span>
-<span class="sd">            &gt;&gt;&gt;         doc = event.create_document(&#39;plaintext&#39;, txt)</span>
-<span class="sd">            &gt;&gt;&gt;         yield doc</span>
+<span class="sd">            &gt;&gt;&gt;         with Event(event_id=path.name, client=client) as event:</span>
+<span class="sd">            &gt;&gt;&gt;             doc = event.create_document(&#39;plaintext&#39;, txt)</span>
+<span class="sd">            &gt;&gt;&gt;             yield doc</span>
 <span class="sd">            &gt;&gt;&gt;</span>
 <span class="sd">            &gt;&gt;&gt; pipeline.run_multithread(document_source(), total=len(docs))</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">futures</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">if</span> <span class="n">progress</span><span class="p">:</span>
-            <span class="n">source</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="n">total</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39; events&#39;</span><span class="p">,</span> <span class="n">smoothing</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
-        <span class="n">cd</span> <span class="o">=</span> <span class="n">_CountDown</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">source</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">event</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">_event_and_params</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
-                <span class="n">event_id</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">event_id</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_read_ahead</span><span class="o">.</span><span class="n">increment_active_tasks</span><span class="p">()</span>
-                <span class="n">cd</span><span class="o">.</span><span class="n">increment</span><span class="p">()</span>
-                <span class="n">future</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_run_by_event_id</span><span class="p">,</span> <span class="n">event_id</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
-                <span class="n">future</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="n">_cancel_callback</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_ahead</span><span class="p">,</span> <span class="n">cd</span><span class="p">,</span> <span class="n">close_events</span><span class="p">))</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">event</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">event</span>
-                <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-                    <span class="n">event</span> <span class="o">=</span> <span class="n">target</span>
-                <span class="n">event</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                <span class="k">raise</span> <span class="n">e</span>
-            <span class="n">futures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">future</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_read_ahead</span><span class="o">.</span><span class="n">wait_to_read</span><span class="p">()</span>
-        <span class="n">wait</span><span class="p">(</span><span class="n">futures</span><span class="p">)</span>
-        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">futures</span><span class="p">:</span>
-            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
-        <span class="n">cd</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">results</span></div>
+        <span class="k">with</span> <span class="n">_PipelineMultiRunner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">total</span><span class="p">,</span> <span class="n">close_events</span><span class="p">,</span> <span class="n">max_failures</span><span class="p">,</span>
+                                  <span class="n">n_threads</span><span class="p">,</span> <span class="n">read_ahead</span><span class="p">)</span> <span class="k">as</span> <span class="n">runner</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">result</span></div>
 
 <div class="viewcode-block" id="Pipeline.run"><a class="viewcode-back" href="../../../mtap.html#mtap.Pipeline.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Event</span><span class="p">,</span> <span class="n">Document</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span>
             <span class="n">params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ProcessingResult</span><span class="p">]:</span>
@@ -409,7 +383,7 @@
         <span class="n">event</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">_event_and_params</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
         <span class="n">event_id</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">event_id</span>
 
-        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_by_event_id</span><span class="p">(</span><span class="n">event_id</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">_run_by_event_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_id</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
@@ -417,21 +391,6 @@
             <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
                 <span class="k">pass</span>
         <span class="k">return</span> <span class="n">results</span></div>
-
-    <span class="k">def</span> <span class="nf">_run_by_event_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_id</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
-        <span class="n">start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
-        <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="n">component</span><span class="o">.</span><span class="n">call_process</span><span class="p">(</span><span class="n">event_id</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span> <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_components</span><span class="p">]</span>
-        <span class="n">total</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
-        <span class="n">times</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">component_times</span><span class="p">,</span> <span class="n">_</span><span class="p">),</span> <span class="n">component</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_components</span><span class="p">):</span>
-            <span class="n">times</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">component</span><span class="o">.</span><span class="n">component_id</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">component_times</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
-        <span class="n">times</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;total&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">total</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_times_collector</span><span class="o">.</span><span class="n">add_times</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
-        <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="n">ProcessingResult</span><span class="p">(</span><span class="n">identifier</span><span class="o">=</span><span class="n">component</span><span class="o">.</span><span class="n">component_id</span><span class="p">,</span> <span class="n">results</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                    <span class="n">timing_info</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">created_indices</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="k">for</span>
-                   <span class="n">component</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_components</span><span class="p">,</span> <span class="n">results</span><span class="p">)]</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Finished processing event_id: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">event_id</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">results</span>
 
 <div class="viewcode-block" id="Pipeline.processor_timer_stats"><a class="viewcode-back" href="../../../mtap.html#mtap.Pipeline.processor_timer_stats">[docs]</a>    <span class="k">def</span> <span class="nf">processor_timer_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">AggregateTimingInfo</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Returns the timing information for all processors.</span>
@@ -468,8 +427,6 @@
 
     <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">exc_val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">False</span>
 
 <div class="viewcode-block" id="Pipeline.close"><a class="viewcode-back" href="../../../mtap.html#mtap.Pipeline.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Closes any open connections to remote processors.</span>
@@ -478,11 +435,7 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">component</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-                <span class="k">pass</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__executor</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-            <span class="k">pass</span></div>
+                <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="Pipeline.as_processor"><a class="viewcode-back" href="../../../mtap.html#mtap.Pipeline.as_processor">[docs]</a>    <span class="k">def</span> <span class="nf">as_processor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventProcessor</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Returns the pipeline as a processor.</span>
@@ -525,6 +478,22 @@
             <span class="p">[</span><span class="nb">repr</span><span class="p">(</span><span class="n">component</span><span class="o">.</span><span class="n">descriptor</span><span class="p">)</span> <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_components</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span></div>
 
 
+<span class="k">def</span> <span class="nf">_run_by_event_id</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">event_id</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="n">component</span><span class="o">.</span><span class="n">call_process</span><span class="p">(</span><span class="n">event_id</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span> <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">_components</span><span class="p">]</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+    <span class="n">times</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">component_times</span><span class="p">,</span> <span class="n">_</span><span class="p">),</span> <span class="n">component</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">_components</span><span class="p">):</span>
+        <span class="n">times</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">component</span><span class="o">.</span><span class="n">component_id</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">component_times</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
+    <span class="n">times</span><span class="p">[</span><span class="n">pipeline</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;total&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">total</span>
+    <span class="n">pipeline</span><span class="o">.</span><span class="n">_times_collector</span><span class="o">.</span><span class="n">add_times</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="n">ProcessingResult</span><span class="p">(</span><span class="n">identifier</span><span class="o">=</span><span class="n">component</span><span class="o">.</span><span class="n">component_id</span><span class="p">,</span> <span class="n">results</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                <span class="n">timing_info</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">created_indices</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="k">for</span>
+               <span class="n">component</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">pipeline</span><span class="o">.</span><span class="n">_components</span><span class="p">,</span> <span class="n">results</span><span class="p">)]</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Finished processing event_id: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">event_id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">results</span>
+
+
 <span class="k">class</span> <span class="nc">_PipelineProcessor</span><span class="p">(</span><span class="n">EventProcessor</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">components</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ProcessingComponent</span><span class="p">]):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_components</span> <span class="o">=</span> <span class="n">components</span>
@@ -542,47 +511,102 @@
         <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;component_results&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]}</span>
 
 
-<span class="k">class</span> <span class="nc">_ReadAhead</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_threads</span><span class="p">,</span> <span class="n">read_ahead</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_active_tasks</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_n_threads</span> <span class="o">=</span> <span class="n">n_threads</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_cond</span> <span class="o">=</span> <span class="n">Condition</span><span class="p">(</span><span class="n">Lock</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_read_ahead</span> <span class="o">=</span> <span class="n">read_ahead</span>
+<span class="k">class</span> <span class="nc">_PipelineMultiRunner</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pipeline</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">total</span><span class="p">,</span> <span class="n">close_events</span><span class="p">,</span> <span class="n">max_failures</span><span class="p">,</span>
+                 <span class="n">n_threads</span><span class="p">,</span> <span class="n">read_ahead</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pipeline</span> <span class="o">=</span> <span class="n">pipeline</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">failures</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_failures</span> <span class="o">=</span> <span class="n">max_failures</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">targets_cond</span> <span class="o">=</span> <span class="n">Condition</span><span class="p">(</span><span class="n">Lock</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active_targets</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close_events</span> <span class="o">=</span> <span class="n">close_events</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_targets</span> <span class="o">=</span> <span class="n">n_threads</span> <span class="o">+</span> <span class="n">read_ahead</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">executor</span> <span class="o">=</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">n_threads</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">progress_bar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">total</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;event&#39;</span><span class="p">,</span> <span class="n">smoothing</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span> <span class="k">if</span> <span class="n">progress</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="n">source</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">params</span>
+
+    <span class="k">def</span> <span class="nf">max_failures_exceeded</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">failures</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_failures</span>
 
     <span class="k">def</span> <span class="nf">increment_active_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cond</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_active_tasks</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets_cond</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">active_targets</span> <span class="o">+=</span> <span class="mi">1</span>
 
     <span class="k">def</span> <span class="nf">task_completed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cond</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_active_tasks</span> <span class="o">-=</span> <span class="mi">1</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_cond</span><span class="o">.</span><span class="n">notify</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets_cond</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">progress_bar</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">progress_bar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">active_targets</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">targets_cond</span><span class="o">.</span><span class="n">notify</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_read_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_active_tasks</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_threads</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_ahead</span>
+    <span class="k">def</span> <span class="nf">read_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_targets</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_targets</span>
 
     <span class="k">def</span> <span class="nf">wait_to_read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cond</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_cond</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_read_ready</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets_cond</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">targets_cond</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read_ready</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">process_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_run_by_event_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">event_id</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ProcessingError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">failures</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">raise</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">task_completed</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">close_events</span><span class="p">:</span>
+                <span class="n">event</span><span class="o">.</span><span class="n">release_lease</span><span class="p">()</span>
 
-<span class="k">class</span> <span class="nc">_CountDown</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span> <span class="o">=</span> <span class="n">Condition</span><span class="p">(</span><span class="n">Lock</span><span class="p">())</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">futures</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">it</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_failures_exceeded</span><span class="p">():</span>
+                    <span class="k">break</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">target</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">it</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="n">event</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">_event_and_params</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">event</span><span class="o">.</span><span class="n">lease</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">increment_active_tasks</span><span class="p">()</span>
+                    <span class="n">future</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_task</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="c1"># here we failed sometime between taking a new lease and adding the done</span>
+                    <span class="c1"># callback to the future, meaning the lease will never get freed.</span>
+                    <span class="n">event</span><span class="o">.</span><span class="n">release_lease</span><span class="p">()</span>
+                    <span class="k">raise</span> <span class="n">e</span>
+                <span class="n">futures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">future</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">wait_to_read</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="c1"># If it is using a generator as in the code examples close it to force any release</span>
+            <span class="c1"># of event objects.</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="s1">&#39;close&#39;</span><span class="p">):</span>
+                <span class="n">it</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">increment</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">futures</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+                <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">ProcessingError</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Failure while processing&#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="c1"># we log instead of re-raising here because failure on exception is handled by</span>
+                <span class="c1"># max_failures and the cd.increment method.</span>
+        <span class="k">return</span> <span class="n">results</span>
 
-    <span class="k">def</span> <span class="nf">count_down</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">-=</span> <span class="mi">1</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span><span class="o">.</span><span class="n">notify_all</span><span class="p">()</span>
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
 
-    <span class="k">def</span> <span class="nf">wait</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_condition</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">_unique_component_id</span><span class="p">(</span><span class="n">component_ids</span><span class="p">,</span> <span class="n">component_id</span><span class="p">):</span>
@@ -623,7 +647,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -632,7 +656,7 @@
       &copy;2019, Regents of the University of Minnesota..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

@@ -2,17 +2,17 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>Index &#8212; MTAP 0.4.0 documentation</title>
+    <title>Index &#8212; MTAP 0.5.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" />
    
@@ -129,10 +129,10 @@
 </li>
       <li><a href="mtap.html#mtap.Config">Config (class in mtap)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mtap.html#mtap.label_indices.LabelIndex.covering">covering() (mtap.label_indices.LabelIndex method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mtap.html#mtap.Location.covers">covers() (mtap.Location method)</a>
 </li>
       <li><a href="mtap.html#mtap.Event.create_document">create_document() (mtap.Event method)</a>
@@ -143,27 +143,27 @@
 </li>
       <li><a href="mtap.html#mtap.events.ProtoLabelAdapter.create_label">create_label() (mtap.events.ProtoLabelAdapter method)</a>
 </li>
+      <li><a href="mtap.html#mtap.processing.ProcessingResult.created_indices">created_indices (mtap.processing.ProcessingResult attribute)</a>
+</li>
       <li><a href="mtap.html#mtap.Document.created_indices">created_indices() (mtap.Document property)</a>
 
       <ul>
         <li><a href="mtap.html#mtap.Event.created_indices">(mtap.Event property)</a>
 </li>
-        <li><a href="mtap.html#mtap.processing.ProcessingResult.created_indices">(mtap.processing.ProcessingResult property)</a>
-</li>
       </ul></li>
+      <li><a href="mtap.html#mtap.events.LabelIndexType.CUSTOM">CUSTOM (mtap.events.LabelIndexType attribute)</a>
+</li>
+      <li><a href="mtap.html#mtap.processing.base.Processor.custom_label_adapters">custom_label_adapters() (mtap.processing.base.Processor property)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mtap.html#mtap.processing.EventProcessor.default_adapters">default_adapters() (mtap.processing.EventProcessor method)</a>
+</li>
       <li><a href="mtap.html#mtap.label_indices.LabelIndex.descending">descending() (mtap.label_indices.LabelIndex method)</a>
-</li>
-      <li><a href="io.html#mtap.io.serialization.dict_to_document">dict_to_document() (in module mtap.io.serialization)</a>
-</li>
-      <li><a href="io.html#mtap.io.serialization.dict_to_event">dict_to_event() (in module mtap.io.serialization)</a>
-</li>
-      <li><a href="io.html#mtap.io.serialization.dict_to_label_index">dict_to_label_index() (in module mtap.io.serialization)</a>
 </li>
       <li><a href="mtap.html#mtap.label_indices.LabelIndex.distinct">distinct() (mtap.label_indices.LabelIndex property)</a>
 </li>
@@ -178,8 +178,6 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mtap.html#mtap.Document.document_name">document_name() (mtap.Document property)</a>
-</li>
-      <li><a href="io.html#mtap.io.serialization.document_to_dict">document_to_dict() (in module mtap.io.serialization)</a>
 </li>
       <li><a href="mtap.html#mtap.processing.DocumentProcessor">DocumentProcessor (class in mtap.processing)</a>
 </li>
@@ -207,11 +205,9 @@
 </li>
       <li><a href="mtap.html#mtap.Document.event">event() (mtap.Document property)</a>
 </li>
-      <li><a href="mtap.html#mtap.Event.event_id">event_id() (mtap.Event property)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="io.html#mtap.io.serialization.event_to_dict">event_to_dict() (in module mtap.io.serialization)</a>
+      <li><a href="mtap.html#mtap.Event.event_id">event_id() (mtap.Event property)</a>
 </li>
       <li><a href="io.html#mtap.io.serialization.Serializer.event_to_file">event_to_file() (mtap.io.serialization.Serializer method)</a>
 </li>
@@ -241,13 +237,13 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="mtap.html#mtap.GenericLabel">GenericLabel (class in mtap)</a>
+      <li><a href="mtap.html#mtap.events.LabelIndexType.GENERIC">GENERIC (mtap.events.LabelIndexType attribute)</a>
 </li>
-      <li><a href="mtap.html#mtap.Document.get_label_index">get_label_index() (mtap.Document method)</a>
+      <li><a href="mtap.html#mtap.GenericLabel">GenericLabel (class in mtap)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="mtap.html#mtap.Document.get_label_indices_info">get_label_indices_info() (mtap.Document method)</a>
+      <li><a href="mtap.html#mtap.Document.get_label_index">get_label_index() (mtap.Document method)</a>
 </li>
       <li><a href="mtap.html#mtap.Document.get_labeler">get_labeler() (mtap.Document method)</a>
 </li>
@@ -258,12 +254,20 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mtap.html#mtap.processing.AggregateTimingInfo.identifier">identifier (mtap.processing.AggregateTimingInfo attribute)</a>
+
+      <ul>
+        <li><a href="mtap.html#mtap.processing.ProcessingResult.identifier">(mtap.processing.ProcessingResult attribute)</a>
 </li>
-      <li><a href="mtap.html#mtap.processing.ProcessingResult.identifier">identifier() (mtap.processing.ProcessingResult property)</a>
+      </ul></li>
+      <li><a href="mtap.html#mtap.GenericLabel.identifier">identifier() (mtap.GenericLabel property)</a>
+
+      <ul>
+        <li><a href="mtap.html#mtap.labels.Label.identifier">(mtap.labels.Label property)</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="mtap.html#mtap.events.LabelIndexInfo.index_name">index_name() (mtap.events.LabelIndexInfo property)</a>
+      <li><a href="mtap.html#mtap.events.LabelIndexInfo.index_name">index_name (mtap.events.LabelIndexInfo attribute)</a>
 </li>
       <li><a href="mtap.html#mtap.label_indices.LabelIndex.inside">inside() (mtap.label_indices.LabelIndex method)</a>
 </li>
@@ -272,10 +276,6 @@
 
 <h2 id="J">J</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="mtap.html#mtap.events.LabelIndexType.JSON">JSON (mtap.events.LabelIndexType attribute)</a>
-</li>
-  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="io.html#mtap.io.serialization.JsonSerializer">JsonSerializer (in module mtap.io.serialization)</a>
 </li>
@@ -295,8 +295,12 @@
         <li><a href="mtap.html#mtap.processing.descriptions.label_index">(in module mtap.processing.descriptions)</a>
 </li>
       </ul></li>
-      <li><a href="io.html#mtap.io.serialization.label_index_to_dict">label_index_to_dict() (in module mtap.io.serialization)</a>
+      <li><a href="mtap.html#mtap.GenericLabel.label_index_name">label_index_name() (mtap.GenericLabel property)</a>
+
+      <ul>
+        <li><a href="mtap.html#mtap.labels.Label.label_index_name">(mtap.labels.Label property)</a>
 </li>
+      </ul></li>
       <li><a href="mtap.html#mtap.processing.descriptions.label_property">label_property() (in module mtap.processing.descriptions)</a>
 </li>
   </ul></td>
@@ -321,22 +325,48 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="mtap.html#mtap.processing.TimerStats.max">max() (mtap.processing.TimerStats property)</a>
+      <li><a href="mtap.html#mtap.processing.TimerStats.max">max (mtap.processing.TimerStats attribute)</a>
 </li>
-      <li><a href="mtap.html#mtap.processing.TimerStats.mean">mean() (mtap.processing.TimerStats property)</a>
+      <li><a href="mtap.html#mtap.processing.TimerStats.mean">mean (mtap.processing.TimerStats attribute)</a>
 </li>
       <li><a href="mtap.html#mtap.Event.metadata">metadata() (mtap.Event property)</a>
 </li>
+      <li><a href="mtap.html#mtap.processing.TimerStats.min">min (mtap.processing.TimerStats attribute)</a>
+</li>
+      <li>
+    module
+
+      <ul>
+        <li><a href="mtap.html#module-mtap">mtap</a>
+</li>
+        <li><a href="io.html#module-mtap.io">mtap.io</a>
+</li>
+        <li><a href="io.html#module-mtap.io.serialization">mtap.io.serialization</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="mtap.html#mtap.processing.TimerStats.min">min() (mtap.processing.TimerStats property)</a>
+      <li>
+    mtap
+
+      <ul>
+        <li><a href="mtap.html#module-mtap">module</a>
 </li>
-      <li><a href="mtap.html#module-mtap">mtap (module)</a>
+      </ul></li>
+      <li>
+    mtap.io
+
+      <ul>
+        <li><a href="io.html#module-mtap.io">module</a>
 </li>
-      <li><a href="io.html#module-mtap.io">mtap.io (module)</a>
+      </ul></li>
+      <li>
+    mtap.io.serialization
+
+      <ul>
+        <li><a href="io.html#module-mtap.io.serialization">module</a>
 </li>
-      <li><a href="io.html#module-mtap.io.serialization">mtap.io.serialization (module)</a>
-</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -351,10 +381,6 @@
 <h2 id="O">O</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="mtap.html#mtap.events.LabelIndexType.OTHER">OTHER (mtap.events.LabelIndexType attribute)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mtap.html#mtap.label_indices.LabelIndex.overlapping">overlapping() (mtap.label_indices.LabelIndex method)</a>
 </li>
   </ul></td>
@@ -363,6 +389,8 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mtap.html#mtap.events.ProtoLabelAdapter.pack">pack() (mtap.events.ProtoLabelAdapter method)</a>
+</li>
       <li><a href="mtap.html#mtap.processing.descriptions.parameter">parameter() (in module mtap.processing.descriptions)</a>
 </li>
       <li><a href="mtap.html#mtap.LocalProcessor.params">params (mtap.LocalProcessor attribute)</a>
@@ -387,10 +415,10 @@
         <li><a href="mtap.html#mtap.processing.AggregateTimingInfo.print_times">(mtap.processing.AggregateTimingInfo method)</a>
 </li>
       </ul></li>
-      <li><a href="mtap.html#mtap.LocalProcessor.proc">proc (mtap.LocalProcessor attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mtap.html#mtap.LocalProcessor.proc">proc (mtap.LocalProcessor attribute)</a>
+</li>
       <li><a href="mtap.html#mtap.processing.EventProcessor.process">process() (mtap.processing.EventProcessor method)</a>
 </li>
       <li><a href="mtap.html#mtap.processing.DocumentProcessor.process_document">process_document() (mtap.processing.DocumentProcessor method)</a>
@@ -419,7 +447,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mtap.html#mtap.RemoteProcessor">RemoteProcessor (class in mtap)</a>
 </li>
-      <li><a href="mtap.html#mtap.processing.ProcessingResult.results">results() (mtap.processing.ProcessingResult property)</a>
+      <li><a href="mtap.html#mtap.processing.ProcessingResult.results">results (mtap.processing.ProcessingResult attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -439,6 +467,12 @@
 </li>
       <li><a href="io.html#mtap.io.serialization.Serializer">Serializer (class in mtap.io.serialization)</a>
 </li>
+      <li><a href="mtap.html#mtap.GenericLabel.shallow_fields_equal">shallow_fields_equal() (mtap.GenericLabel method)</a>
+
+      <ul>
+        <li><a href="mtap.html#mtap.labels.Label.shallow_fields_equal">(mtap.labels.Label method)</a>
+</li>
+      </ul></li>
       <li><a href="mtap.html#mtap.EventsServer.start">start() (mtap.EventsServer method)</a>
 
       <ul>
@@ -459,7 +493,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mtap.html#mtap.processing.base.Processor.started_stopwatch">started_stopwatch() (mtap.processing.base.Processor static method)</a>
 </li>
-      <li><a href="mtap.html#mtap.processing.TimerStats.std">std() (mtap.processing.TimerStats property)</a>
+      <li><a href="mtap.html#mtap.processing.TimerStats.std">std (mtap.processing.TimerStats attribute)</a>
 </li>
       <li><a href="mtap.html#mtap.EventsServer.stop">stop() (mtap.EventsServer method)</a>
 
@@ -471,7 +505,9 @@
       </ul></li>
       <li><a href="mtap.html#mtap.processing.base.Stopwatch">Stopwatch (class in mtap.processing.base)</a>
 </li>
-      <li><a href="mtap.html#mtap.processing.TimerStats.sum">sum() (mtap.processing.TimerStats property)</a>
+      <li><a href="mtap.html#mtap.events.ProtoLabelAdapter.store_references">store_references() (mtap.events.ProtoLabelAdapter method)</a>
+</li>
+      <li><a href="mtap.html#mtap.processing.TimerStats.sum">sum (mtap.processing.TimerStats attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -490,10 +526,12 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mtap.html#mtap.processing.AggregateTimingInfo.timing_info">timing_info (mtap.processing.AggregateTimingInfo attribute)</a>
+
+      <ul>
+        <li><a href="mtap.html#mtap.processing.ProcessingResult.timing_info">(mtap.processing.ProcessingResult attribute)</a>
 </li>
-      <li><a href="mtap.html#mtap.processing.ProcessingResult.timing_info">timing_info() (mtap.processing.ProcessingResult property)</a>
-</li>
-      <li><a href="mtap.html#mtap.events.LabelIndexInfo.type">type() (mtap.events.LabelIndexInfo property)</a>
+      </ul></li>
+      <li><a href="mtap.html#mtap.events.LabelIndexInfo.type">type (mtap.events.LabelIndexInfo attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -503,10 +541,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mtap.html#mtap.events.LabelIndexType.UNKNOWN">UNKNOWN (mtap.events.LabelIndexType attribute)</a>
 </li>
-      <li><a href="mtap.html#mtap.processing.base.Processor.unstarted_stopwatch">unstarted_stopwatch() (mtap.processing.base.Processor static method)</a>
+      <li><a href="mtap.html#mtap.events.ProtoLabelAdapter.unpack">unpack() (mtap.events.ProtoLabelAdapter method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mtap.html#mtap.processing.base.Processor.unstarted_stopwatch">unstarted_stopwatch() (mtap.processing.base.Processor static method)</a>
+</li>
       <li><a href="mtap.html#mtap.Config.update_from_yaml">update_from_yaml() (mtap.Config method)</a>
 </li>
       <li><a href="mtap.html#mtap.processing.base.Processor.update_serving_status">update_serving_status() (mtap.processing.base.Processor method)</a>
@@ -544,7 +584,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -553,7 +593,7 @@
       &copy;2019, Regents of the University of Minnesota..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
