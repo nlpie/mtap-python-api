@@ -4,7 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>mtap.labels &#8212; MTAP 0.5.0 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mtap.labels &#8212; MTAP 0.6.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -83,7 +84,57 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: ``True`` if `other` is completely overlapped/covered ``False`` otherwise.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_index</span> <span class="o">&lt;=</span> <span class="n">other</span><span class="o">.</span><span class="n">start_index</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_index</span> <span class="o">&gt;=</span> <span class="n">other</span><span class="o">.</span><span class="n">end_index</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_index</span> <span class="o">&lt;=</span> <span class="n">other</span><span class="o">.</span><span class="n">start_index</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_index</span> <span class="o">&gt;=</span> <span class="n">other</span><span class="o">.</span><span class="n">end_index</span></div>
+
+<div class="viewcode-block" id="Location.relative_to"><a class="viewcode-back" href="../../mtap.html#mtap.labels.Location.relative_to">[docs]</a>    <span class="k">def</span> <span class="nf">relative_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s1">&#39;Location&#39;</span><span class="p">,</span> <span class="s1">&#39;Label&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s1">&#39;Location&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Creates a location relative to the the same origin as ``location`` and makes it relative</span>
+<span class="sd">        to ``location``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            location (int or Location or Label): A location to relativize this location to.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Location</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; sentence = Location(10, 20)</span>
+<span class="sd">            &gt;&gt;&gt; token = Location(10, 15)</span>
+<span class="sd">            &gt;&gt;&gt; token.relative_to(sentence)</span>
+<span class="sd">            Location(start_index=0, end_index=5)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">start_index</span> <span class="o">=</span> <span class="n">location</span><span class="o">.</span><span class="n">start_index</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">start_index</span> <span class="o">=</span> <span class="n">location</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start_index</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;location must be Label, Location, or an int value&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Location</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_index</span> <span class="o">-</span> <span class="n">start_index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_index</span> <span class="o">-</span> <span class="n">start_index</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Location.offset_by"><a class="viewcode-back" href="../../mtap.html#mtap.labels.Location.offset_by">[docs]</a>    <span class="k">def</span> <span class="nf">offset_by</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s1">&#39;Location&#39;</span><span class="p">,</span> <span class="s1">&#39;Label&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s1">&#39;Location&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Creates a location by offsetting this location by an integer or the ``start_index`` of a</span>
+<span class="sd">        location / label. Derelativizes this location.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            location (int or Location or Label): A location to offset this location by.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Location</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; sentence = Location(10, 20)</span>
+<span class="sd">            &gt;&gt;&gt; token_in_sentence = Location(0, 5)</span>
+<span class="sd">            &gt;&gt;&gt; token_in_sentence.offset_by(sentence)</span>
+<span class="sd">            Location(start_index=10, end_index=15)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">start_index</span> <span class="o">=</span> <span class="n">location</span><span class="o">.</span><span class="n">start_index</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">start_index</span> <span class="o">=</span> <span class="n">location</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start_index</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;location must be Label, Location, or an int value&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Location</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_index</span> <span class="o">+</span> <span class="n">start_index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_index</span> <span class="o">+</span> <span class="n">start_index</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="Label"><a class="viewcode-back" href="../../mtap.html#mtap.labels.Label">[docs]</a><span class="k">class</span> <span class="nc">Label</span><span class="p">(</span><span class="n">ABC</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
@@ -532,7 +583,7 @@
       &copy;2019, Regents of the University of Minnesota..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

@@ -4,7 +4,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>mtap &#8212; MTAP 0.5.0 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mtap &#8212; MTAP 0.6.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -32,8 +33,7 @@
 
           <div class="body" role="main">
             
-  <p>1;95;0c.. Copyright 2018 Regents of the University of Minnesota.</p>
-<div class="section" id="module-mtap">
+  <div class="section" id="module-mtap">
 <span id="mtap"></span><h1><a class="toc-backref" href="#id1">mtap</a><a class="headerlink" href="#module-mtap" title="Permalink to this headline">¶</a></h1>
 <div class="contents topic" id="contents">
 <p class="topic-title">Contents</p>
@@ -427,7 +427,7 @@ adapters set on the document / event.</p>
 
 <dl class="py class">
 <dt id="mtap.events.Labeler">
-<em class="property">class </em><code class="sig-prename descclassname">mtap.events.</code><code class="sig-name descname">Labeler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">client</span></em>, <em class="sig-param"><span class="n">document</span></em>, <em class="sig-param"><span class="n">label_index_name</span></em>, <em class="sig-param"><span class="n">label_adapter</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/events.html#Labeler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.events.Labeler" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mtap.events.</code><code class="sig-name descname">Labeler</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwds</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/events.html#Labeler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.events.Labeler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Object provided by <a class="reference internal" href="#mtap.Document.get_labeler" title="mtap.Document.get_labeler"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_labeler()</span></code></a> which is responsible for adding labels
 to a label index on a document.</p>
 <dl class="field-list simple">
@@ -477,11 +477,11 @@ invoked if the labeler is not used in a context manager block.</p>
 
 <dl class="py class">
 <dt id="mtap.events.LabelIndexInfo">
-<em class="property">class </em><code class="sig-prename descclassname">mtap.events.</code><code class="sig-name descname">LabelIndexInfo</code><a class="headerlink" href="#mtap.events.LabelIndexInfo" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mtap.events.</code><code class="sig-name descname">LabelIndexInfo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">index_name</span></em>, <em class="sig-param"><span class="n">type</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mtap.events.LabelIndexInfo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Information about a label index contained on a document.</p>
 <dl class="py attribute">
 <dt id="mtap.events.LabelIndexInfo.index_name">
-<code class="sig-name descname">index_name</code><a class="headerlink" href="#mtap.events.LabelIndexInfo.index_name" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">index_name</code><em class="property">: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></em><a class="headerlink" href="#mtap.events.LabelIndexInfo.index_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>The name of the label index.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -492,7 +492,7 @@ invoked if the labeler is not used in a context manager block.</p>
 
 <dl class="py attribute">
 <dt id="mtap.events.LabelIndexInfo.type">
-<code class="sig-name descname">type</code><a class="headerlink" href="#mtap.events.LabelIndexInfo.type" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">type</code><em class="property">: <a class="reference internal" href="#mtap.events.LabelIndexType" title="mtap.events.LabelIndexType">mtap.events.LabelIndexType</a></em><a class="headerlink" href="#mtap.events.LabelIndexInfo.type" title="Permalink to this definition">¶</a></dt>
 <dd><p>The type of the label index.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -505,7 +505,7 @@ invoked if the labeler is not used in a context manager block.</p>
 
 <dl class="py class">
 <dt id="mtap.events.LabelIndexType">
-<em class="property">class </em><code class="sig-prename descclassname">mtap.events.</code><code class="sig-name descname">LabelIndexType</code><a class="reference internal" href="_modules/mtap/events.html#LabelIndexType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.events.LabelIndexType" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mtap.events.</code><code class="sig-name descname">LabelIndexType</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/events.html#LabelIndexType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.events.LabelIndexType" title="Permalink to this definition">¶</a></dt>
 <dd><p>The type of serialized labels contained in the label index.</p>
 <dl class="py attribute">
 <dt id="mtap.events.LabelIndexType.UNKNOWN">
@@ -622,7 +622,7 @@ label.</p>
 
 <dl class="py class">
 <dt id="mtap.Location">
-<em class="property">class </em><code class="sig-prename descclassname">mtap.</code><code class="sig-name descname">Location</code><a class="reference internal" href="_modules/mtap/labels.html#Location"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.Location" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mtap.</code><code class="sig-name descname">Location</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start_index</span></em>, <em class="sig-param"><span class="n">end_index</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/labels.html#Location"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.Location" title="Permalink to this definition">¶</a></dt>
 <dd><p>A location in text, a tuple of (<cite>start_index</cite>, <cite>end_index</cite>).</p>
 <p>Used to perform comparison of labels based on their locations.</p>
 <dl class="field-list simple">
@@ -671,6 +671,50 @@ covered by the <code class="docutils literal notranslate"><span class="pre">othe
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mtap.Location.relative_to">
+<code class="sig-name descname">relative_to</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">location</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/labels.html#Location.relative_to"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.Location.relative_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a location relative to the the same origin as <code class="docutils literal notranslate"><span class="pre">location</span></code> and makes it relative
+to <code class="docutils literal notranslate"><span class="pre">location</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>location</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><a class="reference internal" href="#mtap.Location" title="mtap.Location"><em>Location</em></a><em> or </em><a class="reference internal" href="#mtap.labels.Label" title="mtap.labels.Label"><em>Label</em></a>) – A location to relativize this location to.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Location</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sentence</span> <span class="o">=</span> <span class="n">Location</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">token</span> <span class="o">=</span> <span class="n">Location</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">token</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+<span class="go">Location(start_index=0, end_index=5)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mtap.Location.offset_by">
+<code class="sig-name descname">offset_by</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">location</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/labels.html#Location.offset_by"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.Location.offset_by" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a location by offsetting this location by an integer or the <code class="docutils literal notranslate"><span class="pre">start_index</span></code> of a
+location / label. Derelativizes this location.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>location</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><a class="reference internal" href="#mtap.Location" title="mtap.Location"><em>Location</em></a><em> or </em><a class="reference internal" href="#mtap.labels.Label" title="mtap.labels.Label"><em>Label</em></a>) – A location to offset this location by.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Location</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sentence</span> <span class="o">=</span> <span class="n">Location</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">token_in_sentence</span> <span class="o">=</span> <span class="n">Location</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">token_in_sentence</span><span class="o">.</span><span class="n">offset_by</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+<span class="go">Location(start_index=10, end_index=15)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>
@@ -826,7 +870,7 @@ label.</p>
 
 <dl class="py class">
 <dt id="mtap.label_indices.LabelIndex">
-<em class="property">class </em><code class="sig-prename descclassname">mtap.label_indices.</code><code class="sig-name descname">LabelIndex</code><a class="reference internal" href="_modules/mtap/label_indices.html#LabelIndex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.label_indices.LabelIndex" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mtap.label_indices.</code><code class="sig-name descname">LabelIndex</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwds</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/label_indices.html#LabelIndex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.label_indices.LabelIndex" title="Permalink to this definition">¶</a></dt>
 <dd><p>An immutable <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Sequence</span></code></a> of labels ordered by their location in text. By default
 sorts by ascending <cite>start_index</cite> and then by ascending <cite>end_index</cite>.</p>
 <dl class="py method">
@@ -1148,7 +1192,7 @@ be used, or a float index in text.</p>
 <h3><a class="toc-backref" href="#id8">Custom Label Types</a><a class="headerlink" href="#custom-label-types" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt id="mtap.events.ProtoLabelAdapter">
-<em class="property">class </em><code class="sig-prename descclassname">mtap.events.</code><code class="sig-name descname">ProtoLabelAdapter</code><a class="reference internal" href="_modules/mtap/events.html#ProtoLabelAdapter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.events.ProtoLabelAdapter" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mtap.events.</code><code class="sig-name descname">ProtoLabelAdapter</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwds</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/events.html#ProtoLabelAdapter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.events.ProtoLabelAdapter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Responsible for marshalling and unmarshalling of label objects to and from proto messages.</p>
 <dl class="py method">
 <dt id="mtap.events.ProtoLabelAdapter.create_label">
@@ -1280,7 +1324,7 @@ that can be dumped to json, yml, pickle, etc.</p>
 <h3><a class="toc-backref" href="#id9">Creating Processors</a><a class="headerlink" href="#creating-processors" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt id="mtap.processing.base.Processor">
-<em class="property">class </em><code class="sig-prename descclassname">mtap.processing.base.</code><code class="sig-name descname">Processor</code><a class="reference internal" href="_modules/mtap/processing/base.html#Processor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.processing.base.Processor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mtap.processing.base.</code><code class="sig-name descname">Processor</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/processing/base.html#Processor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.processing.base.Processor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mixin used by all processor abstract base classes that provides the ability to update
 serving status and use timers.</p>
 <dl class="py method">
@@ -1360,7 +1404,7 @@ at creation.</p>
 
 <dl class="py class">
 <dt id="mtap.processing.EventProcessor">
-<em class="property">class </em><code class="sig-prename descclassname">mtap.processing.</code><code class="sig-name descname">EventProcessor</code><a class="reference internal" href="_modules/mtap/processing/base.html#EventProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.processing.EventProcessor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mtap.processing.</code><code class="sig-name descname">EventProcessor</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/processing/base.html#EventProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.processing.EventProcessor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Abstract base class for an event processor.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">ExampleProcessor</span><span class="p">(</span><span class="n">EventProcessor</span><span class="p">):</span>
@@ -1417,7 +1461,7 @@ by the framework after it’s done with the processor.</p>
 
 <dl class="py class">
 <dt id="mtap.processing.DocumentProcessor">
-<em class="property">class </em><code class="sig-prename descclassname">mtap.processing.</code><code class="sig-name descname">DocumentProcessor</code><a class="reference internal" href="_modules/mtap/processing/base.html#DocumentProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.processing.DocumentProcessor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mtap.processing.</code><code class="sig-name descname">DocumentProcessor</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/processing/base.html#DocumentProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.processing.DocumentProcessor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Abstract base class for a document processor.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">ExampleProcessor</span><span class="p">(</span><span class="n">DocumentProcessor</span><span class="p">):</span>
@@ -1465,7 +1509,7 @@ by the framework after it’s done with the processor.</p>
 
 <dl class="py class">
 <dt id="mtap.processing.base.Stopwatch">
-<em class="property">class </em><code class="sig-prename descclassname">mtap.processing.base.</code><code class="sig-name descname">Stopwatch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">context</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">key</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/processing/base.html#Stopwatch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.processing.base.Stopwatch" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mtap.processing.base.</code><code class="sig-name descname">Stopwatch</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwds</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/processing/base.html#Stopwatch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.processing.base.Stopwatch" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for timing runtime of components and returning the total runtime with the
 processor’s results.</p>
 <dl class="py attribute">
@@ -1839,7 +1883,7 @@ this function.</p>
 <h3><a class="toc-backref" href="#id12">Running a pipeline</a><a class="headerlink" href="#running-a-pipeline" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt id="mtap.Pipeline">
-<em class="property">class </em><code class="sig-prename descclassname">mtap.</code><code class="sig-name descname">Pipeline</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">components</span></em>, <em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">config</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/processing/pipeline.html#Pipeline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.Pipeline" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mtap.</code><code class="sig-name descname">Pipeline</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwds</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/processing/pipeline.html#Pipeline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.Pipeline" title="Permalink to this definition">¶</a></dt>
 <dd><p>An object which can be used to build and run a pipeline of remote and local processors.</p>
 <p>Pipelines are a <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.MutableSequence" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MutableSequence</span></code></a> containing
 one or more <a class="reference internal" href="#mtap.processing.pipeline.ComponentDescriptor" title="mtap.processing.pipeline.ComponentDescriptor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ComponentDescriptor</span></code></a>,
@@ -2203,11 +2247,11 @@ with every event or document processed. Values should be json-serializable.</p>
 
 <dl class="py class">
 <dt id="mtap.processing.ProcessingResult">
-<em class="property">class </em><code class="sig-prename descclassname">mtap.processing.</code><code class="sig-name descname">ProcessingResult</code><a class="headerlink" href="#mtap.processing.ProcessingResult" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mtap.processing.</code><code class="sig-name descname">ProcessingResult</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">identifier</span></em>, <em class="sig-param"><span class="n">results</span></em>, <em class="sig-param"><span class="n">timing_info</span></em>, <em class="sig-param"><span class="n">created_indices</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mtap.processing.ProcessingResult" title="Permalink to this definition">¶</a></dt>
 <dd><p>The result of processing one document or event.</p>
 <dl class="py attribute">
 <dt id="mtap.processing.ProcessingResult.created_indices">
-<code class="sig-name descname">created_indices</code><a class="headerlink" href="#mtap.processing.ProcessingResult.created_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">created_indices</code><em class="property">: Dict<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><span class="p">, </span>List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><span class="p">]</span><span class="p">]</span></em><a class="headerlink" href="#mtap.processing.ProcessingResult.created_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Any indices that have been
 added to documents by this processor.</p>
 <dl class="field-list simple">
@@ -2219,7 +2263,7 @@ added to documents by this processor.</p>
 
 <dl class="py attribute">
 <dt id="mtap.processing.ProcessingResult.identifier">
-<code class="sig-name descname">identifier</code><a class="headerlink" href="#mtap.processing.ProcessingResult.identifier" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">identifier</code><em class="property">: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></em><a class="headerlink" href="#mtap.processing.ProcessingResult.identifier" title="Permalink to this definition">¶</a></dt>
 <dd><p>The id of the processor with respect to the
 pipeline.</p>
 <dl class="field-list simple">
@@ -2231,7 +2275,7 @@ pipeline.</p>
 
 <dl class="py attribute">
 <dt id="mtap.processing.ProcessingResult.results">
-<code class="sig-name descname">results</code><a class="headerlink" href="#mtap.processing.ProcessingResult.results" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">results</code><em class="property">: Dict</em><a class="headerlink" href="#mtap.processing.ProcessingResult.results" title="Permalink to this definition">¶</a></dt>
 <dd><p>The json object returned by the
 processor as its results.</p>
 <dl class="field-list simple">
@@ -2243,7 +2287,7 @@ processor as its results.</p>
 
 <dl class="py attribute">
 <dt id="mtap.processing.ProcessingResult.timing_info">
-<code class="sig-name descname">timing_info</code><a class="headerlink" href="#mtap.processing.ProcessingResult.timing_info" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">timing_info</code><em class="property">: Dict</em><a class="headerlink" href="#mtap.processing.ProcessingResult.timing_info" title="Permalink to this definition">¶</a></dt>
 <dd><p>A dictionary of the times
 taken processing this document</p>
 <dl class="field-list simple">
@@ -2257,12 +2301,12 @@ taken processing this document</p>
 
 <dl class="py class">
 <dt id="mtap.processing.TimerStats">
-<em class="property">class </em><code class="sig-prename descclassname">mtap.processing.</code><code class="sig-name descname">TimerStats</code><a class="headerlink" href="#mtap.processing.TimerStats" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mtap.processing.</code><code class="sig-name descname">TimerStats</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mean</span></em>, <em class="sig-param"><span class="n">std</span></em>, <em class="sig-param"><span class="n">min</span></em>, <em class="sig-param"><span class="n">max</span></em>, <em class="sig-param"><span class="n">sum</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mtap.processing.TimerStats" title="Permalink to this definition">¶</a></dt>
 <dd><p>Statistics about a specific keyed measured duration recorded by a
 <a class="reference internal" href="#mtap.processing.base.Stopwatch" title="mtap.processing.base.Stopwatch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Stopwatch</span></code></a>.</p>
 <dl class="py attribute">
 <dt id="mtap.processing.TimerStats.max">
-<code class="sig-name descname">max</code><a class="headerlink" href="#mtap.processing.TimerStats.max" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">max</code><em class="property">: <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.8)">datetime.timedelta</a></em><a class="headerlink" href="#mtap.processing.TimerStats.max" title="Permalink to this definition">¶</a></dt>
 <dd><p>The minimum of all measured durations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -2273,7 +2317,7 @@ taken processing this document</p>
 
 <dl class="py attribute">
 <dt id="mtap.processing.TimerStats.mean">
-<code class="sig-name descname">mean</code><a class="headerlink" href="#mtap.processing.TimerStats.mean" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">mean</code><em class="property">: <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.8)">datetime.timedelta</a></em><a class="headerlink" href="#mtap.processing.TimerStats.mean" title="Permalink to this definition">¶</a></dt>
 <dd><p>The sample mean of all measured durations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -2284,7 +2328,7 @@ taken processing this document</p>
 
 <dl class="py attribute">
 <dt id="mtap.processing.TimerStats.min">
-<code class="sig-name descname">min</code><a class="headerlink" href="#mtap.processing.TimerStats.min" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">min</code><em class="property">: <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.8)">datetime.timedelta</a></em><a class="headerlink" href="#mtap.processing.TimerStats.min" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum of all measured durations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -2295,7 +2339,7 @@ taken processing this document</p>
 
 <dl class="py attribute">
 <dt id="mtap.processing.TimerStats.std">
-<code class="sig-name descname">std</code><a class="headerlink" href="#mtap.processing.TimerStats.std" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">std</code><em class="property">: <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.8)">datetime.timedelta</a></em><a class="headerlink" href="#mtap.processing.TimerStats.std" title="Permalink to this definition">¶</a></dt>
 <dd><p>The sample standard deviation of all measured
 durations.</p>
 <dl class="field-list simple">
@@ -2307,7 +2351,7 @@ durations.</p>
 
 <dl class="py attribute">
 <dt id="mtap.processing.TimerStats.sum">
-<code class="sig-name descname">sum</code><a class="headerlink" href="#mtap.processing.TimerStats.sum" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sum</code><em class="property">: <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.8)">datetime.timedelta</a></em><a class="headerlink" href="#mtap.processing.TimerStats.sum" title="Permalink to this definition">¶</a></dt>
 <dd><p>The sum of all measured durations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -2320,7 +2364,7 @@ durations.</p>
 
 <dl class="py class">
 <dt id="mtap.processing.AggregateTimingInfo">
-<em class="property">class </em><code class="sig-prename descclassname">mtap.processing.</code><code class="sig-name descname">AggregateTimingInfo</code><a class="reference internal" href="_modules/mtap/processing/base.html#AggregateTimingInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.processing.AggregateTimingInfo" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mtap.processing.</code><code class="sig-name descname">AggregateTimingInfo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">identifier</span></em>, <em class="sig-param"><span class="n">timing_info</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/processing/base.html#AggregateTimingInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.processing.AggregateTimingInfo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Collection of all of the timing info for a specific processor.</p>
 <dl class="py attribute">
 <dt id="mtap.processing.AggregateTimingInfo.identifier">
@@ -2459,7 +2503,7 @@ that config object.</p>
       &copy;2019, Regents of the University of Minnesota..
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
