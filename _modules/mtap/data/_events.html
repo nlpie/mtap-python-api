@@ -1,0 +1,927 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mtap.data._events &#8212; MTAP 0.7.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">MTAP 0.7.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">mtap.data._events</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for mtap.data._events</h1><div class="highlight"><pre>
+<span></span><span class="c1">#  Copyright 2020 Regents of the University of Minnesota.</span>
+<span class="c1">#</span>
+<span class="c1">#  Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1">#  you may not use this file except in compliance with the License.</span>
+<span class="c1">#  You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#      http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#  Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#  distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1">#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1">#  See the License for the specific language governing permissions and</span>
+<span class="c1">#  limitations under the License.</span>
+<span class="sd">&quot;&quot;&quot;Events service client API and wrapper classes.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">NamedTuple</span><span class="p">,</span> \
+    <span class="n">ContextManager</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
+
+<span class="kn">import</span> <span class="nn">grpc</span>
+<span class="kn">from</span> <span class="nn">grpc_health.v1</span> <span class="kn">import</span> <span class="n">health_pb2_grpc</span><span class="p">,</span> <span class="n">health_pb2</span>
+
+<span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">_config</span><span class="p">,</span> <span class="n">_discovery</span><span class="p">,</span> <span class="n">constants</span>
+<span class="kn">from</span> <span class="nn">mtap.api.v1</span> <span class="kn">import</span> <span class="n">events_pb2</span><span class="p">,</span> <span class="n">events_pb2_grpc</span>
+<span class="kn">from</span> <span class="nn">mtap.data</span> <span class="kn">import</span> <span class="n">_base</span><span class="p">,</span> <span class="n">_labels</span><span class="p">,</span> <span class="n">_label_adapters</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">mtap</span>
+    <span class="kn">import</span> <span class="nn">mtap.data</span> <span class="k">as</span> <span class="nn">data</span>
+
+<span class="n">L</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;L&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s1">&#39;data.Label&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Event"><a class="viewcode-back" href="../../../mtap.html#mtap.Event">[docs]</a><span class="k">class</span> <span class="nc">Event</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;An object for interacting with a specific event locally or on the events service.</span>
+
+<span class="sd">    The Event object functions as a map from string document names to :obj:`Document` objects that</span>
+<span class="sd">    can be used to access document data from the events server.</span>
+
+<span class="sd">    Keyword Args:</span>
+<span class="sd">        event_id (~typing.Optional[str]):</span>
+<span class="sd">            A globally-unique identifier for the event, or omit / none for a random UUID.</span>
+<span class="sd">        client (~typing.Optional[EventsClient]):</span>
+<span class="sd">            A client for an events service to push any changes to the event to.</span>
+<span class="sd">        only_create_new (bool): Fails if the event already exists on the events service.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; with EventsClient() as c, Event(event_id=&#39;id&#39;, client=c) as event:</span>
+<span class="sd">        &gt;&gt;&gt;     # use event</span>
+<span class="sd">        &gt;&gt;&gt;     ...</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">event_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s1">&#39;mtap.EventsClient&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">only_create_new</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="n">default_adapters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s1">&#39;data.ProtoLabelAdapter&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span> <span class="o">=</span> <span class="n">event_id</span> <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_adapters</span> <span class="o">=</span> <span class="n">default_adapters</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">open_event</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span><span class="p">,</span> <span class="n">only_create_new</span><span class="o">=</span><span class="n">only_create_new</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">client</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="s1">&#39;mtap.EventsClient&#39;</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">event_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;str: The globally unique identifier for this event.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">documents</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s1">&#39;mtap.Document&#39;</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;~typing.MutableMapping[str, Document]: A mutable mapping of strings to :obj:`Document`</span>
+<span class="sd">        objects that can be used to query and add documents to the event.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_documents</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_documents</span> <span class="o">=</span> <span class="n">_Documents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_documents</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;~typing.MutableMapping[str, str]: A mutable mapping of strings to strings that can be</span>
+<span class="sd">        used to query and add metadata to the event.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span> <span class="o">=</span> <span class="n">_Metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">binaries</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;~typing.MutableMapping[str, str]: A mutable mapping of strings to bytes that can be used</span>
+<span class="sd">        to query and add binary data to the event.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_binaries</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_binaries</span> <span class="o">=</span> <span class="n">_Binaries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_binaries</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">created_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;~typing.Dict[str, ~typing.List[str]]: A mapping of document names to a list of the names</span>
+<span class="sd">        of all the label indices that have been added to that document&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">document_name</span><span class="p">:</span> <span class="n">document</span><span class="o">.</span><span class="n">created_indices</span>
+                <span class="k">for</span> <span class="n">document_name</span><span class="p">,</span> <span class="n">document</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">documents</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+<div class="viewcode-block" id="Event.close"><a class="viewcode-back" href="../../../mtap.html#mtap.Event.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Closes this event. Lets the event service know that we are done with the event,</span>
+<span class="sd">        allowing to clean up the event if no other clients have open leases to it.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">release_lease</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Event.create_document"><a class="viewcode-back" href="../../../mtap.html#mtap.Event.create_document">[docs]</a>    <span class="k">def</span> <span class="nf">create_document</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;mtap.Document&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Adds a document to the event keyed by `document_name` and</span>
+<span class="sd">        containing the specified `text`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            document_name (str): The event-unique identifier for the document, example: &#39;plaintext&#39;.</span>
+<span class="sd">            text (str):</span>
+<span class="sd">                The content of the document. This is a required field, document text is final and</span>
+<span class="sd">                immutable, as changing the text would very likely invalidate any labels on the</span>
+<span class="sd">                document.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Document: The added document.</span>
+
+<span class="sd">        Examples:</span>
+
+<span class="sd">            &gt;&gt;&gt; event = Event()</span>
+<span class="sd">            &gt;&gt;&gt; document = event.create_document(&#39;plaintext&#39;, text=&quot;The text of the document.&quot;)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;text is not string.&#39;</span><span class="p">)</span>
+        <span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">document_name</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="n">document_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">document</span>
+        <span class="k">return</span> <span class="n">document</span></div>
+
+<div class="viewcode-block" id="Event.add_document"><a class="viewcode-back" href="../../../mtap.html#mtap.Event.add_document">[docs]</a>    <span class="k">def</span> <span class="nf">add_document</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="s1">&#39;mtap.Document&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Adds the document to this event, first uploading to events service if this event has a</span>
+<span class="sd">        client connection to the events service.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            document (~mtap.Document): The document to add to this event.</span>
+
+<span class="sd">        Examples:</span>
+
+<span class="sd">            &gt;&gt;&gt; event = Event()</span>
+<span class="sd">            &gt;&gt;&gt; document = Document(&#39;plaintext&#39;, text=&quot;The text of the document.&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; event.add_document(document)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">document</span><span class="o">.</span><span class="n">_event</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The document already exists on an event&#39;</span><span class="p">)</span>
+        <span class="n">document</span><span class="o">.</span><span class="n">_event</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="n">document</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span>
+        <span class="n">document</span><span class="o">.</span><span class="n">_event_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="n">document</span><span class="o">.</span><span class="n">document_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">document</span></div>
+
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Event&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">add_created_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">created_indices</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">created_indices</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_documents</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                <span class="n">doc</span><span class="o">.</span><span class="n">add_created_indices</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">lease</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">open_event</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">event_id</span><span class="p">,</span> <span class="n">only_create_new</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">release_lease</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">close_event</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">event_id</span><span class="p">)</span></div>
+
+
+<span class="k">class</span> <span class="nc">_WaitingIndex</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">(</span><span class="s1">&#39;_WaitingIndex&#39;</span><span class="p">,</span>
+                               <span class="p">[(</span><span class="s1">&#39;index_name&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span>
+                                <span class="p">(</span><span class="s1">&#39;labels&#39;</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;mtap.GenericLabel&#39;</span><span class="p">]),</span>
+                                <span class="p">(</span><span class="s1">&#39;waiting_on&#39;</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])])):</span>
+    <span class="sd">&quot;&quot;&quot;A label index that is waiting on some labels to be staticized before uploading.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="Document"><a class="viewcode-back" href="../../../mtap.html#mtap.Document">[docs]</a><span class="k">class</span> <span class="nc">Document</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;An object for interacting with text and labels stored on an :class:`Event`.</span>
+
+<span class="sd">    Documents are keyed by their name, and pipelines can store different pieces of</span>
+<span class="sd">    related text on a single processing event using multiple documents. An example would be storing</span>
+<span class="sd">    the text of one language on one document, and a translation on another, or storing the</span>
+<span class="sd">    rtf or html encoding on one document, and the parsed plaintext on another document.</span>
+
+<span class="sd">    Both the document text and any added label indices are immutable. This is to enable</span>
+<span class="sd">    parallelization and distribution of processing, and to prevent changes to the dependency graph</span>
+<span class="sd">    of label indices and text, which can make debugging difficult.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        document_name (str): The document name identifier.</span>
+
+<span class="sd">    Keyword Args:</span>
+<span class="sd">        text (~typing.Optional[str]):</span>
+<span class="sd">            The document text, can be omitted if this is an existing document and text needs to be</span>
+<span class="sd">            retrieved from the events service.</span>
+<span class="sd">        event (~typing.Optional[Event]):</span>
+<span class="sd">            The parent event of this document. If the event has a client, then that client will be</span>
+<span class="sd">            used to share changes to this document with all other clients of the Events service. In</span>
+<span class="sd">            that case, text should only be specified if it is the known existing text of the</span>
+<span class="sd">            document.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Local document:</span>
+
+<span class="sd">        &gt;&gt;&gt; document = Document(&#39;plaintext&#39;, text=&#39;Some document text.&#39;)</span>
+
+<span class="sd">        Existing distributed object:</span>
+
+<span class="sd">        &gt;&gt;&gt; with EventsClient(address=&#39;localhost:8080&#39;) as client, \\</span>
+<span class="sd">        &gt;&gt;&gt;      Event(event_id=&#39;1&#39;, client=client) as event:</span>
+<span class="sd">        &gt;&gt;&gt;     document = event.documents[&#39;plaintext&#39;]</span>
+<span class="sd">        &gt;&gt;&gt;     document.text</span>
+<span class="sd">        &#39;Some document text fetched from the server.&#39;</span>
+
+<span class="sd">        New distributed object:</span>
+
+<span class="sd">        &gt;&gt;&gt; with EventsClient(address=&#39;localhost:8080&#39;) as client, \\</span>
+<span class="sd">        &gt;&gt;&gt;      Event(event_id=&#39;1&#39;, client=client) as event:</span>
+<span class="sd">        &gt;&gt;&gt;     document = Document(&#39;plaintext&#39;, text=&#39;Some document text.&#39;)</span>
+<span class="sd">        &gt;&gt;&gt;     event.add_document(document)</span>
+
+<span class="sd">        or</span>
+
+<span class="sd">        &gt;&gt;&gt; with EventsClient(address=&#39;localhost:8080&#39;) as client, \\</span>
+<span class="sd">        &gt;&gt;&gt;      Event(event_id=&#39;1&#39;, client=client) as event:</span>
+<span class="sd">        &gt;&gt;&gt;     document = event.create_document(&#39;plaintext&#39;, text=&#39;Some document text.&#39;)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">document_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="o">*</span><span class="p">,</span>
+                 <span class="n">text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">event</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Event</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">default_adapters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s1">&#39;data.ProtoLabelAdapter&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">document_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Document name is not string.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_document_name</span> <span class="o">=</span> <span class="n">document_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_event</span> <span class="o">=</span> <span class="n">event</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">event</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">client</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">event_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_text</span> <span class="o">=</span> <span class="n">text</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_labelers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_created_indices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_waiting_indices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_adapters</span> <span class="o">=</span> <span class="n">default_adapters</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">text</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Document without text or an event with a client to fetch the text &#39;</span>
+                             <span class="s1">&#39;from.&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">event</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Event</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Event: The parent event of this document.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">document_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;str: The unique identifier for this document on the event.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_document_name</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">text</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;str: The document text.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_text</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">get_document_text</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_document_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_text</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">created_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;~typing.List[str]: A list of all of the label index names that have created on this</span>
+<span class="sd">                document using a labeler either locally or by remote pipeline components invoked on</span>
+<span class="sd">                this document.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_created_indices</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">labels</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s1">&#39;data.LabelIndex&#39;</span><span class="p">]:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_labels</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_labels</span> <span class="o">=</span> <span class="n">_LabelIndices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_labels</span>
+
+<div class="viewcode-block" id="Document.get_label_index"><a class="viewcode-back" href="../../../mtap.html#mtap.Document.get_label_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_label_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                        <span class="n">label_index_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;data.LabelIndex[Union[mtap.GenericLabel, L]]&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Gets the document&#39;s label index with the specified key.</span>
+
+<span class="sd">        Will fetch from the events service if it is not cached locally if the document has an event</span>
+<span class="sd">        with a client. Uses the `label_adapter` argument to perform unmarshalling from the proto</span>
+<span class="sd">        message if specified.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            label_index_name (str): The name of the label index to get.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            LabelIndex: The requested label index.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">label_index_name</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Document.get_labeler"><a class="viewcode-back" href="../../../mtap.html#mtap.Document.get_labeler">[docs]</a>    <span class="k">def</span> <span class="nf">get_labeler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                    <span class="n">label_index_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                    <span class="o">*</span><span class="p">,</span> <span class="n">distinct</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a function that can be used to add labels to a label index.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            label_index_name (str): A document-unique identifier for the label index to be created.</span>
+<span class="sd">            distinct (~typing.Optional[bool]):</span>
+<span class="sd">                Optional, if using generic labels, whether to use distinct generic labels or</span>
+<span class="sd">                non-distinct generic labels, will default to False.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Labeler: A callable when used in conjunction with the &#39;with&#39; keyword will automatically</span>
+<span class="sd">            handle uploading any added labels to the server.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; with document.get_labeler(&#39;sentences&#39;, distinct=True) as labeler:</span>
+<span class="sd">            &gt;&gt;&gt;     labeler(0, 25, sentence_type=&#39;STANDARD&#39;)</span>
+<span class="sd">            &gt;&gt;&gt;     sentence = labeler(26, 34)</span>
+<span class="sd">            &gt;&gt;&gt;     sentence.sentence_type = &#39;FRAGMENT&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">label_index_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_labelers</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Labeler already in use: &quot;</span> <span class="o">+</span> <span class="n">label_index_name</span><span class="p">)</span>
+        <span class="n">label_adapter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_default_adapter</span><span class="p">(</span><span class="n">label_index_name</span><span class="p">,</span> <span class="n">distinct</span><span class="p">)</span>
+
+        <span class="n">labeler</span> <span class="o">=</span> <span class="n">Labeler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">label_index_name</span><span class="p">,</span> <span class="n">label_adapter</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_labelers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label_index_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">labeler</span></div>
+
+<div class="viewcode-block" id="Document.add_labels"><a class="viewcode-back" href="../../../mtap.html#mtap.Document.add_labels">[docs]</a>    <span class="k">def</span> <span class="nf">add_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                   <span class="n">label_index_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                   <span class="n">labels</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="s1">&#39;data.Label&#39;</span><span class="p">,</span> <span class="n">L</span><span class="p">]],</span>
+                   <span class="o">*</span><span class="p">,</span> <span class="n">distinct</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">label_adapter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s1">&#39;data.ProtoLabelAdapter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Skips using a labeler and adds the sequence of labels as a new label index.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            label_index_name (str): The name of the label index.</span>
+<span class="sd">            labels (~typing.Sequence[Label]): The labels to add.</span>
+<span class="sd">            distinct (~typing.Optional[bool]):</span>
+<span class="sd">                Whether the index is distinct or non-distinct.</span>
+<span class="sd">            label_adapter (mtap.label_adapters.ProtoLabelAdapter): A label adapter to use.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            LabelIndex: The new label index created from the labels.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">label_index_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Label index already exists with name: &quot;</span> <span class="o">+</span> <span class="n">label_index_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">label_adapter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">distinct</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">distinct</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">label_adapter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_default_adapter</span><span class="p">(</span><span class="n">label_index_name</span><span class="p">,</span> <span class="n">distinct</span><span class="p">)</span>
+        <span class="n">labels</span><span class="p">,</span> <span class="n">waiting_on</span> <span class="o">=</span> <span class="n">_labels</span><span class="o">.</span><span class="n">_staticize</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">label_index_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_waiting_indices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">label_ids</span> <span class="o">=</span> <span class="p">{</span><span class="nb">id</span><span class="p">(</span><span class="n">label</span><span class="p">)</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_waiting_indices</span><span class="p">(</span><span class="n">label_ids</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">waiting_on</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_waiting_indices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">label_index_name</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">label_adapter</span><span class="p">,</span> <span class="n">waiting_on</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_finalize_labels</span><span class="p">(</span><span class="n">label_adapter</span><span class="p">,</span> <span class="n">label_index_name</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_check_waiting_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">updated_ids</span><span class="p">):</span>
+        <span class="n">waiting_indices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">label_index_name</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">label_adapter</span><span class="p">,</span> <span class="n">waiting_on</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_waiting_indices</span><span class="p">:</span>
+            <span class="n">still_waiting</span> <span class="o">=</span> <span class="n">waiting_on</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">updated_ids</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">still_waiting</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_finalize_labels</span><span class="p">(</span><span class="n">label_adapter</span><span class="p">,</span> <span class="n">label_index_name</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">waiting_indices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">label_index_name</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">label_adapter</span><span class="p">,</span> <span class="n">still_waiting</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_waiting_indices</span> <span class="o">=</span> <span class="n">waiting_indices</span>
+
+    <span class="k">def</span> <span class="nf">_finalize_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label_adapter</span><span class="p">,</span> <span class="n">label_index_name</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+        <span class="n">label_adapter</span><span class="o">.</span><span class="n">store_references</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">add_labels</span><span class="p">(</span><span class="n">event_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">event_id</span><span class="p">,</span>
+                                    <span class="n">document_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">document_name</span><span class="p">,</span>
+                                    <span class="n">index_name</span><span class="o">=</span><span class="n">label_index_name</span><span class="p">,</span>
+                                    <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
+                                    <span class="n">adapter</span><span class="o">=</span><span class="n">label_adapter</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_created_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label_index_name</span><span class="p">)</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">label_adapter</span><span class="o">.</span><span class="n">create_index</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">add_to_cache</span><span class="p">(</span><span class="n">label_index_name</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">index</span>
+
+    <span class="k">def</span> <span class="nf">get_default_adapter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label_index_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                            <span class="n">distinct</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="s1">&#39;data.ProtoLabelAdapter&#39;</span><span class="p">]:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_adapters</span><span class="p">[</span><span class="n">label_index_name</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">default_adapters</span><span class="p">[</span><span class="n">label_index_name</span><span class="p">]</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">_label_adapters</span><span class="o">.</span><span class="n">DISTINCT_GENERIC_ADAPTER</span> <span class="k">if</span> <span class="n">distinct</span> \
+                <span class="k">else</span> <span class="n">_label_adapters</span><span class="o">.</span><span class="n">GENERIC_ADAPTER</span>
+
+    <span class="k">def</span> <span class="nf">add_created_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">created_indices</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+        <span class="c1"># Internal, used by the pipeline to add any indices created remotely to the</span>
+        <span class="c1"># &quot;created_indices&quot; on a local document.</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_created_indices</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">created_indices</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Labeler"><a class="viewcode-back" href="../../../mtap.html#mtap.Labeler">[docs]</a><span class="k">class</span> <span class="nc">Labeler</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">L</span><span class="p">],</span> <span class="n">ContextManager</span><span class="p">[</span><span class="s1">&#39;Labeler&#39;</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;Object provided by :func:`~&#39;mtap.Document&#39;.get_labeler` which is responsible for adding labels</span>
+<span class="sd">    to a label index on a document.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">client</span><span class="p">:</span> <span class="s1">&#39;mtap.EventsClient&#39;</span><span class="p">,</span>
+                 <span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">,</span>
+                 <span class="n">label_index_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">label_adapter</span><span class="p">:</span> <span class="s1">&#39;data.ProtoLabelAdapter[L]&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_document</span> <span class="o">=</span> <span class="n">document</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_label_index_name</span> <span class="o">=</span> <span class="n">label_index_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_label_adapter</span> <span class="o">=</span> <span class="n">label_adapter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_done</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_labels</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Labeler.__call__"><a class="viewcode-back" href="../../../mtap.html#mtap.Labeler.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">L</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Calls the constructor for the label type adding it to the list of labels to be uploaded.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            args: Arguments passed to the label type&#39;s constructor.</span>
+<span class="sd">            kwargs: Keyword arguments passed to the label type&#39;s constructor.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Label: The object that was created by the label type&#39;s constructor.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; labeler(0, 25, some_field=&#39;some_value&#39;, x=3)</span>
+<span class="sd">            GenericLabel(start_index=0, end_index=25, some_field=&#39;some_value&#39;, x=3)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label_adapter</span><span class="o">.</span><span class="n">create_label</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">document</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_document</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">label</span></div>
+
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;data.Labeler&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">exc_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">done</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Labeler.done"><a class="viewcode-back" href="../../../mtap.html#mtap.Labeler.done">[docs]</a>    <span class="k">def</span> <span class="nf">done</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Finalizes the label index, uploads the added labels to the events service.</span>
+
+<span class="sd">        Normally called automatically on exit from a context manager block, but can be manually</span>
+<span class="sd">        invoked if the labeler is not used in a context manager block.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_done</span><span class="p">:</span>
+                <span class="k">return</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_done</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_document</span><span class="o">.</span><span class="n">add_labels</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_label_index_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_labels</span><span class="p">,</span>
+                                      <span class="n">label_adapter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_label_adapter</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="EventsClient"><a class="viewcode-back" href="../../../mtap.html#mtap.EventsClient">[docs]</a><span class="k">class</span> <span class="nc">EventsClient</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A client object for interacting with the events service.</span>
+
+<span class="sd">    Normally, users shouldn&#39;t have to use any of the methods on this object, as they are invoked by</span>
+<span class="sd">    the globally distributed object classes of :obj:`Event`, :obj:`Document`, and :obj:`~data.Labeler`.</span>
+
+<span class="sd">    Keyword Args:</span>
+<span class="sd">        address (~typing.Optional[str]): The events service target e.g. &#39;localhost:9090&#39; or</span>
+<span class="sd">            omit/None to use service discovery.</span>
+<span class="sd">        stub (~typing.Optional[~mtap.api.v1.events_pb2_grpc.EventsStub]): An existing events service</span>
+<span class="sd">            client gRPC stub to use.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; with EventsClient(address=&#39;localhost:50000&#39;) as client, \\</span>
+<span class="sd">        &gt;&gt;&gt;      Event(event_id=&#39;1&#39;, client=client) as event:</span>
+<span class="sd">        &gt;&gt;&gt;     document = event.create_document(document_name=&#39;plaintext&#39;,</span>
+<span class="sd">        &gt;&gt;&gt;                                      text=&#39;The quick brown fox jumps over the lazy dog.&#39;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="o">*</span><span class="p">,</span> <span class="n">address</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">stub</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">events_pb2_grpc</span><span class="o">.</span><span class="n">EventsStub</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">stub</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">address</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">discovery</span> <span class="o">=</span> <span class="n">_discovery</span><span class="o">.</span><span class="n">Discovery</span><span class="p">(</span><span class="n">_config</span><span class="o">.</span><span class="n">Config</span><span class="p">())</span>
+                <span class="n">address</span> <span class="o">=</span> <span class="n">discovery</span><span class="o">.</span><span class="n">discover_events_service</span><span class="p">(</span><span class="s1">&#39;v1&#39;</span><span class="p">)</span>
+
+            <span class="n">channel</span> <span class="o">=</span> <span class="n">grpc</span><span class="o">.</span><span class="n">insecure_channel</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
+
+            <span class="n">health</span> <span class="o">=</span> <span class="n">health_pb2_grpc</span><span class="o">.</span><span class="n">HealthStub</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+            <span class="n">hcr</span> <span class="o">=</span> <span class="n">health</span><span class="o">.</span><span class="n">Check</span><span class="p">(</span><span class="n">health_pb2</span><span class="o">.</span><span class="n">HealthCheckRequest</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="n">constants</span><span class="o">.</span><span class="n">EVENTS_SERVICE_NAME</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">hcr</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="n">health_pb2</span><span class="o">.</span><span class="n">HealthCheckResponse</span><span class="o">.</span><span class="n">SERVING</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Failed to connect to events service. Status:&#39;</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_channel</span> <span class="o">=</span> <span class="n">channel</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stub</span> <span class="o">=</span> <span class="n">events_pb2_grpc</span><span class="o">.</span><span class="n">EventsStub</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stub</span> <span class="o">=</span> <span class="n">stub</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_open</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;EventsClient&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">ensure_open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_open</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Client to events service is not open&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">open_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">only_create_new</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">events_pb2</span><span class="o">.</span><span class="n">OpenEventRequest</span><span class="p">(</span><span class="n">event_id</span><span class="o">=</span><span class="n">event_id</span><span class="p">,</span> <span class="n">only_create_new</span><span class="o">=</span><span class="n">only_create_new</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">OpenEvent</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">response</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">except</span> <span class="n">grpc</span><span class="o">.</span><span class="n">RpcError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">code</span><span class="p">()</span> <span class="o">==</span> <span class="n">grpc</span><span class="o">.</span><span class="n">StatusCode</span><span class="o">.</span><span class="n">ALREADY_EXISTS</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Event already exists&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+
+    <span class="k">def</span> <span class="nf">close_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_id</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">events_pb2</span><span class="o">.</span><span class="n">CloseEventRequest</span><span class="p">(</span><span class="n">event_id</span><span class="o">=</span><span class="n">event_id</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">CloseEvent</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">get_all_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_id</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">events_pb2</span><span class="o">.</span><span class="n">GetAllMetadataRequest</span><span class="p">(</span><span class="n">event_id</span><span class="o">=</span><span class="n">event_id</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">GetAllMetadata</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">metadata</span>
+
+    <span class="k">def</span> <span class="nf">add_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_id</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">events_pb2</span><span class="o">.</span><span class="n">AddMetadataRequest</span><span class="p">(</span><span class="n">event_id</span><span class="o">=</span><span class="n">event_id</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">AddMetadata</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">get_all_binary_data_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">events_pb2</span><span class="o">.</span><span class="n">GetAllBinaryDataNamesRequest</span><span class="p">(</span><span class="n">event_id</span><span class="o">=</span><span class="n">event_id</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">GetAllBinaryDataNames</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">binary_data_names</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_binary_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">binary_data_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">binary_data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">events_pb2</span><span class="o">.</span><span class="n">AddBinaryDataRequest</span><span class="p">(</span><span class="n">event_id</span><span class="o">=</span><span class="n">event_id</span><span class="p">,</span>
+                                                  <span class="n">binary_data_name</span><span class="o">=</span><span class="n">binary_data_name</span><span class="p">,</span>
+                                                  <span class="n">binary_data</span><span class="o">=</span><span class="n">binary_data</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">AddBinaryData</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">get_binary_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">binary_data_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">events_pb2</span><span class="o">.</span><span class="n">GetBinaryDataRequest</span><span class="p">(</span><span class="n">event_id</span><span class="o">=</span><span class="n">event_id</span><span class="p">,</span>
+                                                  <span class="n">binary_data_name</span><span class="o">=</span><span class="n">binary_data_name</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">GetBinaryData</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">binary_data</span>
+
+    <span class="k">def</span> <span class="nf">get_all_document_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_id</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">events_pb2</span><span class="o">.</span><span class="n">GetAllDocumentNamesRequest</span><span class="p">(</span><span class="n">event_id</span><span class="o">=</span><span class="n">event_id</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">GetAllDocumentNames</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">document_names</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_document</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_id</span><span class="p">,</span> <span class="n">document_name</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">events_pb2</span><span class="o">.</span><span class="n">AddDocumentRequest</span><span class="p">(</span><span class="n">event_id</span><span class="o">=</span><span class="n">event_id</span><span class="p">,</span>
+                                                <span class="n">document_name</span><span class="o">=</span><span class="n">document_name</span><span class="p">,</span>
+                                                <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">AddDocument</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">get_document_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_id</span><span class="p">,</span> <span class="n">document_name</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">events_pb2</span><span class="o">.</span><span class="n">GetDocumentTextRequest</span><span class="p">(</span><span class="n">event_id</span><span class="o">=</span><span class="n">event_id</span><span class="p">,</span>
+                                                    <span class="n">document_name</span><span class="o">=</span><span class="n">document_name</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">GetDocumentText</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span>
+
+    <span class="k">def</span> <span class="nf">get_label_index_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">document_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;data.LabelIndexInfo&#39;</span><span class="p">]:</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">events_pb2</span><span class="o">.</span><span class="n">GetLabelIndicesInfoRequest</span><span class="p">(</span><span class="n">event_id</span><span class="o">=</span><span class="n">event_id</span><span class="p">,</span>
+                                                        <span class="n">document_name</span><span class="o">=</span><span class="n">document_name</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">GetLabelIndicesInfo</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">label_index_infos</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">index</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">events_pb2</span><span class="o">.</span><span class="n">GetLabelIndicesInfoResponse</span><span class="o">.</span><span class="n">LabelIndexInfo</span><span class="o">.</span><span class="n">GENERIC</span><span class="p">:</span>
+                <span class="n">index_type</span> <span class="o">=</span> <span class="n">_base</span><span class="o">.</span><span class="n">LabelIndexType</span><span class="o">.</span><span class="n">GENERIC</span>
+            <span class="k">elif</span> <span class="n">index</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">events_pb2</span><span class="o">.</span><span class="n">GetLabelIndicesInfoResponse</span><span class="o">.</span><span class="n">LabelIndexInfo</span><span class="o">.</span><span class="n">CUSTOM</span><span class="p">:</span>
+                <span class="n">index_type</span> <span class="o">=</span> <span class="n">_base</span><span class="o">.</span><span class="n">LabelIndexType</span><span class="o">.</span><span class="n">CUSTOM</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">index_type</span> <span class="o">=</span> <span class="n">_base</span><span class="o">.</span><span class="n">LabelIndexType</span><span class="o">.</span><span class="n">UNKNOWN</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_base</span><span class="o">.</span><span class="n">LabelIndexInfo</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">index_name</span><span class="p">,</span> <span class="n">index_type</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">def</span> <span class="nf">add_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_id</span><span class="p">,</span> <span class="n">document_name</span><span class="p">,</span> <span class="n">index_name</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">adapter</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">events_pb2</span><span class="o">.</span><span class="n">AddLabelsRequest</span><span class="p">(</span><span class="n">event_id</span><span class="o">=</span><span class="n">event_id</span><span class="p">,</span> <span class="n">document_name</span><span class="o">=</span><span class="n">document_name</span><span class="p">,</span>
+                                              <span class="n">index_name</span><span class="o">=</span><span class="n">index_name</span><span class="p">,</span>
+                                              <span class="n">no_key_validation</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">adapter</span><span class="o">.</span><span class="n">add_to_message</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">AddLabels</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">get_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_id</span><span class="p">,</span> <span class="n">document_name</span><span class="p">,</span> <span class="n">index_name</span><span class="p">,</span> <span class="n">adapter</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">events_pb2</span><span class="o">.</span><span class="n">GetLabelsRequest</span><span class="p">(</span><span class="n">event_id</span><span class="o">=</span><span class="n">event_id</span><span class="p">,</span>
+                                              <span class="n">document_name</span><span class="o">=</span><span class="n">document_name</span><span class="p">,</span>
+                                              <span class="n">index_name</span><span class="o">=</span><span class="n">index_name</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub</span><span class="o">.</span><span class="n">GetLabels</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">adapter</span><span class="o">.</span><span class="n">create_index_from_response</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_open</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_channel</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span></div>
+
+
+<span class="k">class</span> <span class="nc">_Documents</span><span class="p">(</span><span class="n">MutableMapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Document</span><span class="p">]):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EventsClient</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event</span> <span class="o">=</span> <span class="n">event</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event_id</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">event_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">documents</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">document_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">document_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_documents</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">document_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">documents</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Document&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">document_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="n">document_name</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_documents</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="n">document_name</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_documents</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">documents</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_documents</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">documents</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">Document</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">add_document</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">event_id</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">text</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">()</span>
+        <span class="n">v</span><span class="o">.</span><span class="n">_event</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span>
+        <span class="n">v</span><span class="o">.</span><span class="n">_event_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_id</span>
+        <span class="n">v</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="k">def</span> <span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_refresh_documents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">document_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get_all_document_names</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">event_id</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">document_names</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">documents</span><span class="p">:</span>
+                    <span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">documents</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">document</span>
+
+
+<span class="k">class</span> <span class="nc">_Metadata</span><span class="p">(</span><span class="n">MutableMapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EventsClient</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_event</span> <span class="o">=</span> <span class="n">event</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">event_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_metadata</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span>
+
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Metadata already exists with key: &quot;</span> <span class="o">+</span> <span class="n">key</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">add_metadata</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_metadata</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_metadata</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_metadata</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_refresh_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">get_all_metadata</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_Binaries</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">MutableMapping</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EventsClient</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_event</span> <span class="o">=</span> <span class="n">event</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">event_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_binaries</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_names</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_binaries</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_names</span>
+
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Binary already exists with name: &quot;</span> <span class="o">+</span> <span class="n">key</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_names</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_binaries</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">add_binary_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_binaries</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">get_binary_data</span><span class="p">(</span><span class="n">event_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span><span class="p">,</span> <span class="n">binary_data_name</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_names</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_binaries</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">b</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_binaries</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_binaries</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_names</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_binaries</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_names</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_refresh_binaries</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">get_all_binary_data_names</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_names</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_LabelIndices</span><span class="p">(</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s1">&#39;data.LabelIndex&#39;</span><span class="p">]):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_document</span> <span class="o">=</span> <span class="n">document</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_document_name</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">document_name</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">event_id</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">client</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_names_cache</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;data.LabelIndex&#39;</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">label_adapter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_document</span><span class="o">.</span><span class="n">get_default_adapter</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">label_adapter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">label_adapter</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">GENERIC_ADAPTER</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">get_labels</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_document_name</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span>
+                                            <span class="n">adapter</span><span class="o">=</span><span class="n">label_adapter</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">index</span><span class="p">:</span>
+                <span class="n">label</span><span class="o">.</span><span class="n">label_index_name</span> <span class="o">=</span> <span class="n">k</span>
+                <span class="n">label</span><span class="o">.</span><span class="n">document</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_document</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">index</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_names_cache</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">index</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;Document does not have label index: &#39;</span> <span class="o">+</span> <span class="n">k</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_names</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_names_cache</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_names</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_names_cache</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_names</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_names_cache</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_refresh_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">infos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">get_label_index_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_event_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_document_name</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">infos</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_names_cache</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">index_name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_to_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label_index_name</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">label_index_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_names_cache</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">label_index_name</span><span class="p">)</span>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../../../index.html">Table of Contents</a></h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../mtap.html">mtap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../deployment.html">mtap.deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io.html">mtap.io</a></li>
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">MTAP 0.7.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">mtap.data._events</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Regents of the University of Minnesota..
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+    </div>
+  </body>
+</html>

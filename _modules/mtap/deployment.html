@@ -1,0 +1,613 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mtap.deployment &#8212; MTAP 0.7.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MTAP 0.7.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">mtap.deployment</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for mtap.deployment</h1><div class="highlight"><pre>
+<span></span><span class="c1">#  Copyright 2020 Regents of the University of Minnesota.</span>
+<span class="c1">#</span>
+<span class="c1">#  Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1">#  you may not use this file except in compliance with the License.</span>
+<span class="c1">#  You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#      http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#  Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#  distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1">#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1">#  See the License for the specific language governing permissions and</span>
+<span class="c1">#  limitations under the License.</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#  Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1">#  you may not use this file except in compliance with the License.</span>
+<span class="c1">#  You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#      http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#  Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#  distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1">#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1">#  See the License for the specific language governing permissions and</span>
+<span class="c1">#  limitations under the License.</span>
+<span class="c1">#</span>
+<span class="sd">&quot;&quot;&quot;Module for deploying a set of processing services and the events server all at once.</span>
+
+<span class="sd">Examples:</span>
+
+<span class="sd">    An example configuration</span>
+
+<span class="sd">    &gt;&gt;&gt; deploy = Deployment(</span>
+<span class="sd">    &gt;&gt;&gt;     GlobalSettings(host=&#39;0.0.0.0&#39;),</span>
+<span class="sd">    &gt;&gt;&gt;     EventsDeployment(port=10100, workers=8),</span>
+<span class="sd">    &gt;&gt;&gt;     SharedProcessorConfig(workers=8, jvm_args=[&#39;-Xms32m&#39;, &#39;-Xmx8g&#39;], classpath=&#39;blah.jar&#39;),</span>
+<span class="sd">    &gt;&gt;&gt;     ProcessorDeployment(implementation=&#39;python&#39;,</span>
+<span class="sd">    &gt;&gt;&gt;                         entry_point=&#39;mtap.examples.example_processor&#39;,</span>
+<span class="sd">    &gt;&gt;&gt;                         instances=4,</span>
+<span class="sd">    &gt;&gt;&gt;                         port=10101,</span>
+<span class="sd">    &gt;&gt;&gt;                         workers=4),</span>
+<span class="sd">    &gt;&gt;&gt;     ProcessorDeployment(implementation=&#39;java&#39;,</span>
+<span class="sd">    &gt;&gt;&gt;                         entry_point=&#39;edu.umn.nlpie.mtap.WordOccurrencesExampleProcessor&#39;,</span>
+<span class="sd">    &gt;&gt;&gt;                         port=10105)</span>
+<span class="sd">    &gt;&gt;&gt; )</span>
+<span class="sd">    &gt;&gt;&gt; deploy.run_servers()</span>
+
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">grpc</span>
+
+<span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">utilities</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;Deployment&#39;</span><span class="p">,</span> <span class="s1">&#39;GlobalSettings&#39;</span><span class="p">,</span> <span class="s1">&#39;SharedProcessorConfig&#39;</span><span class="p">,</span> <span class="s1">&#39;EventsDeployment&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ProcessorDeployment&#39;</span><span class="p">,</span> <span class="s1">&#39;main&#39;</span><span class="p">,</span> <span class="s1">&#39;deployment_parser&#39;</span><span class="p">,</span> <span class="s1">&#39;ServiceDeploymentException&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">PYTHON_EXE</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">executable</span>
+
+
+<span class="k">def</span> <span class="nf">_get_java</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;JAVA_HOME&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="s1">&#39;bin&#39;</span> <span class="o">/</span> <span class="s1">&#39;java&#39;</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;java&#39;</span>
+
+
+<span class="n">JAVA_EXE</span> <span class="o">=</span> <span class="n">_get_java</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">_listen</span><span class="p">(</span><span class="n">process</span><span class="p">:</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">process</span><span class="o">.</span><span class="n">stdout</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">decode</span><span class="p">(),</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">process</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="ServiceDeploymentException"><a class="viewcode-back" href="../../deployment.html#mtap.deployment.ServiceDeploymentException">[docs]</a><span class="k">class</span> <span class="nc">ServiceDeploymentException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception raised in the case of a service failing to launch.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GlobalSettings"><a class="viewcode-back" href="../../deployment.html#mtap.deployment.GlobalSettings">[docs]</a><span class="k">class</span> <span class="nc">GlobalSettings</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Settings shared by event service and all processors.</span>
+
+<span class="sd">    Keyword Args:</span>
+<span class="sd">        host (Optional[str]): The global host, by default will use &quot;127.0.0.1&quot;.</span>
+<span class="sd">        mtap_config (Optional[str]): The path to an MTAP config file to load for all services.</span>
+<span class="sd">        log_level (Optional[str]): A python logging level to pass to all services.</span>
+<span class="sd">        register (Optional[str]): Whether services should register with service discovery.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        host (Optional[str]): The global host, by default will use &quot;127.0.0.1&quot;.</span>
+<span class="sd">        mtap_config (Optional[str]): The path to an MTAP config file to load for all services.</span>
+<span class="sd">        log_level (Optional[str]): A python logging level to pass to all services.</span>
+<span class="sd">        register (Optional[str]): Whether services should register with service discovery.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                 <span class="n">host</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">mtap_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">log_level</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">register</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mtap_config</span> <span class="o">=</span> <span class="n">mtap_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_level</span> <span class="o">=</span> <span class="n">log_level</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register</span> <span class="o">=</span> <span class="n">register</span>
+
+<div class="viewcode-block" id="GlobalSettings.from_conf"><a class="viewcode-back" href="../../deployment.html#mtap.deployment.GlobalSettings.from_conf">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_conf</span><span class="p">(</span><span class="n">conf</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s1">&#39;GlobalSettings&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Creates a global settings object from a configuration dictionary.</span>
+
+<span class="sd">        Keyword Args:</span>
+<span class="sd">            conf (Optional[Dict]): The configuration dictionary.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            GlobalSettings: The global settings object.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">conf</span> <span class="o">=</span> <span class="n">conf</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="k">return</span> <span class="n">GlobalSettings</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;host&#39;</span><span class="p">),</span> <span class="n">mtap_config</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mtapConfig&#39;</span><span class="p">),</span>
+                              <span class="n">log_level</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;logLevel&#39;</span><span class="p">),</span> <span class="n">register</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;register&#39;</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="SharedProcessorConfig"><a class="viewcode-back" href="../../deployment.html#mtap.deployment.SharedProcessorConfig">[docs]</a><span class="k">class</span> <span class="nc">SharedProcessorConfig</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Configuration that is shared between multiple processor services.</span>
+
+<span class="sd">    Keyword Args:</span>
+<span class="sd">        events_address (Optional[str]): An optional GRPC-compatible target for the events</span>
+<span class="sd">            service to be used by all processors.</span>
+<span class="sd">        workers (Optional[int]): The default number of worker threads which will perform</span>
+<span class="sd">            processing.</span>
+<span class="sd">        additional_args (Optional[List[str]]): a list of additional arguments that</span>
+<span class="sd">            should be appended to every processor.</span>
+<span class="sd">        jvm_args (Optional[List[str]]): a list of JVM arguments for all java</span>
+<span class="sd">            processors.</span>
+<span class="sd">        classpath (Optional[str]): A classpath string that will be passed to all java</span>
+<span class="sd">            processors.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        events_address (Optional[str]): An optional GRPC-compatible target for the events</span>
+<span class="sd">            service to be used by all processors.</span>
+<span class="sd">        workers (Optional[int]): The default number of worker threads which will perform</span>
+<span class="sd">            processing.</span>
+<span class="sd">        additional_args (Optional[List[str]]): a list of additional arguments that</span>
+<span class="sd">            should be appended to every processor.</span>
+<span class="sd">        jvm_args (Optional[List[str]]): a list of JVM arguments for all java</span>
+<span class="sd">            processors.</span>
+<span class="sd">        classpath (Optional[str]): A classpath string that will be passed to all java</span>
+<span class="sd">            processors.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">events_address</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">workers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">additional_args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">jvm_args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">classpath</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events_address</span> <span class="o">=</span> <span class="n">events_address</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">workers</span> <span class="o">=</span> <span class="n">workers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">additional_args</span> <span class="o">=</span> <span class="n">additional_args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jvm_args</span> <span class="o">=</span> <span class="n">jvm_args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classpath</span> <span class="o">=</span> <span class="n">classpath</span>
+
+<div class="viewcode-block" id="SharedProcessorConfig.from_conf"><a class="viewcode-back" href="../../deployment.html#mtap.deployment.SharedProcessorConfig.from_conf">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_conf</span><span class="p">(</span><span class="n">conf</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s1">&#39;SharedProcessorConfig&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Builds a configuration from a dictionary representation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            conf (Optional[Dict]):</span>
+
+<span class="sd">        Returns:</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">conf</span> <span class="o">=</span> <span class="n">conf</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="k">return</span> <span class="n">SharedProcessorConfig</span><span class="p">(</span><span class="n">events_address</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;eventsAddress&#39;</span><span class="p">),</span>
+                                     <span class="n">workers</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;workers&#39;</span><span class="p">),</span>
+                                     <span class="n">additional_args</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;args&#39;</span><span class="p">),</span>
+                                     <span class="n">jvm_args</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;jvmArgs&#39;</span><span class="p">),</span>
+                                     <span class="n">classpath</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;javaClasspath&#39;</span><span class="p">))</span></div></div>
+
+
+<span class="k">class</span> <span class="nc">_ServiceDeployment</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">host</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+                 <span class="n">workers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+                 <span class="n">register</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span>
+                 <span class="n">mtap_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+                 <span class="n">log_level</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">workers</span> <span class="o">=</span> <span class="n">workers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register</span> <span class="o">=</span> <span class="n">register</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mtap_config</span> <span class="o">=</span> <span class="n">mtap_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_level</span> <span class="o">=</span> <span class="n">log_level</span>
+
+    <span class="k">def</span> <span class="nf">service_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                     <span class="n">port</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+                     <span class="n">register_default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                     <span class="n">host_default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                     <span class="n">workers_default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                     <span class="n">mtap_config_default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                     <span class="n">log_level_default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">call</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">host</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="ow">or</span> <span class="n">host_default</span>
+        <span class="k">if</span> <span class="n">host</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;--host&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">host</span><span class="p">)])</span>
+
+        <span class="k">if</span> <span class="n">port</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;--port&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span><span class="p">)])</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">register</span> <span class="ow">or</span> <span class="n">register_default</span><span class="p">:</span>
+            <span class="n">call</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--register&#39;</span><span class="p">)</span>
+
+        <span class="n">workers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">workers</span> <span class="ow">or</span> <span class="n">workers_default</span>
+        <span class="k">if</span> <span class="n">workers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;--workers&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">workers</span><span class="p">)])</span>
+
+        <span class="n">mtap_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtap_config</span> <span class="ow">or</span> <span class="n">mtap_config_default</span>
+        <span class="k">if</span> <span class="n">mtap_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;--mtap-config&#39;</span><span class="p">,</span> <span class="n">mtap_config</span><span class="p">])</span>
+
+        <span class="n">log_level</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_level</span> <span class="ow">or</span> <span class="n">log_level_default</span>
+        <span class="k">if</span> <span class="n">log_level</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;--log-level&#39;</span><span class="p">,</span> <span class="n">log_level</span><span class="p">])</span>
+
+        <span class="n">call</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--write-address&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">call</span>
+
+
+<div class="viewcode-block" id="EventsDeployment"><a class="viewcode-back" href="../../deployment.html#mtap.deployment.EventsDeployment">[docs]</a><span class="k">class</span> <span class="nc">EventsDeployment</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                 <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                 <span class="n">host</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">port</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">workers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">register</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">mtap_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">log_level</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enabled</span> <span class="o">=</span> <span class="n">enabled</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">service_deployment</span> <span class="o">=</span> <span class="n">_ServiceDeployment</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">workers</span><span class="p">,</span> <span class="n">register</span><span class="p">,</span> <span class="n">mtap_config</span><span class="p">,</span> 
+                                                     <span class="n">log_level</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">create_call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_settings</span><span class="p">:</span> <span class="n">GlobalSettings</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="n">call</span> <span class="o">=</span> <span class="p">[</span><span class="n">PYTHON_EXE</span><span class="p">,</span> <span class="s1">&#39;-m&#39;</span><span class="p">,</span> <span class="s1">&#39;mtap&#39;</span><span class="p">,</span> <span class="s1">&#39;events&#39;</span><span class="p">]</span>
+        <span class="n">service_args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service_deployment</span><span class="o">.</span><span class="n">service_args</span><span class="p">(</span>
+            <span class="n">port</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span>
+            <span class="n">register_default</span><span class="o">=</span><span class="n">global_settings</span><span class="o">.</span><span class="n">register</span><span class="p">,</span>
+            <span class="n">host_default</span><span class="o">=</span><span class="n">global_settings</span><span class="o">.</span><span class="n">host</span><span class="p">,</span>
+            <span class="n">mtap_config_default</span><span class="o">=</span><span class="n">global_settings</span><span class="o">.</span><span class="n">mtap_config</span><span class="p">,</span>
+            <span class="n">log_level_default</span><span class="o">=</span><span class="n">global_settings</span><span class="o">.</span><span class="n">log_level</span>
+        <span class="p">)</span>
+        <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">service_args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">call</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_conf</span><span class="p">(</span><span class="n">conf</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s1">&#39;EventsDeployment&#39;</span><span class="p">:</span>
+        <span class="n">conf</span> <span class="o">=</span> <span class="n">conf</span> <span class="ow">or</span> <span class="p">{}</span>
+
+        <span class="n">enabled</span> <span class="o">=</span> <span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;enabled&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">enabled</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">enabled</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="n">EventsDeployment</span><span class="p">(</span><span class="n">enabled</span><span class="o">=</span><span class="n">enabled</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;host&#39;</span><span class="p">),</span> <span class="n">port</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;port&#39;</span><span class="p">),</span>
+                                <span class="n">workers</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;workers&#39;</span><span class="p">),</span> <span class="n">register</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;register&#39;</span><span class="p">),</span>
+                                <span class="n">mtap_config</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mtapConfig&#39;</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="ProcessorDeployment"><a class="viewcode-back" href="../../deployment.html#mtap.deployment.ProcessorDeployment">[docs]</a><span class="k">class</span> <span class="nc">ProcessorDeployment</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">implementation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">entry_point</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="o">*</span><span class="p">,</span> <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                 <span class="n">instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                 <span class="n">host</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">port</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">workers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">register</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">mtap_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">log_level</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">identifier</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">pre_args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">additional_args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enabled</span> <span class="o">=</span> <span class="n">enabled</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">implementation</span> <span class="o">=</span> <span class="n">implementation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entry_point</span> <span class="o">=</span> <span class="n">entry_point</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">instances</span> <span class="o">=</span> <span class="n">instances</span> <span class="ow">or</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span> <span class="o">=</span> <span class="n">identifier</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pre_args</span> <span class="o">=</span> <span class="n">pre_args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">additional_args</span> <span class="o">=</span> <span class="n">additional_args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">service_deployment</span> <span class="o">=</span> <span class="n">_ServiceDeployment</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">workers</span><span class="p">,</span> <span class="n">register</span><span class="p">,</span> <span class="n">mtap_config</span><span class="p">,</span>
+                                                     <span class="n">log_level</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_conf</span><span class="p">(</span><span class="n">conf</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;ProcessorDeployment&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ProcessorDeployment</span><span class="p">(</span><span class="n">implementation</span><span class="o">=</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;implementation&#39;</span><span class="p">],</span>
+                                   <span class="n">entry_point</span><span class="o">=</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;entryPoint&#39;</span><span class="p">],</span>
+                                   <span class="n">enabled</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+                                   <span class="n">instances</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;instances&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                                   <span class="n">host</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;host&#39;</span><span class="p">),</span>
+                                   <span class="n">port</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;port&#39;</span><span class="p">),</span>
+                                   <span class="n">workers</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;workers&#39;</span><span class="p">),</span>
+                                   <span class="n">register</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;register&#39;</span><span class="p">),</span>
+                                   <span class="n">mtap_config</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mtapConfig&#39;</span><span class="p">),</span>
+                                   <span class="n">log_level</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;logLevel&#39;</span><span class="p">),</span>
+                                   <span class="n">identifier</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;identifier&#39;</span><span class="p">),</span>
+                                   <span class="n">pre_args</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;preArgs&#39;</span><span class="p">),</span>
+                                   <span class="n">additional_args</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;args&#39;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">create_calls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                     <span class="n">global_settings</span><span class="p">:</span> <span class="n">GlobalSettings</span><span class="p">,</span>
+                     <span class="n">shared_config</span><span class="p">:</span> <span class="n">SharedProcessorConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">ports</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ports</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ports</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">ports</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">implementation</span> <span class="o">==</span> <span class="s1">&#39;python&#39;</span><span class="p">:</span>
+                <span class="n">call</span> <span class="o">=</span> <span class="p">[</span><span class="n">PYTHON_EXE</span><span class="p">,</span> <span class="s1">&#39;-m&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">entry_point</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">implementation</span> <span class="o">==</span> <span class="s1">&#39;java&#39;</span><span class="p">:</span>
+                <span class="n">call</span> <span class="o">=</span> <span class="p">[</span><span class="n">JAVA_EXE</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">shared_config</span><span class="o">.</span><span class="n">jvm_args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">shared_config</span><span class="o">.</span><span class="n">jvm_args</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">shared_config</span><span class="o">.</span><span class="n">classpath</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;-cp&#39;</span><span class="p">,</span> <span class="n">shared_config</span><span class="o">.</span><span class="n">classpath</span><span class="p">])</span>
+                <span class="n">call</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entry_point</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unrecognized implementation: &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">implementation</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pre_args</span><span class="p">)</span>
+
+            <span class="n">service_args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service_deployment</span><span class="o">.</span><span class="n">service_args</span><span class="p">(</span>
+                <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span>
+                <span class="n">register_default</span><span class="o">=</span><span class="n">global_settings</span><span class="o">.</span><span class="n">register</span><span class="p">,</span>
+                <span class="n">host_default</span><span class="o">=</span><span class="n">global_settings</span><span class="o">.</span><span class="n">host</span><span class="p">,</span>
+                <span class="n">mtap_config_default</span><span class="o">=</span><span class="n">global_settings</span><span class="o">.</span><span class="n">mtap_config</span><span class="p">,</span>
+                <span class="n">log_level_default</span><span class="o">=</span><span class="n">global_settings</span><span class="o">.</span><span class="n">log_level</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">service_args</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;--identifier&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">])</span>
+
+            <span class="n">events_address</span> <span class="o">=</span> <span class="n">shared_config</span><span class="o">.</span><span class="n">events_address</span>
+            <span class="k">if</span> <span class="n">events_address</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;--events&#39;</span><span class="p">,</span> <span class="n">events_address</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">additional_args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">additional_args</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">shared_config</span><span class="o">.</span><span class="n">additional_args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">shared_config</span><span class="o">.</span><span class="n">additional_args</span><span class="p">)</span>
+
+            <span class="k">yield</span> <span class="n">call</span></div>
+
+
+<div class="viewcode-block" id="Deployment"><a class="viewcode-back" href="../../deployment.html#mtap.deployment.Deployment">[docs]</a><span class="k">class</span> <span class="nc">Deployment</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">global_settings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">GlobalSettings</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">events_deployment</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EventsDeployment</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">shared_processor_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SharedProcessorConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="o">*</span><span class="n">processors</span><span class="p">:</span> <span class="n">ProcessorDeployment</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">global_settings</span> <span class="o">=</span> <span class="n">global_settings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events_deployment</span> <span class="o">=</span> <span class="n">events_deployment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shared_processor_config</span> <span class="o">=</span> <span class="n">shared_processor_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">processors</span> <span class="o">=</span> <span class="n">processors</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">load_configuration</span><span class="p">(</span><span class="n">conf</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Deployment&#39;</span><span class="p">:</span>
+        <span class="n">global_settings</span> <span class="o">=</span> <span class="n">GlobalSettings</span><span class="o">.</span><span class="n">from_conf</span><span class="p">(</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;global&#39;</span><span class="p">))</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="n">EventsDeployment</span><span class="o">.</span><span class="n">from_conf</span><span class="p">(</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;eventsService&#39;</span><span class="p">))</span>
+        <span class="n">shared_processor_config</span> <span class="o">=</span> <span class="n">SharedProcessorConfig</span><span class="o">.</span><span class="n">from_conf</span><span class="p">(</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sharedProcessorConfig&#39;</span><span class="p">))</span>
+        <span class="n">processors_list</span> <span class="o">=</span> <span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;processors&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">processors</span> <span class="o">=</span> <span class="p">[</span><span class="n">ProcessorDeployment</span><span class="o">.</span><span class="n">from_conf</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">processors_list</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">Deployment</span><span class="p">(</span><span class="n">global_settings</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="n">shared_processor_config</span><span class="p">,</span> <span class="o">*</span><span class="n">processors</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_yaml_file</span><span class="p">(</span><span class="n">conf_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s1">&#39;Deployment&#39;</span><span class="p">:</span>
+        <span class="n">conf_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">conf_path</span><span class="p">)</span>
+        <span class="kn">from</span> <span class="nn">yaml</span> <span class="kn">import</span> <span class="n">load</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">yaml</span> <span class="kn">import</span> <span class="n">CLoader</span> <span class="k">as</span> <span class="n">Loader</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">yaml</span> <span class="kn">import</span> <span class="n">Loader</span>
+        <span class="k">with</span> <span class="n">conf_path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">conf</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">Loader</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Deployment</span><span class="o">.</span><span class="n">load_configuration</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Deployment.run_servers"><a class="viewcode-back" href="../../deployment.html#mtap.deployment.Deployment.run_servers">[docs]</a>    <span class="k">def</span> <span class="nf">run_servers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Starts all of the configured services.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ServiceDeploymentException: If one of the services fails to launch.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">events_address</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">processes_listeners</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">events_deployment</span><span class="o">.</span><span class="n">enabled</span><span class="p">:</span>
+            <span class="n">call</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">events_deployment</span><span class="o">.</span><span class="n">create_call</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">global_settings</span><span class="p">)</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">call</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">)</span>
+            <span class="n">listener</span><span class="p">,</span> <span class="n">events_address</span> <span class="o">=</span> <span class="n">_listen_test_connectivity</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">&quot;events&quot;</span><span class="p">)</span>
+            <span class="n">processes_listeners</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">p</span><span class="p">,</span> <span class="n">listener</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_settings</span><span class="o">.</span><span class="n">register</span>
+                <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">events_deployment</span><span class="o">.</span><span class="n">service_deployment</span><span class="o">.</span><span class="n">register</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_processor_config</span><span class="o">.</span><span class="n">events_address</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shared_processor_config</span><span class="o">.</span><span class="n">events_address</span> <span class="o">=</span> <span class="n">events_address</span>
+
+        <span class="k">for</span> <span class="n">processor_deployment</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">processors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">processor_deployment</span><span class="o">.</span><span class="n">enabled</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">call</span> <span class="ow">in</span> <span class="n">processor_deployment</span><span class="o">.</span><span class="n">create_calls</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">global_settings</span><span class="p">,</span>
+                                                              <span class="bp">self</span><span class="o">.</span><span class="n">shared_processor_config</span><span class="p">):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Launching processor with call: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">call</span><span class="p">)</span>
+                    <span class="n">p</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">call</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">)</span>
+                    <span class="n">listener</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_listen_test_connectivity</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">call</span><span class="p">)</span>
+                    <span class="n">processes_listeners</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">p</span><span class="p">,</span> <span class="n">listener</span><span class="p">))</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Done deploying all servers.&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">24</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Shutting down all processors&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">listener</span> <span class="ow">in</span> <span class="n">processes_listeners</span><span class="p">:</span>
+                <span class="n">listener</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">_listen_test_connectivity</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">,</span>
+                              <span class="n">name</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="n">listener</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">_listen</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">p</span><span class="p">,))</span>
+    <span class="n">listener</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">address</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">60</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">address</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">read_address</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">pid</span><span class="p">))</span>
+            <span class="k">break</span>
+        <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">address</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ServiceDeploymentException</span><span class="p">(</span><span class="s1">&#39;Timed out waiting for </span><span class="si">{}</span><span class="s1"> to launch&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+    <span class="k">with</span> <span class="n">grpc</span><span class="o">.</span><span class="n">insecure_channel</span><span class="p">(</span><span class="n">address</span><span class="p">)</span> <span class="k">as</span> <span class="n">channel</span><span class="p">:</span>
+        <span class="n">future</span> <span class="o">=</span> <span class="n">grpc</span><span class="o">.</span><span class="n">channel_ready_future</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">grpc</span><span class="o">.</span><span class="n">FutureTimeoutError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ServiceDeploymentException</span><span class="p">(</span><span class="s1">&#39;Failed to launch: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">listener</span><span class="p">,</span> <span class="n">address</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+         <span class="n">conf</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">conf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">conf</span> <span class="o">=</span> <span class="n">deployment_parser</span><span class="p">()</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">conf</span><span class="o">.</span><span class="n">log_level</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="n">conf</span><span class="o">.</span><span class="n">log_level</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">conf</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;run_servers&#39;</span><span class="p">:</span>
+        <span class="n">deployment</span> <span class="o">=</span> <span class="n">Deployment</span><span class="o">.</span><span class="n">from_yaml_file</span><span class="p">(</span><span class="n">conf</span><span class="o">.</span><span class="n">deploy_config</span><span class="p">)</span>
+        <span class="n">deployment</span><span class="o">.</span><span class="n">run_servers</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">conf</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;write_example&#39;</span><span class="p">:</span>
+        <span class="n">example</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;exampleDeploymentConfiguration.yml&quot;</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">example</span><span class="p">,</span> <span class="s2">&quot;./exampleDeploymentConfiguration.yml&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="deployment_parser"><a class="viewcode-back" href="../../deployment.html#mtap.deployment.deployment_parser">[docs]</a><span class="k">def</span> <span class="nf">deployment_parser</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Creates a parser for configuration that can be passed to the deployment main method.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ~argparse.ArgumentParser: The argument parser object that will create a namespace that can</span>
+<span class="sd">        be passed to :func:`main`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">add_help</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">subparsers</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_subparsers</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;mode&#39;</span><span class="p">)</span>
+
+    <span class="n">run_servers</span> <span class="o">=</span> <span class="n">subparsers</span><span class="o">.</span><span class="n">add_parser</span><span class="p">(</span><span class="s1">&#39;run_servers&#39;</span><span class="p">)</span>
+    <span class="n">run_servers</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;deploy_config&#39;</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;CONFIG_FILE&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
+                             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;A path to the deployment configuration to deploy.&quot;</span><span class="p">)</span>
+    <span class="n">run_servers</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--log-level&#39;</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;LEVEL&#39;</span><span class="p">,</span>
+                             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;The log level to use for the deployment script.&quot;</span><span class="p">)</span>
+    <span class="n">run_servers</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;run_servers&#39;</span><span class="p">)</span>
+
+    <span class="n">write_example</span> <span class="o">=</span> <span class="n">subparsers</span><span class="o">.</span><span class="n">add_parser</span><span class="p">(</span><span class="s1">&#39;write_example&#39;</span><span class="p">)</span>
+    <span class="n">write_example</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;write_example&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parser</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../../index.html">Table of Contents</a></h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../mtap.html">mtap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../deployment.html">mtap.deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../io.html">mtap.io</a></li>
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MTAP 0.7.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">mtap.deployment</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Regents of the University of Minnesota..
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+    </div>
+  </body>
+</html>
