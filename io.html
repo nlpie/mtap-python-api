@@ -5,14 +5,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>mtap.io &#8212; MTAP 0.7.0 documentation</title>
-    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <title>mtap.io &#8212; MTAP 0.8.0 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="mtap.deployment" href="deployment.html" /> 
@@ -29,7 +28,7 @@
         <li class="right" >
           <a href="deployment.html" title="mtap.deployment"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">MTAP 0.7.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">MTAP 0.8.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">mtap.io</a></li> 
       </ul>
     </div>  
@@ -74,7 +73,7 @@ representations of events.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ser</strong> (<a class="reference internal" href="#mtap.io.serialization.Serializer" title="mtap.io.serialization.Serializer"><em>Serializer</em></a>) – The serializer to use.</p></li>
-<li><p><strong>output_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The output_directory.</p></li>
+<li><p><strong>output_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – The output_directory.</p></li>
 </ul>
 </dd>
 </dl>
@@ -90,7 +89,7 @@ representations of events.</p>
 <dd><p>Filename extension, including period. Ex: <code class="docutils literal notranslate"><span class="pre">'.json'</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -103,8 +102,8 @@ representations of events.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>event</strong> (<a class="reference internal" href="mtap.html#mtap.Event" title="mtap.Event"><em>Event</em></a>) – The event object to serialize.</p></li>
-<li><p><strong>f</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>Path</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/io.html#io.IOBase" title="(in Python v3.8)"><em>IOBase</em></a><em>]</em>) – A file or a path to a file to write the event to.</p></li>
-<li><p><strong>include_label_text</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Whether, when serializing, to include the text that each label covers with the rest
+<li><p><strong>f</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.9)"><em>Path</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/io.html#io.IOBase" title="(in Python v3.9)"><em>IOBase</em></a><em>]</em>) – A file or a path to a file to write the event to.</p></li>
+<li><p><strong>include_label_text</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Whether, when serializing, to include the text that each label covers with the rest
 of the label.</p></li>
 </ul>
 </dd>
@@ -118,7 +117,7 @@ of the label.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>f</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>Path</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/io.html#io.IOBase" title="(in Python v3.8)"><em>IOBase</em></a><em>]</em>) – The file to load from.</p></li>
+<li><p><strong>f</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.9)"><em>Path</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/io.html#io.IOBase" title="(in Python v3.9)"><em>IOBase</em></a><em>]</em>) – The file to load from.</p></li>
 <li><p><strong>client</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="mtap.html#mtap.EventsClient" title="mtap.EventsClient"><em>EventsClient</em></a><em>]</em>) – The events service to load the event into.</p></li>
 </ul>
 </dd>
@@ -190,13 +189,13 @@ of the label.</p></li>
         <li class="right" >
           <a href="deployment.html" title="mtap.deployment"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">MTAP 0.7.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">MTAP 0.8.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">mtap.io</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Regents of the University of Minnesota..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
     </div>
   </body>
 </html>

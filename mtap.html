@@ -5,14 +5,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>mtap &#8212; MTAP 0.7.0 documentation</title>
-    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <title>mtap &#8212; MTAP 0.8.0 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="mtap.deployment" href="deployment.html" />
@@ -33,7 +32,7 @@
         <li class="right" >
           <a href="index.html" title="Welcome to MTAP’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">MTAP 0.7.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">MTAP 0.8.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">mtap</a></li> 
       </ul>
     </div>  
@@ -101,16 +100,16 @@ optional arguments:
 <h3><a class="toc-backref" href="#id5">Events service client, documents</a><a class="headerlink" href="#events-service-client-documents" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt id="mtap.EventsClient">
-<em class="property">class </em><code class="sig-prename descclassname">mtap.</code><code class="sig-name descname">EventsClient</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">address</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">stub</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/data/_events.html#EventsClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.EventsClient" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mtap.</code><code class="sig-name descname">EventsClient</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">address</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">stub</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">config</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">enable_proxy</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/data/_events.html#EventsClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.EventsClient" title="Permalink to this definition">¶</a></dt>
 <dd><p>A client object for interacting with the events service.</p>
 <p>Normally, users shouldn’t have to use any of the methods on this object, as they are invoked by
 the globally distributed object classes of <a class="reference internal" href="#mtap.Event" title="mtap.Event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Event</span></code></a>, <a class="reference internal" href="#mtap.Document" title="mtap.Document"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Document</span></code></a>, and <a class="reference internal" href="#mtap.data.Labeler" title="mtap.data.Labeler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Labeler</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Keyword Arguments</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>address</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em>) – The events service target e.g. ‘localhost:9090’ or
+<li><p><strong>address</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – The events service target e.g. ‘localhost:9090’ or
 omit/None to use service discovery.</p></li>
-<li><p><strong>stub</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><em>EventsStub</em><em>]</em>) – An existing events service
+<li><p><strong>stub</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><em>EventsStub</em><em>]</em>) – An existing events service
 client gRPC stub to use.</p></li>
 </ul>
 </dd>
@@ -133,9 +132,9 @@ can be used to access document data from the events server.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Keyword Arguments</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>event_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em>) – A globally-unique identifier for the event, or omit / none for a random UUID.</p></li>
-<li><p><strong>client</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference internal" href="#mtap.EventsClient" title="mtap.EventsClient"><em>EventsClient</em></a><em>]</em>) – A client for an events service to push any changes to the event to.</p></li>
-<li><p><strong>only_create_new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Fails if the event already exists on the events service.</p></li>
+<li><p><strong>event_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – A globally-unique identifier for the event, or omit / none for a random UUID.</p></li>
+<li><p><strong>client</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference internal" href="#mtap.EventsClient" title="mtap.EventsClient"><em>EventsClient</em></a><em>]</em>) – A client for an events service to push any changes to the event to.</p></li>
+<li><p><strong>only_create_new</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Fails if the event already exists on the events service.</p></li>
 </ul>
 </dd>
 </dl>
@@ -151,7 +150,7 @@ can be used to access document data from the events server.</p>
 <dd><p>The globally unique identifier for this event.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -163,7 +162,7 @@ can be used to access document data from the events server.</p>
 objects that can be used to query and add documents to the event.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.MutableMapping" title="(in Python v3.8)">MutableMapping</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>, <a class="reference internal" href="#mtap.Document" title="mtap.Document">Document</a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.MutableMapping" title="(in Python v3.9)">MutableMapping</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a>, <a class="reference internal" href="#mtap.Document" title="mtap.Document">Document</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -175,7 +174,7 @@ objects that can be used to query and add documents to the event.</p>
 used to query and add metadata to the event.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.MutableMapping" title="(in Python v3.8)">MutableMapping</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.MutableMapping" title="(in Python v3.9)">MutableMapping</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -187,7 +186,7 @@ used to query and add metadata to the event.</p>
 to query and add binary data to the event.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.MutableMapping" title="(in Python v3.8)">MutableMapping</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.MutableMapping" title="(in Python v3.9)">MutableMapping</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -199,7 +198,7 @@ to query and add binary data to the event.</p>
 of all the label indices that have been added to that document</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.8)">Dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)">List</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>]]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.9)">Dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.9)">List</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a>]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -219,8 +218,8 @@ containing the specified <cite>text</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>document_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The event-unique identifier for the document, example: ‘plaintext’.</p></li>
-<li><p><strong>text</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The content of the document. This is a required field, document text is final and
+<li><p><strong>document_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – The event-unique identifier for the document, example: ‘plaintext’.</p></li>
+<li><p><strong>text</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – The content of the document. This is a required field, document text is final and
 immutable, as changing the text would very likely invalidate any labels on the
 document.</p></li>
 </ul>
@@ -272,13 +271,13 @@ parallelization and distribution of processing, and to prevent changes to the de
 of label indices and text, which can make debugging difficult.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>document_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The document name identifier.</p>
+<dd class="field-odd"><p><strong>document_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – The document name identifier.</p>
 </dd>
 <dt class="field-even">Keyword Arguments</dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>text</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em>) – The document text, can be omitted if this is an existing document and text needs to be
+<li><p><strong>text</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – The document text, can be omitted if this is an existing document and text needs to be
 retrieved from the events service.</p></li>
-<li><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference internal" href="#mtap.Event" title="mtap.Event"><em>Event</em></a><em>]</em>) – The parent event of this document. If the event has a client, then that client will be
+<li><p><strong>event</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference internal" href="#mtap.Event" title="mtap.Event"><em>Event</em></a><em>]</em>) – The parent event of this document. If the event has a client, then that client will be
 used to share changes to this document with all other clients of the Events service. In
 that case, text should only be specified if it is the known existing text of the
 document.</p></li>
@@ -328,7 +327,7 @@ document.</p></li>
 <dd><p>The unique identifier for this document on the event.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -339,7 +338,7 @@ document.</p></li>
 <dd><p>The document text.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -352,7 +351,7 @@ document using a labeler either locally or by remote pipeline components invoked
 this document.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)">List</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.9)">List</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -366,7 +365,7 @@ with a client. Uses the <cite>label_adapter</cite> argument to perform unmarshal
 message if specified.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>label_index_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The name of the label index to get.</p>
+<dd class="field-odd"><p><strong>label_index_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – The name of the label index to get.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The requested label index.</p>
@@ -384,8 +383,8 @@ message if specified.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>label_index_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – A document-unique identifier for the label index to be created.</p></li>
-<li><p><strong>distinct</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a><em>]</em>) – Optional, if using generic labels, whether to use distinct generic labels or
+<li><p><strong>label_index_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – A document-unique identifier for the label index to be created.</p></li>
+<li><p><strong>distinct</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>]</em>) – Optional, if using generic labels, whether to use distinct generic labels or
 non-distinct generic labels, will default to False.</p></li>
 </ul>
 </dd>
@@ -413,9 +412,9 @@ handle uploading any added labels to the server.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>label_index_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The name of the label index.</p></li>
-<li><p><strong>labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.8)"><em>Sequence</em></a><em>[</em><a class="reference internal" href="#mtap.data.Label" title="mtap.data.Label"><em>Label</em></a><em>]</em>) – The labels to add.</p></li>
-<li><p><strong>distinct</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a><em>]</em>) – Whether the index is distinct or non-distinct.</p></li>
+<li><p><strong>label_index_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – The name of the label index.</p></li>
+<li><p><strong>labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.9)"><em>Sequence</em></a><em>[</em><a class="reference internal" href="#mtap.data.Label" title="mtap.data.Label"><em>Label</em></a><em>]</em>) – The labels to add.</p></li>
+<li><p><strong>distinct</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>]</em>) – Whether the index is distinct or non-distinct.</p></li>
 <li><p><strong>label_adapter</strong> (<em>mtap.label_adapters.ProtoLabelAdapter</em>) – A label adapter to use.</p></li>
 </ul>
 </dd>
@@ -432,7 +431,7 @@ handle uploading any added labels to the server.</p>
 
 <dl class="py class">
 <dt id="mtap.data.Labeler">
-<em class="property">class </em><code class="sig-prename descclassname">mtap.data.</code><code class="sig-name descname">Labeler</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwds</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/data/_events.html#Labeler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.data.Labeler" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mtap.data.</code><code class="sig-name descname">Labeler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">client</span></em>, <em class="sig-param"><span class="n">document</span></em>, <em class="sig-param"><span class="n">label_index_name</span></em>, <em class="sig-param"><span class="n">label_adapter</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/data/_events.html#Labeler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.data.Labeler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Object provided by <code class="xref py py-func docutils literal notranslate"><span class="pre">get_labeler()</span></code> which is responsible for adding labels
 to a label index on a document.</p>
 <dl class="py method">
@@ -475,26 +474,15 @@ invoked if the labeler is not used in a context manager block.</p>
 <em class="property">class </em><code class="sig-prename descclassname">mtap.data.</code><code class="sig-name descname">LabelIndexInfo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">index_name</span></em>, <em class="sig-param"><span class="n">type</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mtap.data.LabelIndexInfo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Information about a label index contained on a document.</p>
 <dl class="py method">
-<dt id="mtap.data.LabelIndexInfo.__new__">
-<em class="property">static </em><code class="sig-name descname">__new__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_cls</span></em>, <em class="sig-param"><span class="n">index_name</span></em>, <em class="sig-param"><span class="n">type</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mtap.data.LabelIndexInfo.__new__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create new instance of LabelIndexInfo(index_name, type)</p>
-</dd></dl>
-
-<dl class="py method">
 <dt id="mtap.data.LabelIndexInfo.__getnewargs__">
 <code class="sig-name descname">__getnewargs__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mtap.data.LabelIndexInfo.__getnewargs__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return self as a plain tuple.  Used by copy and pickle.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="mtap.data.LabelIndexInfo.type">
-<em class="property">property </em><code class="sig-name descname">type</code><a class="headerlink" href="#mtap.data.LabelIndexInfo.type" title="Permalink to this definition">¶</a></dt>
-<dd><p>The type of the label index.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#mtap.data.LabelIndexType" title="mtap.data.LabelIndexType">LabelIndexType</a></p>
-</dd>
-</dl>
+<dt id="mtap.data.LabelIndexInfo.__new__">
+<em class="property">static </em><code class="sig-name descname">__new__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_cls</span></em>, <em class="sig-param"><span class="n">index_name</span></em>, <em class="sig-param"><span class="n">type</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mtap.data.LabelIndexInfo.__new__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create new instance of LabelIndexInfo(index_name, type)</p>
 </dd></dl>
 
 <dl class="py method">
@@ -509,7 +497,18 @@ invoked if the labeler is not used in a context manager block.</p>
 <dd><p>The name of the label index.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mtap.data.LabelIndexInfo.type">
+<em class="property">property </em><code class="sig-name descname">type</code><a class="headerlink" href="#mtap.data.LabelIndexInfo.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>The type of the label index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#mtap.data.LabelIndexType" title="mtap.data.LabelIndexType">LabelIndexType</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -564,7 +563,7 @@ invoked if the labeler is not used in a context manager block.</p>
 <dd><p>The label index this label appears on.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -575,7 +574,7 @@ invoked if the labeler is not used in a context manager block.</p>
 <dd><p>The index of the label within its label index.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -586,7 +585,7 @@ invoked if the labeler is not used in a context manager block.</p>
 <dd><p>The index of the first character of the text covered by this label.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -597,7 +596,7 @@ invoked if the labeler is not used in a context manager block.</p>
 <dd><p>The index after the last character of the text covered by this label.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -621,7 +620,7 @@ comparison first based on start_index, then based on end_index.</p>
 if it is not cached locally.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -651,8 +650,8 @@ label.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>start_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – The start index inclusive of the location in text.</p></li>
-<li><p><strong>end_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – The end index exclusive of the location in text.</p></li>
+<li><p><strong>start_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – The start index inclusive of the location in text.</p></li>
+<li><p><strong>end_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – The end index exclusive of the location in text.</p></li>
 </ul>
 </dd>
 </dl>
@@ -662,7 +661,7 @@ label.</p>
 <dd><p>The start index inclusive of the location in text.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -673,7 +672,7 @@ label.</p>
 <dd><p>The end index exclusive of the location in text.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -691,7 +690,7 @@ covered by the <code class="docutils literal notranslate"><span class="pre">othe
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>other</cite> is completely overlapped/covered <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -703,7 +702,7 @@ covered by the <code class="docutils literal notranslate"><span class="pre">othe
 to <code class="docutils literal notranslate"><span class="pre">location</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>location</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><a class="reference internal" href="#mtap.data.Location" title="mtap.data.Location"><em>Location</em></a><em> or </em><a class="reference internal" href="#mtap.data.Label" title="mtap.data.Label"><em>Label</em></a>) – A location to relativize this location to.</p>
+<dd class="field-odd"><p><strong>location</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em> or </em><a class="reference internal" href="#mtap.data.Location" title="mtap.data.Location"><em>Location</em></a><em> or </em><a class="reference internal" href="#mtap.data.Label" title="mtap.data.Label"><em>Label</em></a>) – A location to relativize this location to.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>A copy with updated indices.</p>
@@ -728,7 +727,7 @@ to <code class="docutils literal notranslate"><span class="pre">location</span><
 location / label. Derelativizes this location.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>location</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><a class="reference internal" href="#mtap.data.Location" title="mtap.data.Location"><em>Location</em></a><em> or </em><a class="reference internal" href="#mtap.data.Label" title="mtap.data.Label"><em>Label</em></a>) – A location to offset this location by.</p>
+<dd class="field-odd"><p><strong>location</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em> or </em><a class="reference internal" href="#mtap.data.Location" title="mtap.data.Location"><em>Location</em></a><em> or </em><a class="reference internal" href="#mtap.data.Label" title="mtap.data.Label"><em>Label</em></a>) – A location to offset this location by.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>A copy with updated indices.</p>
@@ -755,8 +754,8 @@ location / label. Derelativizes this location.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>start_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The index of the first character in text to be included in the label.</p></li>
-<li><p><strong>end_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The index after the last character in text to be included in the label.</p></li>
+<li><p><strong>start_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – The index of the first character in text to be included in the label.</p></li>
+<li><p><strong>end_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – The index after the last character in text to be included in the label.</p></li>
 <li><p><strong>document</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="#mtap.Document" title="mtap.Document"><em>Document</em></a><em>]</em>) – The parent document of the label. This will be
 automatically set if a the label is created via labeler.</p></li>
 <li><p><strong>**kwargs</strong> – Arbitrary, any other fields that should be added to the label, values must be
@@ -774,13 +773,13 @@ json-serializable.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>start_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The index of the first character in text to be included in the label.</p></li>
-<li><p><strong>end_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The index after the last character in text to be included in the label.</p></li>
+<li><p><strong>start_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – The index of the first character in text to be included in the label.</p></li>
+<li><p><strong>end_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – The index after the last character in text to be included in the label.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Keyword Arguments</dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>document</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference internal" href="#mtap.Document" title="mtap.Document"><em>Document</em></a><em>]</em>) – The parent document of the label. This will be
+<li><p><strong>document</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference internal" href="#mtap.Document" title="mtap.Document"><em>Document</em></a><em>]</em>) – The parent document of the label. This will be
 automatically set if a the label is created via labeler.</p></li>
 <li><p><strong>**kwargs</strong> – Arbitrary, any other fields that should be added to the label, values must be
 json-serializable.</p></li>
@@ -816,7 +815,7 @@ json-serializable.</p></li>
 <dd><p>The label index this label appears on.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -827,7 +826,7 @@ json-serializable.</p></li>
 <dd><p>The index of the label within its label index.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -838,7 +837,7 @@ json-serializable.</p></li>
 <dd><p>The index of the first character of the text covered by this label.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -849,7 +848,7 @@ json-serializable.</p></li>
 <dd><p>The index after the last character of the text covered by this label.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -881,8 +880,8 @@ label.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><em>List</em></a><em>[</em><em>L</em><em>]</em>) – Zero or more labels to create a label index from.</p></li>
-<li><p><strong>distinct</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Whether the label index is distinct or not.</p></li>
+<li><p><strong>labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.9)"><em>List</em></a><em>[</em><em>L</em><em>]</em>) – Zero or more labels to create a label index from.</p></li>
+<li><p><strong>distinct</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Whether the label index is distinct or not.</p></li>
 <li><p><strong>adapter</strong> (<a class="reference internal" href="#mtap.data.ProtoLabelAdapter" title="mtap.data.ProtoLabelAdapter"><em>ProtoLabelAdapter</em></a>) – The label adapter for these labels.</p></li>
 </ul>
 </dd>
@@ -910,7 +909,7 @@ label.</p>
 <dl class="py class">
 <dt id="mtap.data.LabelIndex">
 <em class="property">class </em><code class="sig-prename descclassname">mtap.data.</code><code class="sig-name descname">LabelIndex</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwds</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/data/_label_indices.html#LabelIndex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.data.LabelIndex" title="Permalink to this definition">¶</a></dt>
-<dd><p>An immutable <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Sequence</span></code></a> of labels ordered by their location in text. By default
+<dd><p>An immutable <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Sequence</span></code></a> of labels ordered by their location in text. By default
 sorts by ascending <cite>start_index</cite> and then by ascending <cite>end_index</cite>.</p>
 <dl class="py method">
 <dt id="mtap.data.LabelIndex.distinct">
@@ -919,7 +918,7 @@ sorts by ascending <cite>start_index</cite> and then by ascending <cite>end_inde
 non-overlapping.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -933,7 +932,7 @@ non-overlapping.</p>
 method on the sorted index.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>fn</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#mtap.data.Label" title="mtap.data.Label"><em>Label</em></a><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a><em>]</em>) – A filter function, returns <code class="docutils literal notranslate"><span class="pre">true</span></code> if the label
+<dd class="field-odd"><p><strong>fn</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#mtap.data.Label" title="mtap.data.Label"><em>Label</em></a><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>]</em>) – A filter function, returns <code class="docutils literal notranslate"><span class="pre">true</span></code> if the label
 should be included, <code class="docutils literal notranslate"><span class="pre">false</span></code> if it should not be included</p>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -952,9 +951,9 @@ should be included, <code class="docutils literal notranslate"><span class="pre"
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>Union</em><em>[</em><a class="reference internal" href="#mtap.data.Label" title="mtap.data.Label"><em>Label</em></a><em>, </em><a class="reference internal" href="#mtap.data.Location" title="mtap.data.Location"><em>Location</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>]</em>) – A label or location, or start index if <cite>end</cite>
+<li><p><strong>x</strong> (<em>Union</em><em>[</em><a class="reference internal" href="#mtap.data.Label" title="mtap.data.Label"><em>Label</em></a><em>, </em><a class="reference internal" href="#mtap.data.Location" title="mtap.data.Location"><em>Location</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>]</em>) – A label or location, or start index if <cite>end</cite>
 is specified.</p></li>
-<li><p><strong>end</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>]</em>) – The exclusive end index of the location in text if it has
+<li><p><strong>end</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>]</em>) – The exclusive end index of the location in text if it has
 not been specified by a label.</p></li>
 </ul>
 </dd>
@@ -983,9 +982,9 @@ not been specified by a label.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>Union</em><em>[</em><em>Label'</em><em>, </em><em>Location'</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>]</em>) – A label or location, or start
+<li><p><strong>x</strong> (<em>Union</em><em>[</em><em>Label'</em><em>, </em><em>Location'</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>]</em>) – A label or location, or start
 index if <cite>end</cite> is specified.</p></li>
-<li><p><strong>end</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>]</em>) – The exclusive end index of the location in text if it has
+<li><p><strong>end</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>]</em>) – The exclusive end index of the location in text if it has
 not been specified by a label.</p></li>
 </ul>
 </dd>
@@ -1017,9 +1016,9 @@ not been specified by a label.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>Union</em><em>[</em><em>Label'</em><em>, </em><em>Location'</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>]</em>) – A label or location, or start
+<li><p><strong>x</strong> (<em>Union</em><em>[</em><em>Label'</em><em>, </em><em>Location'</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>]</em>) – A label or location, or start
 index if <cite>end</cite> is specified.</p></li>
-<li><p><strong>end</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>]</em>) – The exclusive end index of the location in text if it has
+<li><p><strong>end</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>]</em>) – The exclusive end index of the location in text if it has
 not been specified by a label.</p></li>
 </ul>
 </dd>
@@ -1052,9 +1051,9 @@ in text.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>Union</em><em>[</em><em>Label'</em><em>, </em><em>Location'</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>]</em>) – A label or location, or start
+<li><p><strong>x</strong> (<em>Union</em><em>[</em><em>Label'</em><em>, </em><em>Location'</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>]</em>) – A label or location, or start
 index if <cite>end</cite> is specified.</p></li>
-<li><p><strong>end</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>]</em>) – The exclusive end index of the location in text if it has
+<li><p><strong>end</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>]</em>) – The exclusive end index of the location in text if it has
 not been specified by a label.</p></li>
 </ul>
 </dd>
@@ -1086,9 +1085,9 @@ not been specified by a label.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>Union</em><em>[</em><em>Label'</em><em>, </em><em>Location'</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>]</em>) – A label or location, or start
+<li><p><strong>x</strong> (<em>Union</em><em>[</em><em>Label'</em><em>, </em><em>Location'</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>]</em>) – A label or location, or start
 index if <cite>end</cite> is specified.</p></li>
-<li><p><strong>end</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>]</em>) – The exclusive end index of the location in text if it has
+<li><p><strong>end</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>]</em>) – The exclusive end index of the location in text if it has
 not been specified by a label.</p></li>
 </ul>
 </dd>
@@ -1120,7 +1119,7 @@ not been specified by a label.</p></li>
 an index in text.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>x</strong> (<em>Union</em><em>[</em><em>Label'</em><em>, </em><em>Location'</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>]</em>) – A label or location whose
+<dd class="field-odd"><p><strong>x</strong> (<em>Union</em><em>[</em><em>Label'</em><em>, </em><em>Location'</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>]</em>) – A label or location whose
 <cite>start_index</cite> will be used, or a float index in text.</p>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1151,7 +1150,7 @@ an index in text.</p>
 or an index in text.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>x</strong> (<em>Union</em><em>[</em><a class="reference internal" href="#mtap.data.Label" title="mtap.data.Label"><em>Label</em></a><em>, </em><a class="reference internal" href="#mtap.data.Location" title="mtap.data.Location"><em>Location</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>]</em>) – A label or location whose <cite>end_index</cite> will
+<dd class="field-odd"><p><strong>x</strong> (<em>Union</em><em>[</em><a class="reference internal" href="#mtap.data.Label" title="mtap.data.Label"><em>Label</em></a><em>, </em><a class="reference internal" href="#mtap.data.Location" title="mtap.data.Location"><em>Location</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>]</em>) – A label or location whose <cite>end_index</cite> will
 be used, or a float index in text.</p>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1282,7 +1281,7 @@ the events service.</p>
 <dd><p>Creates a LabelIndex from an iterable of label objects.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.8)"><em>Iterable</em></a><em>[</em><em>L</em><em>]</em>) – Labels to put in index.</p>
+<dd class="field-odd"><p><strong>labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.9)"><em>Iterable</em></a><em>[</em><em>L</em><em>]</em>) – Labels to put in index.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>A label index containing all of the labels in the list.</p>
@@ -1335,7 +1334,7 @@ that can be dumped to json, yml, pickle, etc.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>packed</strong> (<em>Any</em>) – The packed representation.</p></li>
-<li><p><strong>label_index_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The index name of the label index.</p></li>
+<li><p><strong>label_index_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – The index name of the label index.</p></li>
 <li><p><strong>document</strong> (<a class="reference internal" href="#mtap.Document" title="mtap.Document"><em>Document</em></a>) – The document this label index occurs on.</p></li>
 </ul>
 </dd>
@@ -1375,7 +1374,7 @@ serving status and use timers.</p>
 <dd><p>Updates the serving status of the processor for health checking.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>status</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – One of “SERVING”, “NOT_SERVING”, “UNKNOWN”.</p>
+<dd class="field-odd"><p><strong>status</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – One of “SERVING”, “NOT_SERVING”, “UNKNOWN”.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1394,7 +1393,7 @@ serving status and use timers.</p>
 at creation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The key to store the time under.</p>
+<dd class="field-odd"><p><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – The key to store the time under.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>An object that is used to do the timing.</p>
@@ -1419,7 +1418,7 @@ at creation.</p>
 at creation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The key to store the time under.</p>
+<dd class="field-odd"><p><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – The key to store the time under.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>An object that is used to do the timing.</p>
@@ -1463,7 +1462,7 @@ at creation.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>event</strong> (<a class="reference internal" href="#mtap.Event" title="mtap.Event"><em>Event</em></a>) – The event object to be processed.</p></li>
-<li><p><strong>params</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.8)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Processing parameters. A dictionary of strings mapped to json-serializable values.</p></li>
+<li><p><strong>params</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.9)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Processing parameters. A dictionary of strings mapped to json-serializable values.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1471,7 +1470,7 @@ at creation.</p>
 returned to the caller, even remotely.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.8)">Dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>, Any]]</p>
+<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.9)">Dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a>, Any]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1487,7 +1486,7 @@ be used in any documents or events provided to this processor’s process method
 ProtoLabelAdapters to be used for those indices.</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Mapping[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>, <a class="reference internal" href="#mtap.data.ProtoLabelAdapter" title="mtap.data.ProtoLabelAdapter">ProtoLabelAdapter</a>]</p>
+<dd class="field-even"><p>Mapping[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a>, <a class="reference internal" href="#mtap.data.ProtoLabelAdapter" title="mtap.data.ProtoLabelAdapter">ProtoLabelAdapter</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1527,7 +1526,7 @@ by the framework after it’s done with the processor.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>document</strong> (<a class="reference internal" href="#mtap.Document" title="mtap.Document"><em>Document</em></a>) – The document object to be processed.</p></li>
-<li><p><strong>params</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.8)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Processing parameters. A dictionary of strings mapped to json-serializable values.</p></li>
+<li><p><strong>params</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.9)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Processing parameters. A dictionary of strings mapped to json-serializable values.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1535,7 +1534,7 @@ by the framework after it’s done with the processor.</p>
 returned to the caller of the processor.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.8)">Dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>, Any]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.9)">Dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a>, Any]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1551,7 +1550,7 @@ by the framework after it’s done with the processor.</p>
 
 <dl class="py class">
 <dt id="mtap.processing.Stopwatch">
-<em class="property">class </em><code class="sig-prename descclassname">mtap.processing.</code><code class="sig-name descname">Stopwatch</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwds</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/processing/_base.html#Stopwatch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.processing.Stopwatch" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mtap.processing.</code><code class="sig-name descname">Stopwatch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">context</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">key</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/processing/_base.html#Stopwatch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.processing.Stopwatch" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for timing runtime of components and returning the total runtime with the
 processor’s results.</p>
 <dl class="py attribute">
@@ -1560,7 +1559,7 @@ processor’s results.</p>
 <dd><p>The amount of time elapsed for this timer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.8)">timedelta</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.9)">timedelta</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1606,7 +1605,7 @@ processor’s results.</p>
 for runtime reflection of how the processor works.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – <p>Identifying service name both for launching via command line and for service
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – <p>Identifying service name both for launching via command line and for service
 registration.</p>
 <p>Should be a mix of alphanumeric characters and dashes so that it plays nice with the
 DNS name requirements of service discovery tools like Consul. Can be overridden at
@@ -1615,15 +1614,15 @@ runtime via the <cite>identifier</cite> option on <a class="reference internal" 
 </dd>
 <dt class="field-even">Keyword Arguments</dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>human_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em>) – An option human name for the processor.</p></li>
-<li><p><strong>description</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em>) – A short description of the processor and what it does.</p></li>
-<li><p><strong>parameters</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><em>List</em></a><em>[</em><em>ParameterDescription</em><em>]</em><em>]</em>) – The processor’s parameters.</p></li>
-<li><p><strong>inputs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em><em>]</em>) – <p>String identifiers for the output from a processor that this processor uses as an input.</p>
+<li><p><strong>human_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – An option human name for the processor.</p></li>
+<li><p><strong>description</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – A short description of the processor and what it does.</p></li>
+<li><p><strong>parameters</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.9)"><em>List</em></a><em>[</em><em>ParameterDescription</em><em>]</em><em>]</em>) – The processor’s parameters.</p></li>
+<li><p><strong>inputs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.9)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em><em>]</em>) – <p>String identifiers for the output from a processor that this processor uses as an input.</p>
 <p>Takes the format “[processor-name]/[output]”. Examples would be “tagger:pos_tags” or
 “sentence-detector:sentences”.</p>
 </p></li>
-<li><p><strong>outputs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><em>List</em></a><em>[</em><em>LabelDescription</em><em>]</em><em>]</em>) – The label indices this processor outputs.</p></li>
-<li><p><strong>**additional_metadata</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.8)"><em>Any</em></a>) – Any other data that should be added to the processor’s metadata, should be serializable
+<li><p><strong>outputs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.9)"><em>List</em></a><em>[</em><em>LabelDescription</em><em>]</em><em>]</em>) – The label indices this processor outputs.</p></li>
+<li><p><strong>**additional_metadata</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.9)"><em>Any</em></a>) – Any other data that should be added to the processor’s metadata, should be serializable
 to yaml and json.</p></li>
 </ul>
 </dd>
@@ -1677,17 +1676,17 @@ decorator attaches the metadata so it can be reflected at runtime.</p>
 <dd><p>A description for a label type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The label index name.</p>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – The label index name.</p>
 </dd>
 <dt class="field-even">Keyword Arguments</dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>reference</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em>) – If this is an output of another processor, that processor’s name followed by a slash
+<li><p><strong>reference</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – If this is an output of another processor, that processor’s name followed by a slash
 and the default output name of the index go here.
 Example: “sentence-detector/sentences”.</p></li>
-<li><p><strong>optional</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Whether this label index is an optional input or output.</p></li>
-<li><p><strong>name_from_parameter</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em>) – If the label index gets its name from a processor parameter, the name of the parameter.</p></li>
-<li><p><strong>description</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em>) – A short description of the label index.</p></li>
-<li><p><strong>properties</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><em>List</em></a><em>[</em><a class="reference internal" href="#mtap.processing.descriptions.label_property" title="mtap.processing.descriptions.label_property"><em>label_property</em></a><em>]</em><em>]</em>) – The properties of the labels in the label index.</p></li>
+<li><p><strong>optional</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Whether this label index is an optional input or output.</p></li>
+<li><p><strong>name_from_parameter</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – If the label index gets its name from a processor parameter, the name of the parameter.</p></li>
+<li><p><strong>description</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – A short description of the label index.</p></li>
+<li><p><strong>properties</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.9)"><em>List</em></a><em>[</em><a class="reference internal" href="#mtap.processing.descriptions.label_property" title="mtap.processing.descriptions.label_property"><em>label_property</em></a><em>]</em><em>]</em>) – The properties of the labels in the label index.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1697,7 +1696,7 @@ Example: “sentence-detector/sentences”.</p></li>
 <dd><p>The label index name.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1710,7 +1709,7 @@ and the default output name of the index go here.
 Example: “sentence-detector/sentences”.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>]</p>
+<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1721,7 +1720,7 @@ Example: “sentence-detector/sentences”.</p>
 <dd><p>Whether this label index is an optional input or output.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1732,7 +1731,7 @@ Example: “sentence-detector/sentences”.</p>
 <dd><p>If the label index gets its name from a processor parameter, the name of the parameter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>]</p>
+<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1743,7 +1742,7 @@ Example: “sentence-detector/sentences”.</p>
 <dd><p>A short description of the label index.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>]</p>
+<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1754,7 +1753,7 @@ Example: “sentence-detector/sentences”.</p>
 <dd><p>The properties of the labels in the label index.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)">List</a>[label_property]]</p>
+<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.9)">List</a>[label_property]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1767,13 +1766,13 @@ Example: “sentence-detector/sentences”.</p>
 <dd><p>Creates a description for a property on a label.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The property’s name.</p>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – The property’s name.</p>
 </dd>
 <dt class="field-even">Keyword Arguments</dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>description</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em>) – A short description of the property.</p></li>
-<li><p><strong>data_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em>) – The data type of the property: str, float, or bool; List[T] or Mapping[T1, T2] of those.</p></li>
-<li><p><strong>nullable</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Whether the property can have a valid value of null.</p></li>
+<li><p><strong>description</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – A short description of the property.</p></li>
+<li><p><strong>data_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – The data type of the property: str, float, or bool; List[T] or Mapping[T1, T2] of those.</p></li>
+<li><p><strong>nullable</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Whether the property can have a valid value of null.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1785,14 +1784,14 @@ Example: “sentence-detector/sentences”.</p>
 <dl class="py function">
 <dt id="mtap.processor_parser">
 <code class="sig-prename descclassname">mtap.</code><code class="sig-name descname">processor_parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/processing/_service.html#processor_parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.processor_parser" title="Permalink to this definition">¶</a></dt>
-<dd><p>An <a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArgumentParser</span></code></a> that can be used to parse the settings for
+<dd><p>An <a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArgumentParser</span></code></a> that can be used to parse the settings for
 <a class="reference internal" href="#mtap.run_processor" title="mtap.run_processor"><code class="xref py py-func docutils literal notranslate"><span class="pre">run_processor()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A parser containing server settings.</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser" title="(in Python v3.8)">ArgumentParser</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser" title="(in Python v3.9)">ArgumentParser</a></p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
@@ -1815,9 +1814,9 @@ Example: “sentence-detector/sentences”.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>proc</strong> (<a class="reference internal" href="#mtap.EventProcessor" title="mtap.EventProcessor"><em>EventProcessor</em></a>) – The processor to host.</p></li>
-<li><p><strong>namespace</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.Namespace" title="(in Python v3.8)"><em>Namespace</em></a><em>]</em>) – The parsed arguments from the parser
+<li><p><strong>namespace</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.Namespace" title="(in Python v3.9)"><em>Namespace</em></a><em>]</em>) – The parsed arguments from the parser
 returned by <a class="reference internal" href="#mtap.processor_parser" title="mtap.processor_parser"><code class="xref py py-func docutils literal notranslate"><span class="pre">processor_parser()</span></code></a>.</p></li>
-<li><p><strong>args</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.8)"><em>Sequence</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em><em>]</em>) – Arguments to parse server settings from if
+<li><p><strong>args</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.9)"><em>Sequence</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em><em>]</em>) – Arguments to parse server settings from if
 <code class="docutils literal notranslate"><span class="pre">namespace</span></code> was not supplied.</p></li>
 </ul>
 </dd>
@@ -1839,12 +1838,12 @@ returned by <a class="reference internal" href="#mtap.processor_parser" title="m
 <dd><p>Server which hosts events.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>host</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The address / hostname / IP to host the server on.</p>
+<dd class="field-odd"><p><strong>host</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – The address / hostname / IP to host the server on.</p>
 </dd>
 <dt class="field-even">Keyword Arguments</dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>port</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The port to host the server on.</p></li>
-<li><p><strong>register</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Whether to register the service with service discovery.</p></li>
+<li><p><strong>port</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – The port to host the server on.</p></li>
+<li><p><strong>register</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Whether to register the service with service discovery.</p></li>
 <li><p><strong>workers</strong> – The number of workers that should handle requests.</p></li>
 </ul>
 </dd>
@@ -1855,7 +1854,7 @@ returned by <a class="reference internal" href="#mtap.processor_parser" title="m
 <dd><p>The port the processor service is bound to.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1877,14 +1876,14 @@ the server after the soonest grace to expire, calling the shutdown event for all
 this function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Keyword Arguments</dt>
-<dd class="field-odd"><p><strong>grace</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>]</em>) – The grace period in seconds that the server should continue processing requests
+<dd class="field-odd"><p><strong>grace</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>]</em>) – The grace period in seconds that the server should continue processing requests
 before shutdown.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>A shutdown event for the server.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/threading.html#threading.Event" title="(in Python v3.8)">threading.Event</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/threading.html#threading.Event" title="(in Python v3.9)">threading.Event</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1893,25 +1892,27 @@ before shutdown.</p>
 
 <dl class="py class">
 <dt id="mtap.ProcessorServer">
-<em class="property">class </em><code class="sig-prename descclassname">mtap.</code><code class="sig-name descname">ProcessorServer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">proc</span></em>, <em class="sig-param"><span class="n">host</span></em>, <em class="sig-param"><span class="n">port</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">register</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">events_address</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">processor_id</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">workers</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">params</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">write_address</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/processing/_service.html#ProcessorServer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.ProcessorServer" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mtap.</code><code class="sig-name descname">ProcessorServer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">proc</span></em>, <em class="sig-param"><span class="n">host</span></em>, <em class="sig-param"><span class="n">port</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">register</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">events_address</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">processor_id</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">workers</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">params</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">write_address</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">grpc_enable_http_proxy</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/processing/_service.html#ProcessorServer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.ProcessorServer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Host a MTAP processor as a service.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>proc</strong> (<a class="reference internal" href="#mtap.EventProcessor" title="mtap.EventProcessor"><em>EventProcessor</em></a>) – The event processor to host.</p></li>
-<li><p><strong>host</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The address / hostname / IP to host the server on.</p></li>
-<li><p><strong>port</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The port to host the server on, or 0 to use a random port.</p></li>
+<li><p><strong>host</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – The address / hostname / IP to host the server on.</p></li>
+<li><p><strong>port</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – The port to host the server on, or 0 to use a random port.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Keyword Arguments</dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>register</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a><em>]</em>) – Whether to register the processor with service discovery.</p></li>
-<li><p><strong>events_address</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em>) – The address of the events server, or omitted / None if the events service should be
+<li><p><strong>register</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>]</em>) – Whether to register the processor with service discovery.</p></li>
+<li><p><strong>events_address</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – The address of the events server, or omitted / None if the events service should be
 discovered.</p></li>
-<li><p><strong>processor_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em>) – The identifier to register the processor under, if omitted the processor name will be
+<li><p><strong>processor_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – The identifier to register the processor under, if omitted the processor name will be
 used.</p></li>
-<li><p><strong>workers</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>]</em>) – The number of workers that should handle requests. Defaults to 10.</p></li>
-<li><p><strong>params</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.8)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.8)"><em>Any</em></a><em>]</em>) – A set of default parameters that will be passed to the processor every time it runs.</p></li>
+<li><p><strong>workers</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>]</em>) – The number of workers that should handle requests. Defaults to 10.</p></li>
+<li><p><strong>params</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.9)"><em>Mapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.9)"><em>Any</em></a><em>]</em>) – A set of default parameters that will be passed to the processor every time it runs.</p></li>
+<li><p><strong>grpc_enable_http_proxy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Enables or disables the grpc channel to the event service using http_proxy or
+https_proxy environment variables.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1921,7 +1922,7 @@ used.</p></li>
 <dd><p>Port the hosted server is bound to.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1943,13 +1944,13 @@ the server after the soonest grace to expire, calling the shutdown event for all
 this function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Keyword Arguments</dt>
-<dd class="field-odd"><p><strong>grace</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>]</em>) – The grace period that the server should continue processing requests for shutdown.</p>
+<dd class="field-odd"><p><strong>grace</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>]</em>) – The grace period that the server should continue processing requests for shutdown.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>A shutdown event for the server.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/threading.html#threading.Event" title="(in Python v3.8)">threading.Event</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/threading.html#threading.Event" title="(in Python v3.9)">threading.Event</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1961,9 +1962,9 @@ this function.</p>
 <h3><a class="toc-backref" href="#id12">Running a pipeline</a><a class="headerlink" href="#running-a-pipeline" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt id="mtap.Pipeline">
-<em class="property">class </em><code class="sig-prename descclassname">mtap.</code><code class="sig-name descname">Pipeline</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwds</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/processing/_pipeline.html#Pipeline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.Pipeline" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mtap.</code><code class="sig-name descname">Pipeline</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">components</span></em>, <em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">config</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/processing/_pipeline.html#Pipeline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.Pipeline" title="Permalink to this definition">¶</a></dt>
 <dd><p>An object which can be used to build and run a pipeline of remote and local processors.</p>
-<p>Pipelines are a <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.MutableSequence" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MutableSequence</span></code></a> containing
+<p>Pipelines are a <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.MutableSequence" title="(in Python v3.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MutableSequence</span></code></a> containing
 one or more <code class="xref py py-obj docutils literal notranslate"><span class="pre">ComponentDescriptor</span></code>,
 a pipeline can be modified after creation using this functionality.</p>
 <dl class="field-list simple">
@@ -1973,8 +1974,8 @@ a pipeline can be modified after creation using this functionality.</p>
 </dd>
 <dt class="field-even">Keyword Arguments</dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em>) – An optional name for the pipeline, defaults to ‘pipeline’.</p></li>
-<li><p><strong>config</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference internal" href="#mtap.Config" title="mtap.Config"><em>Config</em></a><em>]</em>) – An optional config override.</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – An optional name for the pipeline, defaults to ‘pipeline’.</p></li>
+<li><p><strong>config</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference internal" href="#mtap.Config" title="mtap.Config"><em>Config</em></a><em>]</em>) – An optional config override.</p></li>
 </ul>
 </dd>
 </dl>
@@ -2036,7 +2037,7 @@ a pipeline can be modified after creation using this functionality.</p>
 <dd><p>The pipeline’s name.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2050,21 +2051,21 @@ pipeline.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>source</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.8)"><em>Iterable</em></a><em>[</em><em>Union</em><em>[</em><a class="reference internal" href="#mtap.Event" title="mtap.Event"><em>Event</em></a><em>, </em><a class="reference internal" href="#mtap.Document" title="mtap.Document"><em>Document</em></a><em>]</em><em>]</em><em>, </em><a class="reference internal" href="#mtap.processing.ProcessingSource" title="mtap.processing.ProcessingSource"><em>ProcessingSource</em></a><em>]</em>) – A generator of events or documents to process. This should be an
-<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Iterable</span></code></a> of either <a class="reference internal" href="#mtap.Event" title="mtap.Event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Event</span></code></a> or <a class="reference internal" href="#mtap.Document" title="mtap.Document"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Document</span></code></a> objects or a
+<li><p><strong>source</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.9)"><em>Iterable</em></a><em>[</em><em>Union</em><em>[</em><a class="reference internal" href="#mtap.Event" title="mtap.Event"><em>Event</em></a><em>, </em><a class="reference internal" href="#mtap.Document" title="mtap.Document"><em>Document</em></a><em>]</em><em>]</em><em>, </em><a class="reference internal" href="#mtap.processing.ProcessingSource" title="mtap.processing.ProcessingSource"><em>ProcessingSource</em></a><em>]</em>) – A generator of events or documents to process. This should be an
+<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Iterable</span></code></a> of either <a class="reference internal" href="#mtap.Event" title="mtap.Event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Event</span></code></a> or <a class="reference internal" href="#mtap.Document" title="mtap.Document"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Document</span></code></a> objects or a
 <a class="reference internal" href="#mtap.processing.ProcessingSource" title="mtap.processing.ProcessingSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ProcessingSource</span></code></a>.</p></li>
-<li><p><strong>params</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Json object containing params specific to processing this event, the existing params
+<li><p><strong>params</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Json object containing params specific to processing this event, the existing params
 dictionary defined in <code class="xref py py-func docutils literal notranslate"><span class="pre">add_processor()</span></code> will be updated with
 the contents of this dict.</p></li>
-<li><p><strong>progress</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Whether to print a progress bar using tqdm.</p></li>
-<li><p><strong>total</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>]</em>) – An optional argument indicating the total number of events / documents that will be
+<li><p><strong>progress</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Whether to print a progress bar using tqdm.</p></li>
+<li><p><strong>total</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>]</em>) – An optional argument indicating the total number of events / documents that will be
 provided by the iterable, for the progress bar.</p></li>
-<li><p><strong>close_events</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Whether the pipeline should close events after they have been fully processed
+<li><p><strong>close_events</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Whether the pipeline should close events after they have been fully processed
 through all components.</p></li>
-<li><p><strong>max_failures</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The number of acceptable failures. Once this amount is exceeded processing will
+<li><p><strong>max_failures</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – The number of acceptable failures. Once this amount is exceeded processing will
 halt. Note that because of the nature of conccurrency processing may continue for a
 short amount of time before termination.</p></li>
-<li><p><strong>n_threads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The number of threads to process documents on.</p></li>
+<li><p><strong>n_threads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – The number of threads to process documents on.</p></li>
 <li><p><strong>read_ahead</strong> – The number of source documents to read ahead into memory before processing.</p></li>
 </ul>
 </dd>
@@ -2092,7 +2093,7 @@ short amount of time before termination.</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target</strong> (<em>Union</em><em>[</em><a class="reference internal" href="#mtap.Event" title="mtap.Event"><em>Event</em></a><em>, </em><a class="reference internal" href="#mtap.Document" title="mtap.Document"><em>Document</em></a><em>]</em>) – Either an event or a document to process.</p></li>
-<li><p><strong>params</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Json object containing params specific to processing this event, the existing params
+<li><p><strong>params</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Json object containing params specific to processing this event, the existing params
 dictionary defined in <code class="xref py py-func docutils literal notranslate"><span class="pre">add_processor()</span></code> will be updated with
 the contents of this dict.</p></li>
 </ul>
@@ -2101,7 +2102,7 @@ the contents of this dict.</p></li>
 <dd class="field-even"><p>The results of all the processors in the pipeline.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)">list</a>[<a class="reference internal" href="#mtap.processing.ProcessingResult" title="mtap.processing.ProcessingResult">ProcessingResult</a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)">list</a>[<a class="reference internal" href="#mtap.processing.ProcessingResult" title="mtap.processing.ProcessingResult">ProcessingResult</a>]</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
@@ -2153,7 +2154,7 @@ which document on the event to process.</p>
 <dl class="py method">
 <dt id="mtap.Pipeline.print_times">
 <code class="sig-name descname">print_times</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/processing/_pipeline.html#Pipeline.print_times"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.Pipeline.print_times" title="Permalink to this definition">¶</a></dt>
-<dd><p>Prints all of the times collected during this pipeline using <a class="reference external" href="https://docs.python.org/3/library/functions.html#print" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">print()</span></code></a>.</p>
+<dd><p>Prints all of the times collected during this pipeline using <a class="reference external" href="https://docs.python.org/3/library/functions.html#print" title="(in Python v3.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">print()</span></code></a>.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2167,20 +2168,20 @@ pipeline needs to do to call the component.</p>
 
 <dl class="py class">
 <dt id="mtap.RemoteProcessor">
-<em class="property">class </em><code class="sig-prename descclassname">mtap.</code><code class="sig-name descname">RemoteProcessor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">processor_id</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">address</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">component_id</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">params</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/processing/_pipeline.html#RemoteProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.RemoteProcessor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mtap.</code><code class="sig-name descname">RemoteProcessor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">processor_id</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">address</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">component_id</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">params</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">enable_proxy</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/processing/_pipeline.html#RemoteProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mtap.RemoteProcessor" title="Permalink to this definition">¶</a></dt>
 <dd><p>A configuration for a remote processor that the pipeline will connect to in order
 to perform processing.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>processor_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The identifier used for health checking and discovery.</p>
+<dd class="field-odd"><p><strong>processor_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – The identifier used for health checking and discovery.</p>
 </dd>
 <dt class="field-even">Keyword Arguments</dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>address</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em>) – Optionally an address to use, will use service discovery configuration to locate
+<li><p><strong>address</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – Optionally an address to use, will use service discovery configuration to locate
 processors if this is None / omitted.</p></li>
-<li><p><strong>component_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em>) – How the processor’s results will be identified locally. Will be modified to be unique
+<li><p><strong>component_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – How the processor’s results will be identified locally. Will be modified to be unique
 if it is not unique relative to other component in a pipeline.</p></li>
-<li><p><strong>params</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>, </em><em>Any</em><em>]</em>) – An optional parameter dictionary that will be passed to the processor as parameters
+<li><p><strong>params</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em>, </em><em>Any</em><em>]</em>) – An optional parameter dictionary that will be passed to the processor as parameters
 with every event or document processed. Values should be json-serializable.</p></li>
 </ul>
 </dd>
@@ -2191,7 +2192,7 @@ with every event or document processed. Values should be json-serializable.</p><
 <dd><p>The identifier used for health checking and discovery.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2203,7 +2204,7 @@ with every event or document processed. Values should be json-serializable.</p><
 processors if this is None / omitted.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>]</p>
+<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2215,7 +2216,7 @@ processors if this is None / omitted.</p>
 if it is not unique relative to other component in a pipeline.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>]</p>
+<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2227,7 +2228,7 @@ if it is not unique relative to other component in a pipeline.</p>
 with every event or document processed. Values should be json-serializable.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a>, Any]</p>
+<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)">dict</a>, Any]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2244,12 +2245,12 @@ with every event or document processed. Values should be json-serializable.</p>
 </dd>
 <dt class="field-even">Keyword Arguments</dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>component_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – How the processor’s results will be identified locally. Will be modified to be unique
+<li><p><strong>component_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – How the processor’s results will be identified locally. Will be modified to be unique
 if it is not unique relative to other component in a pipeline.</p></li>
 <li><p><strong>client</strong> (<a class="reference internal" href="#mtap.EventsClient" title="mtap.EventsClient"><em>EventsClient</em></a>) – The client used by the local processor to connect to an events service to retrieve
 events and documents. Required because pipeline components are all called using
 identifiers and not concrete objects.</p></li>
-<li><p><strong>params</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>, </em><em>Any</em><em>]</em>) – An optional parameter dictionary that will be passed to the processor as parameters
+<li><p><strong>params</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em>, </em><em>Any</em><em>]</em>) – An optional parameter dictionary that will be passed to the processor as parameters
 with every event or document processed. Values should be json-serializable.</p></li>
 </ul>
 </dd>
@@ -2272,7 +2273,7 @@ with every event or document processed. Values should be json-serializable.</p><
 if it is not unique relative to other component in a pipeline.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>]</p>
+<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2297,7 +2298,7 @@ identifiers and not concrete objects.</p>
 with every event or document processed. Values should be json-serializable.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a>, Any]</p>
+<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)">dict</a>, Any]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2361,7 +2362,7 @@ documents.</p>
 <dd class="field-even"><p>Whether the error should be suppressed and not count against maximum failures.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2435,21 +2436,21 @@ component</p></li>
 <em class="property">class </em><code class="sig-prename descclassname">mtap.processing.</code><code class="sig-name descname">ProcessingResult</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">identifier</span></em>, <em class="sig-param"><span class="n">result_dict</span></em>, <em class="sig-param"><span class="n">timing_info</span></em>, <em class="sig-param"><span class="n">created_indices</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mtap.processing.ProcessingResult" title="Permalink to this definition">¶</a></dt>
 <dd><p>The result of processing one document or event.</p>
 <dl class="py method">
+<dt id="mtap.processing.ProcessingResult.__getnewargs__">
+<code class="sig-name descname">__getnewargs__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mtap.processing.ProcessingResult.__getnewargs__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return self as a plain tuple.  Used by copy and pickle.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="mtap.processing.ProcessingResult.__new__">
 <em class="property">static </em><code class="sig-name descname">__new__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_cls</span></em>, <em class="sig-param"><span class="n">identifier</span></em>, <em class="sig-param"><span class="n">result_dict</span></em>, <em class="sig-param"><span class="n">timing_info</span></em>, <em class="sig-param"><span class="n">created_indices</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mtap.processing.ProcessingResult.__new__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create new instance of ProcessingResult(identifier, result_dict, timing_info, created_indices)</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="mtap.processing.ProcessingResult.result_dict">
-<em class="property">property </em><code class="sig-name descname">result_dict</code><a class="headerlink" href="#mtap.processing.ProcessingResult.result_dict" title="Permalink to this definition">¶</a></dt>
-<dd><p>The json object returned by the processor as its results.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="mtap.processing.ProcessingResult.__getnewargs__">
-<code class="sig-name descname">__getnewargs__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mtap.processing.ProcessingResult.__getnewargs__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return self as a plain tuple.  Used by copy and pickle.</p>
+<dt id="mtap.processing.ProcessingResult.__repr__">
+<code class="sig-name descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mtap.processing.ProcessingResult.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a nicely formatted representation string</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2460,22 +2461,22 @@ processor.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="mtap.processing.ProcessingResult.timing_info">
-<em class="property">property </em><code class="sig-name descname">timing_info</code><a class="headerlink" href="#mtap.processing.ProcessingResult.timing_info" title="Permalink to this definition">¶</a></dt>
-<dd><p>A dictionary of the times taken processing this
-document</p>
-</dd></dl>
-
-<dl class="py method">
 <dt id="mtap.processing.ProcessingResult.identifier">
 <em class="property">property </em><code class="sig-name descname">identifier</code><a class="headerlink" href="#mtap.processing.ProcessingResult.identifier" title="Permalink to this definition">¶</a></dt>
 <dd><p>The id of the processor with respect to the pipeline.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="mtap.processing.ProcessingResult.__repr__">
-<code class="sig-name descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mtap.processing.ProcessingResult.__repr__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a nicely formatted representation string</p>
+<dt id="mtap.processing.ProcessingResult.result_dict">
+<em class="property">property </em><code class="sig-name descname">result_dict</code><a class="headerlink" href="#mtap.processing.ProcessingResult.result_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>The json object returned by the processor as its results.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mtap.processing.ProcessingResult.timing_info">
+<em class="property">property </em><code class="sig-name descname">timing_info</code><a class="headerlink" href="#mtap.processing.ProcessingResult.timing_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary of the times taken processing this
+document</p>
 </dd></dl>
 
 </dd></dl>
@@ -2486,10 +2487,9 @@ document</p>
 <dd><p>Statistics about a specific keyed measured duration recorded by a
 <code class="xref py py-obj docutils literal notranslate"><span class="pre">Stopwatch</span></code>.</p>
 <dl class="py method">
-<dt id="mtap.processing.TimerStats.std">
-<em class="property">property </em><code class="sig-name descname">std</code><a class="headerlink" href="#mtap.processing.TimerStats.std" title="Permalink to this definition">¶</a></dt>
-<dd><p>The sample standard deviation of all measured
-durations.</p>
+<dt id="mtap.processing.TimerStats.__getnewargs__">
+<code class="sig-name descname">__getnewargs__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mtap.processing.TimerStats.__getnewargs__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return self as a plain tuple.  Used by copy and pickle.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2499,9 +2499,9 @@ durations.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="mtap.processing.TimerStats.sum">
-<em class="property">property </em><code class="sig-name descname">sum</code><a class="headerlink" href="#mtap.processing.TimerStats.sum" title="Permalink to this definition">¶</a></dt>
-<dd><p>The sum of all measured durations.</p>
+<dt id="mtap.processing.TimerStats.__repr__">
+<code class="sig-name descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mtap.processing.TimerStats.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a nicely formatted representation string</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2517,21 +2517,22 @@ durations.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="mtap.processing.TimerStats.__getnewargs__">
-<code class="sig-name descname">__getnewargs__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mtap.processing.TimerStats.__getnewargs__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return self as a plain tuple.  Used by copy and pickle.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt id="mtap.processing.TimerStats.min">
 <em class="property">property </em><code class="sig-name descname">min</code><a class="headerlink" href="#mtap.processing.TimerStats.min" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum of all measured durations.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="mtap.processing.TimerStats.__repr__">
-<code class="sig-name descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mtap.processing.TimerStats.__repr__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a nicely formatted representation string</p>
+<dt id="mtap.processing.TimerStats.std">
+<em class="property">property </em><code class="sig-name descname">std</code><a class="headerlink" href="#mtap.processing.TimerStats.std" title="Permalink to this definition">¶</a></dt>
+<dd><p>The sample standard deviation of all measured
+durations.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mtap.processing.TimerStats.sum">
+<em class="property">property </em><code class="sig-name descname">sum</code><a class="headerlink" href="#mtap.processing.TimerStats.sum" title="Permalink to this definition">¶</a></dt>
+<dd><p>The sum of all measured durations.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2546,7 +2547,7 @@ durations.</p>
 <dd><p>The ID of the processor with respect to the pipeline.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2557,7 +2558,7 @@ durations.</p>
 <dd><p>A map from all of the timer keys for the processor to the aggregated duration statistics.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>, <a class="reference internal" href="#mtap.processing.TimerStats" title="mtap.processing.TimerStats">TimerStats</a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a>, <a class="reference internal" href="#mtap.processing.TimerStats" title="mtap.processing.TimerStats">TimerStats</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2711,13 +2712,13 @@ that config object.</p>
         <li class="right" >
           <a href="index.html" title="Welcome to MTAP’s documentation!"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">MTAP 0.7.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">MTAP 0.8.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">mtap</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Regents of the University of Minnesota..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
     </div>
   </body>
 </html>
