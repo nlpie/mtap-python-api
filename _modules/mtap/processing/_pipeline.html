@@ -1,16 +1,17 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>mtap.processing._pipeline &#8212; MTAP 0.8.0 documentation</title>
-    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
-    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <title>mtap.processing._pipeline &#8212; MTAP 1.0.0rc2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinxdoc.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
@@ -24,7 +25,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">MTAP 0.8.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">MTAP 1.0.0rc2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">mtap.processing._pipeline</a></li> 
       </ul>
@@ -36,23 +37,27 @@
           <div class="body" role="main">
             
   <h1>Source code for mtap.processing._pipeline</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright 2019 Regents of the University of Minnesota.</span>
+<span></span><span class="c1">#  Copyright 2021 Regents of the University of Minnesota.</span>
 <span class="c1">#</span>
-<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
-<span class="c1"># you may not use this file except in compliance with the License.</span>
-<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#  Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1">#  you may not use this file except in compliance with the License.</span>
+<span class="c1">#  You may obtain a copy of the License at</span>
 <span class="c1">#</span>
-<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#      http://www.apache.org/licenses/LICENSE-2.0</span>
 <span class="c1">#</span>
-<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
-<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
-<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
-<span class="c1"># See the License for the specific language governing permissions and</span>
-<span class="c1"># limitations under the License.</span>
+<span class="c1">#  Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#  distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1">#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1">#  See the License for the specific language governing permissions and</span>
+<span class="c1">#  limitations under the License.</span>
+
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">Future</span>
-<span class="kn">from</span> <span class="nn">concurrent.futures.thread</span> <span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Lock</span><span class="p">,</span> <span class="n">Condition</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">MutableSequence</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> \
@@ -60,8 +65,9 @@
 
 <span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
 
-<span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">_config</span>
-<span class="kn">from</span> <span class="nn">mtap.processing</span> <span class="kn">import</span> <span class="n">_base</span><span class="p">,</span> <span class="n">_runners</span>
+<span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">EventsClient</span><span class="p">,</span> <span class="n">Config</span>
+<span class="kn">from</span> <span class="nn">mtap.data</span> <span class="kn">import</span> <span class="n">Event</span>
+<span class="kn">from</span> <span class="nn">mtap.processing</span> <span class="kn">import</span> <span class="n">_base</span><span class="p">,</span> <span class="n">_runners</span><span class="p">,</span> <span class="n">_timing</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">mtap</span>
@@ -100,6 +106,7 @@
 <span class="sd">            An optional parameter dictionary that will be passed to the processor as parameters</span>
 <span class="sd">            with every event or document processed. Values should be json-serializable.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;processor_id&#39;</span><span class="p">,</span> <span class="s1">&#39;address&#39;</span><span class="p">,</span> <span class="s1">&#39;component_id&#39;</span><span class="p">,</span> <span class="s1">&#39;params&#39;</span><span class="p">,</span> <span class="s1">&#39;enable_proxy&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">processor_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">address</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">component_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -112,15 +119,14 @@
 
     <span class="k">def</span> <span class="nf">create_pipeline_component</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
-            <span class="n">config</span><span class="p">:</span> <span class="s1">&#39;mtap.Config&#39;</span><span class="p">,</span>
-            <span class="n">component_ids</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+            <span class="n">component_ids</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+            <span class="n">client</span><span class="p">:</span> <span class="s1">&#39;mtap.EventsClient&#39;</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;processing.ProcessingComponent&#39;</span><span class="p">:</span>
         <span class="n">component_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">component_id</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">processor_id</span>
         <span class="n">component_id</span> <span class="o">=</span> <span class="n">_unique_component_id</span><span class="p">(</span><span class="n">component_ids</span><span class="p">,</span> <span class="n">component_id</span><span class="p">)</span>
-        <span class="n">runner</span> <span class="o">=</span> <span class="n">_runners</span><span class="o">.</span><span class="n">RemoteRunner</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">processor_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">processor_id</span><span class="p">,</span>
+        <span class="n">runner</span> <span class="o">=</span> <span class="n">_runners</span><span class="o">.</span><span class="n">RemoteRunner</span><span class="p">(</span><span class="n">processor_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">processor_id</span><span class="p">,</span>
                                        <span class="n">address</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">component_id</span><span class="o">=</span><span class="n">component_id</span><span class="p">,</span>
                                        <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">enable_proxy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">enable_proxy</span><span class="p">)</span>
-        <span class="n">runner</span><span class="o">.</span><span class="n">descriptor</span> <span class="o">=</span> <span class="bp">self</span>
         <span class="k">return</span> <span class="n">runner</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -160,33 +166,32 @@
 <span class="sd">            An optional parameter dictionary that will be passed to the processor as parameters</span>
 <span class="sd">            with every event or document processed. Values should be json-serializable.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;proc&#39;</span><span class="p">,</span> <span class="s1">&#39;component_id&#39;</span><span class="p">,</span> <span class="s1">&#39;params&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proc</span><span class="p">:</span> <span class="s1">&#39;mtap.EventProcessor&#39;</span><span class="p">,</span>
-                 <span class="o">*</span><span class="p">,</span> <span class="n">component_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                 <span class="n">client</span><span class="p">:</span> <span class="s1">&#39;mtap.EventsClient&#39;</span><span class="p">,</span>
+                 <span class="o">*</span><span class="p">,</span> <span class="n">component_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">proc</span> <span class="o">=</span> <span class="n">proc</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">component_id</span> <span class="o">=</span> <span class="n">component_id</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">component_id</span> <span class="o">=</span> <span class="n">component_id</span> <span class="ow">or</span> <span class="n">proc</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">params</span>
 
     <span class="k">def</span> <span class="nf">create_pipeline_component</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
-            <span class="n">config</span><span class="p">:</span> <span class="s1">&#39;mtap.Config&#39;</span><span class="p">,</span>
-            <span class="n">component_ids</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+            <span class="n">component_ids</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+            <span class="n">client</span><span class="p">:</span> <span class="s1">&#39;Callable[[], mtap.EventsClient]&#39;</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;processing.ProcessingComponent&#39;</span><span class="p">:</span>
         <span class="n">identifier</span> <span class="o">=</span> <span class="n">_unique_component_id</span><span class="p">(</span><span class="n">component_ids</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">component_id</span><span class="p">)</span>
-        <span class="n">runner</span> <span class="o">=</span> <span class="n">_runners</span><span class="o">.</span><span class="n">ProcessorRunner</span><span class="p">(</span><span class="n">proc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">,</span> <span class="n">identifier</span><span class="o">=</span><span class="n">identifier</span><span class="p">,</span>
-                                          <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
-        <span class="n">runner</span><span class="o">.</span><span class="n">descriptor</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="n">runner</span> <span class="o">=</span> <span class="n">_runners</span><span class="o">.</span><span class="n">ProcessorRunner</span><span class="p">(</span><span class="n">proc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="p">,</span>
+                                          <span class="n">identifier</span><span class="o">=</span><span class="n">identifier</span><span class="p">,</span>
+                                          <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+                                          <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">runner</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s1">&#39;LocalProcessor(proc=</span><span class="si">{}</span><span class="s1">, component_id=</span><span class="si">{}</span><span class="s1">, client=</span><span class="si">{}</span><span class="s1">, params=</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="k">return</span> <span class="s1">&#39;LocalProcessor(proc=</span><span class="si">{}</span><span class="s1">, component_id=</span><span class="si">{}</span><span class="s1">, params=</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="o">*</span><span class="nb">map</span><span class="p">(</span><span class="nb">repr</span><span class="p">,</span> <span class="p">[</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">component_id</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">params</span>
             <span class="p">]))</span></div>
 
@@ -210,6 +215,67 @@
         <span class="n">cd</span><span class="o">.</span><span class="n">count_down</span><span class="p">(</span><span class="n">future</span><span class="o">.</span><span class="n">exception</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">fn</span>
+
+
+<span class="k">def</span> <span class="nf">_create_pipeline</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                     <span class="n">events_address</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                     <span class="n">events_client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EventsClient</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                     <span class="n">mp_config</span><span class="p">:</span> <span class="s1">&#39;Optional[MpConfig]&#39;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                     <span class="o">*</span><span class="n">components</span><span class="p">:</span> <span class="s1">&#39;processing.ComponentDescriptor&#39;</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Pipeline</span><span class="p">(</span><span class="o">*</span><span class="n">components</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">events_address</span><span class="o">=</span><span class="n">events_address</span><span class="p">,</span>
+                    <span class="n">events_client</span><span class="o">=</span><span class="n">events_client</span><span class="p">,</span> <span class="n">mp_config</span><span class="o">=</span><span class="n">mp_config</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">MpConfig</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Configuration object for pipeline multiprocessing.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        max_failures (~typing.Optional[int])</span>
+<span class="sd">            Override for maximum number of failures before cancelling the pipeline run. Default is</span>
+<span class="sd">            0.</span>
+<span class="sd">        show_progress (~typing.Optional[bool])</span>
+<span class="sd">            Override for whether progress should be displayed in console. Default is true.</span>
+<span class="sd">        workers (~typing.Optional[int])</span>
+<span class="sd">            Number of workers to concurrently process events through the pipeline. Default is 4.</span>
+<span class="sd">        read_ahead (~typing.Optional[int])</span>
+<span class="sd">            The number of documents to read onto the events service(s) to queue for processing.</span>
+<span class="sd">            Default is equal to number of workers.</span>
+<span class="sd">        close_events (~typing.Optional[bool])</span>
+<span class="sd">            Whether any events passed from the source to the pipeline should be closed when the</span>
+<span class="sd">            pipeline is completed. Default is true.</span>
+<span class="sd">        mp_start_method (~typing.Optional[str])</span>
+<span class="sd">            The start method for multiprocessing processes see: :meth:`multiprocessing.get_context`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;max_failures&quot;</span><span class="p">,</span> <span class="s2">&quot;show_progress&quot;</span><span class="p">,</span> <span class="s2">&quot;workers&quot;</span><span class="p">,</span> <span class="s2">&quot;read_ahead&quot;</span><span class="p">,</span> <span class="s2">&quot;close_events&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;mp_start_method&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">max_failures</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">show_progress</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">workers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">read_ahead</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">close_events</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">mp_start_method</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_failures</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">max_failures</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">max_failures</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_failures</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_failures</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;max_failures must be None or non-negative integer&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">show_progress</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">show_progress</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">show_progress</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">show_progress</span><span class="p">)</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;show_progress must be boolean.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">workers</span> <span class="o">=</span> <span class="mi">4</span> <span class="k">if</span> <span class="n">workers</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">workers</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workers</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">workers</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;workers must be None or positive integer.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_ahead</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">workers</span> <span class="k">if</span> <span class="n">read_ahead</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">read_ahead</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read_ahead</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_ahead</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;read_ahead must be None or a non-negative integer&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close_events</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">close_events</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">close_events</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">close_events</span><span class="p">)</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;close_events must be None or a bool.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mp_start_method</span> <span class="o">=</span> <span class="s2">&quot;spawn&quot;</span> <span class="k">if</span> <span class="n">mp_start_method</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">mp_start_method</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_configuration</span><span class="p">(</span><span class="n">conf</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;MpConfig&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">MpConfig</span><span class="p">(</span><span class="o">**</span><span class="n">conf</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="Pipeline"><a class="viewcode-back" href="../../../mtap.html#mtap.Pipeline">[docs]</a><span class="k">class</span> <span class="nc">Pipeline</span><span class="p">(</span><span class="n">MutableSequence</span><span class="p">[</span><span class="s1">&#39;processing.ComponentDescriptor&#39;</span><span class="p">]):</span>
@@ -283,35 +349,119 @@
 <span class="sd">    Attributes:</span>
 <span class="sd">        name (str): The pipeline&#39;s name.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;_component_ids&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;_component_descriptors&#39;</span><span class="p">,</span> <span class="s1">&#39;events_address&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;mp_config&#39;</span><span class="p">,</span> <span class="s1">&#39;_created_events_client&#39;</span><span class="p">,</span> <span class="s1">&#39;_provided_events_client&#39;</span><span class="p">,</span> <span class="s1">&#39;times_map&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;__components&#39;</span><span class="p">,</span> <span class="s1">&#39;_events_client&#39;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">components</span><span class="p">:</span> <span class="s1">&#39;processing.ComponentDescriptor&#39;</span><span class="p">,</span>
                  <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s1">&#39;mtap.Config&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">config</span> <span class="ow">or</span> <span class="n">_config</span><span class="o">.</span><span class="n">Config</span><span class="p">()</span>
+                 <span class="n">events_address</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">events_client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EventsClient</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">mp_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MpConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_component_ids</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="s1">&#39;pipeline&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_components</span> <span class="o">=</span> <span class="p">[</span><span class="n">desc</span><span class="o">.</span><span class="n">create_pipeline_component</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_component_ids</span><span class="p">)</span>
-                            <span class="k">for</span> <span class="n">desc</span> <span class="ow">in</span> <span class="n">components</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_component_descriptors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">components</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events_address</span> <span class="o">=</span> <span class="n">events_address</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_created_events_client</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_provided_events_client</span> <span class="o">=</span> <span class="n">events_client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_events_client</span> <span class="o">=</span> <span class="n">events_client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mp_config</span> <span class="o">=</span> <span class="n">mp_config</span> <span class="ow">or</span> <span class="n">MpConfig</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">times_map</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_create_pipeline</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">events_address</span><span class="p">,</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">_provided_events_client</span><span class="p">,</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">mp_config</span><span class="p">)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_component_descriptors</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Pipeline.from_yaml_file"><a class="viewcode-back" href="../../../mtap.html#mtap.Pipeline.from_yaml_file">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_yaml_file</span><span class="p">(</span><span class="n">conf_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s1">&#39;Pipeline&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Creates a pipeline from a yaml pipeline configuration file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            conf_path (str or pathlib.Path): The path to the configuration file.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Pipeline object from the configuration.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">conf_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">conf_path</span><span class="p">)</span>
+        <span class="kn">from</span> <span class="nn">yaml</span> <span class="kn">import</span> <span class="n">load</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">yaml</span> <span class="kn">import</span> <span class="n">CLoader</span> <span class="k">as</span> <span class="n">Loader</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">yaml</span> <span class="kn">import</span> <span class="n">Loader</span>
+        <span class="k">with</span> <span class="n">conf_path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">conf</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">Loader</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Pipeline</span><span class="o">.</span><span class="n">load_configuration</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Pipeline.load_configuration"><a class="viewcode-back" href="../../../mtap.html#mtap.Pipeline.load_configuration">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">load_configuration</span><span class="p">(</span><span class="n">conf</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Pipeline&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Creates a pipeline from a pipeline configuration dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            conf (Dict): The pipeline configuration dictionary.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Pipeline created from the configuration.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">events_address</span> <span class="o">=</span> <span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;events_address&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;events_addresses&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">components</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">conf_components</span> <span class="o">=</span> <span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;components&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">for</span> <span class="n">conf_component</span> <span class="ow">in</span> <span class="n">conf_components</span><span class="p">:</span>
+            <span class="n">components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">RemoteProcessor</span><span class="p">(</span>
+                    <span class="n">processor_id</span><span class="o">=</span><span class="n">conf_component</span><span class="p">[</span><span class="s1">&#39;processor_id&#39;</span><span class="p">],</span>
+                    <span class="n">address</span><span class="o">=</span><span class="n">conf_component</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">],</span>
+                    <span class="n">component_id</span><span class="o">=</span><span class="n">conf_component</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;component_id&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                    <span class="n">params</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">conf_component</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;params&#39;</span><span class="p">,</span> <span class="p">{}))</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">mp_config</span> <span class="o">=</span> <span class="n">MpConfig</span><span class="o">.</span><span class="n">from_configuration</span><span class="p">(</span><span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mp_config&#39;</span><span class="p">,</span> <span class="p">{}))</span>
+        <span class="k">return</span> <span class="n">Pipeline</span><span class="p">(</span><span class="o">*</span><span class="n">components</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">events_address</span><span class="o">=</span><span class="n">events_address</span><span class="p">,</span> <span class="n">mp_config</span><span class="o">=</span><span class="n">mp_config</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">_times_collector</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">events_client</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventsClient</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_events_client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_events_client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_created_events_client</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_events_client</span> <span class="o">=</span> <span class="n">EventsClient</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">events_address</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_events_client</span>
+
+    <span class="nd">@events_client</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">events_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">EventsClient</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_events_client</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_components</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;List[processing.ProcessingComponent]&#39;</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__times_collector</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__components</span>
         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__times_collector</span> <span class="o">=</span> <span class="n">_runners</span><span class="o">.</span><span class="n">ProcessingTimesCollector</span><span class="p">()</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__times_collector</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__components</span> <span class="o">=</span> <span class="p">[</span><span class="n">desc</span><span class="o">.</span><span class="n">create_pipeline_component</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_component_ids</span><span class="p">,</span>
+                                                                <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">events_client</span><span class="p">)</span>
+                                 <span class="k">for</span> <span class="n">desc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_component_descriptors</span><span class="p">]</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__components</span>
+
+    <span class="nd">@_components</span><span class="o">.</span><span class="n">deleter</span>
+    <span class="k">def</span> <span class="nf">_components</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__components</span><span class="p">:</span>
+            <span class="n">component</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">__components</span>
 
 <div class="viewcode-block" id="Pipeline.run_multithread"><a class="viewcode-back" href="../../../mtap.html#mtap.Pipeline.run_multithread">[docs]</a>    <span class="k">def</span> <span class="nf">run_multithread</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span>
                 <span class="n">Iterable</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="s1">&#39;mtap.Document&#39;</span><span class="p">,</span> <span class="s1">&#39;mtap.Event&#39;</span><span class="p">]],</span> <span class="s1">&#39;processing.ProcessingSource&#39;</span><span class="p">],</span>
             <span class="o">*</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="n">show_progress</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">total</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">close_events</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="n">max_failures</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="n">n_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
-            <span class="n">read_ahead</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">close_events</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">max_failures</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">workers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">read_ahead</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">mp_context</span><span class="o">=</span><span class="kc">None</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Runs this pipeline on a source which provides multiple documents / events.</span>
 
@@ -323,26 +473,28 @@
 <span class="sd">                A generator of events or documents to process. This should be an</span>
 <span class="sd">                :obj:`~typing.Iterable` of either :obj:`Event` or :obj:`Document` objects or a</span>
 <span class="sd">                :obj:`~mtap.processing.ProcessingSource`.</span>
-<span class="sd">            params (dict[str, ~typing.Any])</span>
+<span class="sd">            params (~typing.Optional[dict[str, ~typing.Any]])</span>
 <span class="sd">                Json object containing params specific to processing this event, the existing params</span>
 <span class="sd">                dictionary defined in :func:`~PipelineBuilder.add_processor` will be updated with</span>
 <span class="sd">                the contents of this dict.</span>
-<span class="sd">            progress (bool)</span>
+<span class="sd">            show_progress (~typing.Optional[bool])</span>
 <span class="sd">                Whether to print a progress bar using tqdm.</span>
 <span class="sd">            total (~typing.Optional[int])</span>
 <span class="sd">                An optional argument indicating the total number of events / documents that will be</span>
 <span class="sd">                provided by the iterable, for the progress bar.</span>
-<span class="sd">            close_events (bool)</span>
+<span class="sd">            close_events (~typing.Optional[bool])</span>
 <span class="sd">                Whether the pipeline should close events after they have been fully processed</span>
 <span class="sd">                through all components.</span>
-<span class="sd">            max_failures (int)</span>
+<span class="sd">            max_failures (~typing.Optional[int])</span>
 <span class="sd">                The number of acceptable failures. Once this amount is exceeded processing will</span>
 <span class="sd">                halt. Note that because of the nature of conccurrency processing may continue for a</span>
 <span class="sd">                short amount of time before termination.</span>
-<span class="sd">            n_threads (int)</span>
+<span class="sd">            workers (~typing.Optional[int])</span>
 <span class="sd">                The number of threads to process documents on.</span>
-<span class="sd">            read_ahead</span>
+<span class="sd">            read_ahead (~typing.Optional[int])</span>
 <span class="sd">                The number of source documents to read ahead into memory before processing.</span>
+<span class="sd">            mp_context (multiprocessing context, optional)</span>
+<span class="sd">                An optional override for the multiprocessing context.</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; docs = list(Path(&#39;abc/&#39;).glob(&#39;*.txt&#39;))</span>
@@ -357,8 +509,15 @@
 <span class="sd">            &gt;&gt;&gt; pipeline.run_multithread(document_source(), total=len(docs))</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">_PipelineMultiRunner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">total</span><span class="p">,</span> <span class="n">close_events</span><span class="p">,</span> <span class="n">max_failures</span><span class="p">,</span>
-                                  <span class="n">n_threads</span><span class="p">,</span> <span class="n">read_ahead</span><span class="p">)</span> <span class="k">as</span> <span class="n">runner</span><span class="p">:</span>
+        <span class="n">show_progress</span> <span class="o">=</span> <span class="n">show_progress</span> <span class="k">if</span> <span class="n">show_progress</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">mp_config</span><span class="o">.</span><span class="n">show_progress</span>
+        <span class="n">close_events</span> <span class="o">=</span> <span class="n">close_events</span> <span class="k">if</span> <span class="n">close_events</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">mp_config</span><span class="o">.</span><span class="n">close_events</span>
+        <span class="n">max_failures</span> <span class="o">=</span> <span class="n">max_failures</span> <span class="k">if</span> <span class="n">max_failures</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">mp_config</span><span class="o">.</span><span class="n">max_failures</span>
+        <span class="n">workers</span> <span class="o">=</span> <span class="n">workers</span> <span class="k">if</span> <span class="n">workers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">mp_config</span><span class="o">.</span><span class="n">workers</span>
+        <span class="n">mp_context</span> <span class="o">=</span> <span class="p">(</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">get_context</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mp_config</span><span class="o">.</span><span class="n">mp_start_method</span><span class="p">)</span>
+                      <span class="k">if</span> <span class="n">mp_context</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">mp_context</span><span class="p">)</span>
+        <span class="n">read_ahead</span> <span class="o">=</span> <span class="n">read_ahead</span> <span class="k">if</span> <span class="n">read_ahead</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">mp_config</span><span class="o">.</span><span class="n">read_ahead</span>
+        <span class="k">with</span> <span class="n">_PipelineMultiRunner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">show_progress</span><span class="p">,</span> <span class="n">total</span><span class="p">,</span> <span class="n">close_events</span><span class="p">,</span>
+                                  <span class="n">max_failures</span><span class="p">,</span> <span class="n">workers</span><span class="p">,</span> <span class="n">read_ahead</span><span class="p">,</span> <span class="n">mp_context</span><span class="p">)</span> <span class="k">as</span> <span class="n">runner</span><span class="p">:</span>
             <span class="n">runner</span><span class="o">.</span><span class="n">run</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Pipeline.run"><a class="viewcode-back" href="../../../mtap.html#mtap.Pipeline.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s1">&#39;mtap.Event&#39;</span><span class="p">,</span> <span class="s1">&#39;mtap.Document&#39;</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span>
@@ -388,7 +547,8 @@
         <span class="n">event</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">_event_and_params</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
         <span class="n">event_id</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">event_id</span>
 
-        <span class="n">result</span> <span class="o">=</span> <span class="n">_run_by_event_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_id</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_by_event_id</span><span class="p">(</span><span class="n">event_id</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">event_service_instance_id</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_result_times</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">component_result</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">component_results</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
@@ -396,6 +556,24 @@
             <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
                 <span class="k">pass</span>
         <span class="k">return</span> <span class="n">result</span></div>
+
+    <span class="k">def</span> <span class="nf">_run_by_event_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_id</span><span class="p">,</span> <span class="n">event_service_instance_id</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="n">component</span><span class="o">.</span><span class="n">call_process</span><span class="p">(</span><span class="n">event_id</span><span class="p">,</span> <span class="n">event_service_instance_id</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+                   <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_components</span><span class="p">]</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="n">_base</span><span class="o">.</span><span class="n">ProcessingResult</span><span class="p">(</span><span class="n">identifier</span><span class="o">=</span><span class="n">component</span><span class="o">.</span><span class="n">component_id</span><span class="p">,</span> <span class="n">result_dict</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                          <span class="n">timing_info</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">created_indices</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="k">for</span>
+                   <span class="n">component</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_components</span><span class="p">,</span> <span class="n">results</span><span class="p">)]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Finished processing event_id: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">event_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_base</span><span class="o">.</span><span class="n">PipelineResult</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">total</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_add_result_times</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
+        <span class="n">times</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">component_id</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">component_times</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">component_results</span><span class="p">:</span>
+            <span class="n">times</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">component_id</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">component_times</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
+        <span class="n">times</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;total&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">elapsed_time</span>
+        <span class="n">_timing</span><span class="o">.</span><span class="n">add_times</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">times_map</span><span class="p">,</span> <span class="n">times</span><span class="p">)</span>
 
     <span class="nd">@overload</span>
     <span class="k">def</span> <span class="nf">processor_timer_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;List[processing.AggregateTimingInfo]&#39;</span><span class="p">:</span>
@@ -424,13 +602,13 @@
 
     <span class="k">def</span> <span class="nf">processor_timer_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">identifier</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">aggregates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_times_collector</span><span class="o">.</span><span class="n">get_aggregates</span><span class="p">(</span><span class="n">identifier</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span><span class="p">)</span>
+            <span class="n">aggregates</span> <span class="o">=</span> <span class="n">_timing</span><span class="o">.</span><span class="n">create_timer_stats</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">times_map</span><span class="p">,</span> <span class="n">identifier</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span><span class="p">)</span>
             <span class="n">aggregates</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">[(</span><span class="nb">len</span><span class="p">(</span><span class="n">identifier</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):]:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">aggregates</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
             <span class="k">return</span> <span class="n">_base</span><span class="o">.</span><span class="n">AggregateTimingInfo</span><span class="p">(</span><span class="n">identifier</span><span class="o">=</span><span class="n">identifier</span><span class="p">,</span> <span class="n">timing_info</span><span class="o">=</span><span class="n">aggregates</span><span class="p">)</span>
         <span class="n">timing_infos</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_components</span><span class="p">:</span>
             <span class="n">component_id</span> <span class="o">=</span> <span class="n">component</span><span class="o">.</span><span class="n">component_id</span>
-            <span class="n">aggregates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_times_collector</span><span class="o">.</span><span class="n">get_aggregates</span><span class="p">(</span><span class="n">component_id</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span><span class="p">)</span>
+            <span class="n">aggregates</span> <span class="o">=</span> <span class="n">_timing</span><span class="o">.</span><span class="n">create_timer_stats</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">times_map</span><span class="p">,</span> <span class="n">component_id</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span><span class="p">)</span>
             <span class="n">aggregates</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">[(</span><span class="nb">len</span><span class="p">(</span><span class="n">component_id</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):]:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">aggregates</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
             <span class="n">timing_infos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="n">_base</span><span class="o">.</span><span class="n">AggregateTimingInfo</span><span class="p">(</span><span class="n">identifier</span><span class="o">=</span><span class="n">component_id</span><span class="p">,</span> <span class="n">timing_info</span><span class="o">=</span><span class="n">aggregates</span><span class="p">))</span>
@@ -445,7 +623,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">pipeline_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
-        <span class="n">aggregates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_times_collector</span><span class="o">.</span><span class="n">get_aggregates</span><span class="p">(</span><span class="n">pipeline_id</span><span class="p">)</span>
+        <span class="n">aggregates</span> <span class="o">=</span> <span class="n">_timing</span><span class="o">.</span><span class="n">create_timer_stats</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">times_map</span><span class="p">,</span> <span class="n">pipeline_id</span><span class="p">)</span>
         <span class="n">aggregates</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">pipeline_id</span><span class="p">):]:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">aggregates</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="k">return</span> <span class="n">_base</span><span class="o">.</span><span class="n">AggregateTimingInfo</span><span class="p">(</span><span class="n">identifier</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">timing_info</span><span class="o">=</span><span class="n">aggregates</span><span class="p">)</span></div>
 
@@ -462,7 +640,9 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">component</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-                <span class="k">pass</span></div>
+                <span class="k">pass</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_created_events_client</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_events_client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Pipeline.as_processor"><a class="viewcode-back" href="../../../mtap.html#mtap.Pipeline.as_processor">[docs]</a>    <span class="k">def</span> <span class="nf">as_processor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;processing.EventProcessor&#39;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Returns the pipeline as a processor.</span>
@@ -480,45 +660,32 @@
             <span class="n">pipeline_timer</span><span class="o">.</span><span class="n">print_times</span><span class="p">()</span></div>
 
     <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>
-            <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">descriptor</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_components</span><span class="p">[</span><span class="n">item</span><span class="p">]]</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_components</span><span class="p">[</span><span class="n">item</span><span class="p">]</span><span class="o">.</span><span class="n">descriptor</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_component_descriptors</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_components</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_components</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">create_pipeline_component</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_component_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_clear_components</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_component_descriptors</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="k">def</span> <span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_components</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_components</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_clear_components</span><span class="p">()</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_component_descriptors</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_components</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_component_descriptors</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_clear_components</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_components</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span>
 
     <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">o</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_components</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">index</span><span class="p">,</span>
-                                <span class="n">o</span><span class="o">.</span><span class="n">create_pipeline_component</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_component_ids</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_clear_components</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_component_descriptors</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">o</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;Pipeline(&quot;</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="p">[</span><span class="nb">repr</span><span class="p">(</span><span class="n">component</span><span class="o">.</span><span class="n">descriptor</span><span class="p">)</span> <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_components</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span></div>
-
-
-<span class="k">def</span> <span class="nf">_run_by_event_id</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">event_id</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
-    <span class="n">start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
-    <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="n">component</span><span class="o">.</span><span class="n">call_process</span><span class="p">(</span><span class="n">event_id</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span> <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">_components</span><span class="p">]</span>
-    <span class="n">total</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
-    <span class="n">times</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">component_times</span><span class="p">,</span> <span class="n">_</span><span class="p">),</span> <span class="n">component</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">_components</span><span class="p">):</span>
-        <span class="n">times</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">component</span><span class="o">.</span><span class="n">component_id</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">component_times</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
-    <span class="n">times</span><span class="p">[</span><span class="n">pipeline</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;total&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">total</span>
-    <span class="n">pipeline</span><span class="o">.</span><span class="n">_times_collector</span><span class="o">.</span><span class="n">add_times</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
-    <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="n">_base</span><span class="o">.</span><span class="n">ProcessingResult</span><span class="p">(</span><span class="n">identifier</span><span class="o">=</span><span class="n">component</span><span class="o">.</span><span class="n">component_id</span><span class="p">,</span> <span class="n">result_dict</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                      <span class="n">timing_info</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">created_indices</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="k">for</span>
-               <span class="n">component</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">pipeline</span><span class="o">.</span><span class="n">_components</span><span class="p">,</span> <span class="n">results</span><span class="p">)]</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Finished processing event_id: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">event_id</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">_base</span><span class="o">.</span><span class="n">PipelineResult</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">total</span><span class="p">)</span>
+            <span class="p">[</span><span class="nb">repr</span><span class="p">(</span><span class="n">component</span><span class="p">)</span> <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_component_descriptors</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span></div>
 
 
 <div class="viewcode-block" id="ProcessingSource"><a class="viewcode-back" href="../../../mtap.html#mtap.ProcessingSource">[docs]</a><span class="k">class</span> <span class="nc">ProcessingSource</span><span class="p">(</span><span class="n">ContextManager</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
@@ -526,6 +693,24 @@
 <span class="sd">    for receiving results.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_total&#39;</span><span class="p">,)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">total</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;The total number of documents this source will provide.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str or None count of the total events or None if not known.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_total</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@total</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">total</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">count</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_total</span> <span class="o">=</span> <span class="n">count</span>
 
 <div class="viewcode-block" id="ProcessingSource.provide"><a class="viewcode-back" href="../../../mtap.html#mtap.ProcessingSource.provide">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">provide</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">consume</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Union</span><span class="p">[</span><span class="s1">&#39;mtap.Document&#39;</span><span class="p">,</span> <span class="s1">&#39;mtap.Event&#39;</span><span class="p">]],</span> <span class="kc">None</span><span class="p">]):</span>
@@ -595,6 +780,7 @@
     <span class="sd">&quot;&quot;&quot;Wraps an iterable in a ProcessingSource for the multi-thread processor.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;it&#39;</span><span class="p">,)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">):</span>
         <span class="c1"># We use an iterator here so we can ensure that it gets closed on unexpected / early</span>
@@ -619,11 +805,14 @@
 
 
 <span class="k">class</span> <span class="nc">_PipelineProcessor</span><span class="p">(</span><span class="n">_base</span><span class="o">.</span><span class="n">EventProcessor</span><span class="p">):</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_components&#39;</span><span class="p">,)</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">components</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;processing.ProcessingComponent&#39;</span><span class="p">]):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_components</span> <span class="o">=</span> <span class="n">components</span>
 
     <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="s1">&#39;mtap.Event&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="n">component</span><span class="o">.</span><span class="n">call_process</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">event_id</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span> <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_components</span><span class="p">]</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="n">component</span><span class="o">.</span><span class="n">call_process</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">event_id</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">event_service_instance_id</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+                   <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_components</span><span class="p">]</span>
         <span class="n">times</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">component_times</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
             <span class="n">times</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">component_times</span><span class="p">)</span>
@@ -633,17 +822,47 @@
         <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;component_results&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]}</span>
 
 
+<span class="n">_mp_pipeline</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<span class="k">def</span> <span class="nf">_mp_process_init</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">pipeline</span><span class="p">):</span>
+    <span class="k">global</span> <span class="n">_mp_pipeline</span>
+    <span class="n">Config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span><span class="o">.</span><span class="n">enter_context</span><span class="p">()</span>
+    <span class="n">_mp_pipeline</span> <span class="o">=</span> <span class="n">pipeline</span>
+
+    <span class="k">def</span> <span class="nf">cleanup_pipeline</span><span class="p">(</span><span class="o">*</span><span class="n">_</span><span class="p">):</span>
+        <span class="n">_mp_pipeline</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="n">cleanup_pipeline</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_mp_process_event</span><span class="p">(</span><span class="n">event_id</span><span class="p">,</span> <span class="n">event_service_instance_id</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_mp_pipeline</span><span class="p">,</span> <span class="n">Pipeline</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">_mp_pipeline</span><span class="o">.</span><span class="n">_run_by_event_id</span><span class="p">(</span><span class="n">event_id</span><span class="p">,</span> <span class="n">event_service_instance_id</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">event_id</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">event_id</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="kc">None</span>
+
+
 <span class="k">class</span> <span class="nc">_PipelineMultiRunner</span><span class="p">:</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;pipeline&#39;</span><span class="p">,</span> <span class="s1">&#39;failures&#39;</span><span class="p">,</span> <span class="s1">&#39;max_failures&#39;</span><span class="p">,</span> <span class="s1">&#39;targets_cond&#39;</span><span class="p">,</span> <span class="s1">&#39;active_targets&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;close_events&#39;</span><span class="p">,</span> <span class="s1">&#39;max_targets&#39;</span><span class="p">,</span> <span class="s1">&#39;n_threads&#39;</span><span class="p">,</span> <span class="s1">&#39;progress_bar&#39;</span><span class="p">,</span> <span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="s1">&#39;params&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;pool&#39;</span><span class="p">,</span> <span class="s1">&#39;active_events&#39;</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pipeline</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">total</span><span class="p">,</span> <span class="n">close_events</span><span class="p">,</span> <span class="n">max_failures</span><span class="p">,</span>
-                 <span class="n">n_threads</span><span class="p">,</span> <span class="n">read_ahead</span><span class="p">):</span>
+                 <span class="n">n_threads</span><span class="p">,</span> <span class="n">read_ahead</span><span class="p">,</span> <span class="n">mp_context</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pipeline</span> <span class="o">=</span> <span class="n">pipeline</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">failures</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_failures</span> <span class="o">=</span> <span class="n">max_failures</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">targets_cond</span> <span class="o">=</span> <span class="n">Condition</span><span class="p">(</span><span class="n">Lock</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">active_targets</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">close_events</span> <span class="o">=</span> <span class="n">close_events</span>
+        <span class="k">if</span> <span class="n">read_ahead</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">read_ahead</span> <span class="o">=</span> <span class="n">n_threads</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_targets</span> <span class="o">=</span> <span class="n">n_threads</span> <span class="o">+</span> <span class="n">read_ahead</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">executor</span> <span class="o">=</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">n_threads</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_threads</span> <span class="o">=</span> <span class="n">n_threads</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">total</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s1">&#39;total&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="n">total</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">progress_bar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">total</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;event&#39;</span><span class="p">,</span> <span class="n">smoothing</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span> <span class="k">if</span> <span class="n">progress</span> <span class="k">else</span> <span class="kc">None</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">ProcessingSource</span><span class="p">):</span>
@@ -652,6 +871,13 @@
             <span class="n">source</span> <span class="o">=</span> <span class="n">_IterableProcessingSource</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="n">source</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">params</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool</span> <span class="o">=</span> <span class="n">mp_context</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_threads</span><span class="p">,</span>
+            <span class="n">initializer</span><span class="o">=</span><span class="n">_mp_process_init</span><span class="p">,</span>
+            <span class="n">initargs</span><span class="o">=</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">Config</span><span class="p">()),</span> <span class="n">pipeline</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active_events</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="k">def</span> <span class="nf">max_failures_reached</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">failures</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_failures</span>
@@ -681,30 +907,38 @@
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets_cond</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">targets_cond</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read_ready</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">process_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_failures_reached</span><span class="p">():</span>
-                <span class="k">return</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">_run_by_event_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">event_id</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">receive_result</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
-        <span class="k">except</span> <span class="n">_base</span><span class="o">.</span><span class="n">ProcessingError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">receive_failure</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">failures</span> <span class="o">+=</span> <span class="mi">1</span>
-                <span class="k">raise</span> <span class="n">e</span>
-        <span class="k">finally</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">result_handler</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
+            <span class="n">event_id</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="n">result</span>
+            <span class="n">event</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_events</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">event_id</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pipeline</span><span class="o">.</span><span class="n">_add_result_times</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">receive_result</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">receive_failure</span><span class="p">(</span><span class="n">error</span><span class="p">):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Error while processing event_id: </span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">event_id</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">failures</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">task_completed</span><span class="p">()</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">close_events</span><span class="p">:</span>
                 <span class="n">event</span><span class="o">.</span><span class="n">release_lease</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">error_handler</span><span class="p">(</span><span class="n">error</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Unexpected error&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">error</span>
+
         <span class="k">def</span> <span class="nf">consume</span><span class="p">(</span><span class="n">target</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_failures_reached</span><span class="p">():</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Max processing failures exceeded.&#39;</span><span class="p">)</span>
             <span class="n">event</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">_event_and_params</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">event</span><span class="o">.</span><span class="n">lease</span><span class="p">()</span>
+                <span class="n">event_id</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">event_id</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">active_events</span><span class="p">[</span><span class="n">event_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">event</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">_mp_process_event</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">event_id</span><span class="p">,</span>
+                                                               <span class="n">event</span><span class="o">.</span><span class="n">event_service_instance_id</span><span class="p">,</span>
+                                                               <span class="n">params</span><span class="p">),</span>
+                                      <span class="n">callback</span><span class="o">=</span><span class="n">result_handler</span><span class="p">,</span> <span class="n">error_callback</span><span class="o">=</span><span class="n">error_handler</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">increment_active_tasks</span><span class="p">()</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_task</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="c1"># here we failed sometime between taking a new lease and adding the done</span>
                 <span class="c1"># callback to the future, meaning the lease will never get freed.</span>
@@ -728,7 +962,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">close_events</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_events</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="n">event</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 
 <span class="k">def</span> <span class="nf">_unique_component_id</span><span class="p">(</span><span class="n">component_ids</span><span class="p">,</span> <span class="n">component_id</span><span class="p">):</span>
@@ -738,6 +976,49 @@
     <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">component_id</span> <span class="o">=</span> <span class="n">component_id</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">count</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">component_id</span>
+
+
+<span class="k">class</span> <span class="nc">FilesInDirectoryProcessingSource</span><span class="p">(</span><span class="n">ProcessingSource</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Processing source for pipelines which iterates over files in a directory.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        client (mtap.EventsClient): The events client to send documents to.</span>
+<span class="sd">        directory (pathlib.Path or str): The path to the directory of files to process.</span>
+
+<span class="sd">    Keyword Args:</span>
+<span class="sd">         document_name (str): The name of the document to create and add text to.</span>
+<span class="sd">         extension_glob (str): The glob for which files to create events and documents for.</span>
+<span class="sd">         count_total (bool): Whether to count the total number of documents before processing.</span>
+<span class="sd">         errors (~typing.Optional[str]): The errors argument for :func:`open`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;client&#39;</span><span class="p">,</span> <span class="s1">&#39;input_directory&#39;</span><span class="p">,</span> <span class="s1">&#39;document_name&#39;</span><span class="p">,</span> <span class="s1">&#39;extension_glob&#39;</span><span class="p">,</span> <span class="s1">&#39;errors&#39;</span><span class="p">,</span> <span class="s1">&#39;total&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="s1">&#39;mtap.EventsClient&#39;</span><span class="p">,</span>
+                 <span class="n">directory</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+                 <span class="o">*</span><span class="p">,</span> <span class="n">document_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;plaintext&#39;</span><span class="p">,</span>
+                 <span class="n">extension_glob</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;*.txt&#39;</span><span class="p">,</span>
+                 <span class="n">count_total</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                 <span class="n">errors</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_directory</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_directory</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid / non-existing input directory: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_directory</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">document_name</span> <span class="o">=</span> <span class="n">document_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extension_glob</span> <span class="o">=</span> <span class="n">extension_glob</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">errors</span> <span class="o">=</span> <span class="n">errors</span>
+        <span class="k">if</span> <span class="n">count_total</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">total</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_directory</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extension_glob</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">provide</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">consume</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Union</span><span class="p">[</span><span class="s1">&#39;mtap.Document&#39;</span><span class="p">,</span> <span class="s1">&#39;mtap.Event&#39;</span><span class="p">]],</span> <span class="kc">None</span><span class="p">]):</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_directory</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extension_glob</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">txt</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">relative</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_directory</span><span class="p">))</span>
+            <span class="k">with</span> <span class="n">Event</span><span class="p">(</span><span class="n">event_id</span><span class="o">=</span><span class="n">relative</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">,</span>
+                       <span class="n">only_create_new</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">doc</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">create_document</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">document_name</span><span class="p">,</span> <span class="n">txt</span><span class="p">)</span>
+                <span class="n">consume</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
 </pre></div>
 
             <div class="clearer"></div>
@@ -747,7 +1028,7 @@
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <h3><a href="../../../index.html">Table of Contents</a></h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../mtap.html">mtap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../deployment.html">mtap.deployment</a></li>
@@ -758,12 +1039,12 @@
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -777,14 +1058,14 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">MTAP 0.8.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">MTAP 1.0.0rc2 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">mtap.processing._pipeline</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Regents of the University of Minnesota..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
     </div>
   </body>
 </html>
