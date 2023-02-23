@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>mtap.data._events &#8212; MTAP 1.0.0rc2 documentation</title>
+    <title>mtap.data._events &#8212; MTAP 1.0.0rc6.dev2+gfcbe98d.d20230221 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinxdoc.css" />
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
@@ -13,6 +13,7 @@
     <script src="../../../_static/underscore.js"></script>
     <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
@@ -25,7 +26,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">MTAP 1.0.0rc2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">MTAP 1.0.0rc6.dev2+gfcbe98d.d20230221 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">mtap.data._events</a></li> 
       </ul>
@@ -57,8 +58,23 @@
 <span class="kn">import</span> <span class="nn">collections</span>
 <span class="kn">import</span> <span class="nn">threading</span>
 <span class="kn">import</span> <span class="nn">uuid</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">NamedTuple</span><span class="p">,</span> \
-    <span class="n">ContextManager</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Iterator</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">MutableMapping</span><span class="p">,</span>
+    <span class="n">Generic</span><span class="p">,</span>
+    <span class="n">TypeVar</span><span class="p">,</span>
+    <span class="n">NamedTuple</span><span class="p">,</span>
+    <span class="n">ContextManager</span><span class="p">,</span>
+    <span class="n">Iterable</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Sequence</span><span class="p">,</span>
+    <span class="n">Union</span><span class="p">,</span>
+    <span class="n">Mapping</span><span class="p">,</span>
+    <span class="n">TYPE_CHECKING</span><span class="p">,</span>
+    <span class="n">Callable</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="kn">import</span> <span class="nn">grpc</span>
 <span class="kn">from</span> <span class="nn">grpc_health.v1</span> <span class="kn">import</span> <span class="n">health_pb2_grpc</span><span class="p">,</span> <span class="n">health_pb2</span>
@@ -536,11 +552,12 @@
 
 <span class="k">def</span> <span class="nf">create_channel</span><span class="p">(</span><span class="n">address</span><span class="p">):</span>
     <span class="n">config</span> <span class="o">=</span> <span class="n">_config</span><span class="o">.</span><span class="n">Config</span><span class="p">()</span>
-    <span class="n">options</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;grpc.events_channel_options&#39;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">options</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;grpc.events_options&#39;</span><span class="p">,</span> <span class="p">{})</span>
     <span class="n">channel</span> <span class="o">=</span> <span class="n">grpc</span><span class="o">.</span><span class="n">insecure_channel</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
 
     <span class="n">health</span> <span class="o">=</span> <span class="n">health_pb2_grpc</span><span class="o">.</span><span class="n">HealthStub</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
-    <span class="n">hcr</span> <span class="o">=</span> <span class="n">health</span><span class="o">.</span><span class="n">Check</span><span class="p">(</span><span class="n">health_pb2</span><span class="o">.</span><span class="n">HealthCheckRequest</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="n">constants</span><span class="o">.</span><span class="n">EVENTS_SERVICE_NAME</span><span class="p">))</span>
+    <span class="n">hcr</span> <span class="o">=</span> <span class="n">health</span><span class="o">.</span><span class="n">Check</span><span class="p">(</span><span class="n">health_pb2</span><span class="o">.</span><span class="n">HealthCheckRequest</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="n">constants</span><span class="o">.</span><span class="n">EVENTS_SERVICE_NAME</span><span class="p">),</span>
+                       <span class="n">metadata</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;service-name&#39;</span><span class="p">,</span> <span class="n">constants</span><span class="o">.</span><span class="n">EVENTS_SERVICE_NAME</span><span class="p">)])</span>
     <span class="k">if</span> <span class="n">hcr</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="n">health_pb2</span><span class="o">.</span><span class="n">HealthCheckResponse</span><span class="o">.</span><span class="n">SERVING</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Failed to connect to events service. Status:&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">channel</span>
@@ -557,12 +574,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">instance_id_to_delegate</span> <span class="o">=</span> <span class="p">{</span><span class="n">d</span><span class="o">.</span><span class="n">instance_id</span><span class="p">:</span> <span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="p">}</span>
 
     <span class="k">def</span> <span class="nf">get_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">instance_id_to_delegate</span><span class="p">[</span><span class="n">instance_id</span><span class="p">]</span>
-        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_ptr</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_ptr</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ptr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">i</span>
+        <span class="k">if</span> <span class="n">instance_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">instance_id_to_delegate</span><span class="p">[</span><span class="n">instance_id</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;instance_id: </span><span class="si">{</span><span class="n">instance_id</span><span class="si">}</span><span class="s2"> not found. &quot;</span>
+                               <span class="sa">f</span><span class="s2">&quot;Available instances: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">instance_id_to_delegate</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_ptr</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ptr</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ptr</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">i</span>
 
 
 <div class="viewcode-block" id="EventsClient"><a class="viewcode-back" href="../../../mtap.html#mtap.EventsClient">[docs]</a><span class="k">class</span> <span class="nc">EventsClient</span><span class="p">:</span>
@@ -590,7 +610,7 @@
                  <span class="n">channel_factory</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="n">grpc</span><span class="o">.</span><span class="n">Channel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">_pool</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">_ClientPool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">_channel</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">grpc</span><span class="o">.</span><span class="n">Channel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">address</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">address</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">address</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
             <span class="n">discovery</span> <span class="o">=</span> <span class="n">_discovery</span><span class="o">.</span><span class="n">Discovery</span><span class="p">(</span><span class="n">_config</span><span class="o">.</span><span class="n">Config</span><span class="p">())</span>
             <span class="n">address</span> <span class="o">=</span> <span class="n">discovery</span><span class="o">.</span><span class="n">discover_events_service</span><span class="p">(</span><span class="s1">&#39;v1&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -1028,7 +1048,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../mtap.html">mtap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../deployment.html">mtap.deployment</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html">mtap.io</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../serialization.html">mtap.serialization</a></li>
 </ul>
 
 <div id="searchbox" style="display: none" role="search">
@@ -1054,14 +1074,14 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">MTAP 1.0.0rc2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">MTAP 1.0.0rc6.dev2+gfcbe98d.d20230221 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">mtap.data._events</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Regents of the University of Minnesota..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>
 </html>

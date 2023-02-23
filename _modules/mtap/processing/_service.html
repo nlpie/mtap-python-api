@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>mtap.processing._service &#8212; MTAP 1.0.0rc2 documentation</title>
+    <title>mtap.processing._service &#8212; MTAP 1.0.0rc6.dev2+gfcbe98d.d20230221 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinxdoc.css" />
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
@@ -13,6 +13,7 @@
     <script src="../../../_static/underscore.js"></script>
     <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
@@ -25,7 +26,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">MTAP 1.0.0rc2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">MTAP 1.0.0rc6.dev2+gfcbe98d.d20230221 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">mtap.processing._service</a></li> 
       </ul>
@@ -53,10 +54,12 @@
 <span class="kn">import</span> <span class="nn">argparse</span>
 <span class="kn">import</span> <span class="nn">concurrent.futures.thread</span> <span class="k">as</span> <span class="nn">thread</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">signal</span>
 <span class="kn">import</span> <span class="nn">threading</span>
-<span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">traceback</span>
 <span class="kn">import</span> <span class="nn">typing</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">logging.handlers</span> <span class="kn">import</span> <span class="n">QueueListener</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">google.protobuf.empty_pb2</span> <span class="k">as</span> <span class="nn">empty_pb2</span>
@@ -74,8 +77,7 @@
 <span class="k">if</span> <span class="n">typing</span><span class="o">.</span><span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">mtap</span>
 
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
-<span class="n">_ONE_DAY_IN_SECONDS</span> <span class="o">=</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">24</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;mtap.processing&#39;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="run_processor"><a class="viewcode-back" href="../../../mtap.html#mtap.run_processor">[docs]</a><span class="k">def</span> <span class="nf">run_processor</span><span class="p">(</span><span class="n">proc</span><span class="p">:</span> <span class="s1">&#39;mtap.EventProcessor&#39;</span><span class="p">,</span>
@@ -129,43 +131,61 @@
         <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">mtap_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">c</span><span class="o">.</span><span class="n">update_from_yaml</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">mtap_config</span><span class="p">)</span>
         <span class="c1"># instantiate runner</span>
-        <span class="n">processor_id</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">identifier</span> <span class="ow">or</span> <span class="n">proc</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">name</span> <span class="ow">or</span> <span class="n">proc</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="n">sid</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">sid</span>
 
         <span class="n">enable_http_proxy</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">grpc_enable_http_proxy</span>
         <span class="k">if</span> <span class="n">enable_http_proxy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">c</span><span class="p">[</span><span class="s1">&#39;grpc.enable_proxy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">enable_http_proxy</span>
+            <span class="n">c</span><span class="p">[</span><span class="s1">&#39;grpc.events_channel_options.grpc.enable_http_proxy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">enable_http_proxy</span>
         <span class="k">if</span> <span class="n">mp</span><span class="p">:</span>
             <span class="n">runner</span> <span class="o">=</span> <span class="n">MpProcessorRunner</span><span class="p">(</span><span class="n">proc</span><span class="o">=</span><span class="n">proc</span><span class="p">,</span>
                                        <span class="n">workers</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">workers</span><span class="p">,</span>
                                        <span class="n">events_address</span><span class="o">=</span><span class="n">events_addresses</span><span class="p">,</span>
-                                       <span class="n">identifier</span><span class="o">=</span><span class="n">processor_id</span><span class="p">,</span>
-                                       <span class="n">mp_context</span><span class="o">=</span><span class="n">mp_context</span><span class="p">)</span>
+                                       <span class="n">processor_name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                       <span class="n">mp_context</span><span class="o">=</span><span class="n">mp_context</span><span class="p">,</span>
+                                       <span class="n">log_level</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">log_level</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">client</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">EventsClient</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="n">events_addresses</span><span class="p">)</span>
             <span class="n">runner</span> <span class="o">=</span> <span class="n">_runners</span><span class="o">.</span><span class="n">ProcessorRunner</span><span class="p">(</span><span class="n">proc</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
-                                              <span class="n">identifier</span><span class="o">=</span><span class="n">processor_id</span><span class="p">,</span>
+                                              <span class="n">processor_name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
                                               <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
         <span class="n">server</span> <span class="o">=</span> <span class="n">ProcessorServer</span><span class="p">(</span><span class="n">runner</span><span class="o">=</span><span class="n">runner</span><span class="p">,</span>
+                                 <span class="n">sid</span><span class="o">=</span><span class="n">sid</span><span class="p">,</span>
                                  <span class="n">host</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">host</span><span class="p">,</span>
                                  <span class="n">port</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">port</span><span class="p">,</span>
                                  <span class="n">register</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">register</span><span class="p">,</span>
                                  <span class="n">workers</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">workers</span><span class="p">,</span>
                                  <span class="n">write_address</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">write_address</span><span class="p">)</span>
+
+        <span class="n">e</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">do_stop</span><span class="p">(</span><span class="o">*</span><span class="n">_</span><span class="p">):</span>
+            <span class="n">e</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="n">do_stop</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">,</span> <span class="n">do_stop</span><span class="p">)</span>
+
         <span class="n">server</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">_ONE_DAY_IN_SECONDS</span><span class="p">)</span>
+            <span class="n">e</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
-            <span class="n">server</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span></div>
+            <span class="k">pass</span>
+        <span class="n">server</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span></div>
 
 
 <span class="n">_mp_processor</span> <span class="o">=</span> <span class="o">...</span>  <span class="c1"># EventProcessor</span>
 <span class="n">_mp_client</span> <span class="o">=</span> <span class="o">...</span>  <span class="c1"># EventClient</span>
 
 
-<span class="k">def</span> <span class="nf">_mp_initialize</span><span class="p">(</span><span class="n">proc</span><span class="p">:</span> <span class="s1">&#39;mtap.EventProcessor&#39;</span><span class="p">,</span> <span class="n">events_address</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_mp_initialize</span><span class="p">(</span><span class="n">proc</span><span class="p">:</span> <span class="s1">&#39;mtap.EventProcessor&#39;</span><span class="p">,</span> <span class="n">events_address</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">log_queue</span><span class="p">):</span>
     <span class="k">global</span> <span class="n">_mp_processor</span>
     <span class="k">global</span> <span class="n">_mp_client</span>
+
+    <span class="n">h</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">QueueHandler</span><span class="p">(</span><span class="n">log_queue</span><span class="p">)</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+    <span class="n">root</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+    <span class="n">root</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+
     <span class="n">_config</span><span class="o">.</span><span class="n">Config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
     <span class="n">_mp_processor</span> <span class="o">=</span> <span class="n">proc</span>
     <span class="n">_mp_client</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">EventsClient</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="n">events_address</span><span class="p">)</span>
@@ -183,24 +203,33 @@
 
 
 <span class="k">class</span> <span class="nc">MpProcessorRunner</span><span class="p">:</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;pool&#39;</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">,</span> <span class="s1">&#39;processor_id&#39;</span><span class="p">,</span> <span class="s1">&#39;component_id&#39;</span><span class="p">)</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;pool&#39;</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">,</span> <span class="s1">&#39;processor_name&#39;</span><span class="p">,</span> <span class="s1">&#39;component_id&#39;</span><span class="p">,</span> <span class="s1">&#39;log_listener&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">proc</span><span class="p">:</span> <span class="s1">&#39;mtap.EventProcessor&#39;</span><span class="p">,</span>
-                 <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">processor_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">component_id</span><span class="p">:</span> <span class="s1">&#39;Optional[str]&#39;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">workers</span><span class="p">:</span> <span class="s1">&#39;Optional[int]&#39;</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
                  <span class="n">events_address</span><span class="p">:</span> <span class="s1">&#39;Optional[Union[str, Sequence[str]]]&#39;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">mp_context</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                 <span class="n">mp_context</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">log_level</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">mp_context</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
-            <span class="n">mp_context</span> <span class="o">=</span> <span class="n">mp</span>
+            <span class="n">mp_context</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">get_context</span><span class="p">(</span><span class="s1">&#39;spawn&#39;</span><span class="p">)</span>
         <span class="n">config</span> <span class="o">=</span> <span class="n">_config</span><span class="o">.</span><span class="n">Config</span><span class="p">()</span>
+        <span class="n">log_queue</span> <span class="o">=</span> <span class="n">mp_context</span><span class="o">.</span><span class="n">Queue</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">()</span>
+        <span class="n">log_level</span> <span class="o">=</span> <span class="s1">&#39;INFO&#39;</span> <span class="k">if</span> <span class="n">log_level</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">log_level</span>
+        <span class="n">handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">log_level</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_listener</span> <span class="o">=</span> <span class="n">QueueListener</span><span class="p">(</span><span class="n">log_queue</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_listener</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">pool</span> <span class="o">=</span> <span class="n">mp_context</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">workers</span><span class="p">,</span>
                                     <span class="n">initializer</span><span class="o">=</span><span class="n">_mp_initialize</span><span class="p">,</span>
-                                    <span class="n">initargs</span><span class="o">=</span><span class="p">(</span><span class="n">proc</span><span class="p">,</span> <span class="n">events_address</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">config</span><span class="p">)))</span>
+                                    <span class="n">initargs</span><span class="o">=</span><span class="p">(</span><span class="n">proc</span><span class="p">,</span> <span class="n">events_address</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">config</span><span class="p">),</span> <span class="n">log_queue</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">metadata</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">processor_id</span> <span class="o">=</span> <span class="n">identifier</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">component_id</span> <span class="o">=</span> <span class="n">identifier</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">processor_name</span> <span class="o">=</span> <span class="n">processor_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">component_id</span> <span class="o">=</span> <span class="n">component_id</span> <span class="ow">or</span> <span class="n">processor_name</span>
 
     <span class="k">def</span> <span class="nf">call_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                      <span class="n">event_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -215,6 +244,7 @@
     <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_listener</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 
 
 <div class="viewcode-block" id="processor_parser"><a class="viewcode-back" href="../../../mtap.html#mtap.processor_parser">[docs]</a><span class="k">def</span> <span class="nf">processor_parser</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">:</span>
@@ -251,9 +281,10 @@
                                    <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                    <span class="n">help</span><span class="o">=</span><span class="s1">&#39;address of the events service to use, &#39;</span>
                                         <span class="s1">&#39;omit to use discovery&#39;</span><span class="p">)</span>
-    <span class="n">processors_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--identifier&#39;</span><span class="p">,</span> <span class="s1">&#39;-i&#39;</span><span class="p">,</span>
-                                   <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Optional argument if you want the processor to register &quot;</span>
-                                        <span class="s2">&quot;under a different identifier than its name.&quot;</span><span class="p">)</span>
+    <span class="n">processors_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--name&#39;</span><span class="p">,</span> <span class="s1">&#39;-n&#39;</span><span class="p">,</span>
+                                   <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Optional override service name, defaults to the processor annotation&quot;</span><span class="p">)</span>
+    <span class="n">processors_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--sid&#39;</span><span class="p">,</span>
+                                   <span class="n">help</span><span class="o">=</span><span class="s2">&quot;A unique identifier for this instance of the processor service.&quot;</span><span class="p">)</span>
     <span class="n">processors_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--write-address&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
                                    <span class="n">help</span><span class="o">=</span><span class="s1">&#39;If set, will write the server address &#39;</span><span class="p">)</span>
     <span class="n">processors_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--log-level&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;INFO&#39;</span><span class="p">,</span>
@@ -283,11 +314,13 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">config</span><span class="p">:</span> <span class="s1">&#39;mtap.Config&#39;</span><span class="p">,</span>
                  <span class="n">address</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">sid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">runner</span><span class="p">:</span> <span class="s1">&#39;_base.ProcessingComponent&#39;</span><span class="p">,</span>
                  <span class="n">health_servicer</span><span class="p">:</span> <span class="n">health</span><span class="o">.</span><span class="n">HealthServicer</span><span class="p">,</span>
                  <span class="n">register</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="n">address</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sid</span> <span class="o">=</span> <span class="n">sid</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_runner</span> <span class="o">=</span> <span class="n">runner</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register</span> <span class="o">=</span> <span class="n">register</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">health_servicer</span> <span class="o">=</span> <span class="n">health_servicer</span>
@@ -299,20 +332,19 @@
 
     <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">health_servicer</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_runner</span><span class="o">.</span><span class="n">processor_id</span><span class="p">,</span> <span class="s1">&#39;SERVING&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">health_servicer</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_runner</span><span class="p">,</span> <span class="s1">&#39;SERVING&#39;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">register</span><span class="p">:</span>
             <span class="kn">from</span> <span class="nn">mtap._discovery</span> <span class="kn">import</span> <span class="n">Discovery</span>
             <span class="n">service_registration</span> <span class="o">=</span> <span class="n">Discovery</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_deregister</span> <span class="o">=</span> <span class="n">service_registration</span><span class="o">.</span><span class="n">register_processor_service</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
-                <span class="n">port</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_runner</span><span class="o">.</span><span class="n">component_id</span><span class="p">,</span>
-                <span class="s1">&#39;v1&#39;</span>
-            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_deregister</span> <span class="o">=</span> <span class="n">service_registration</span><span class="o">.</span><span class="n">register_processor_service</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_runner</span><span class="o">.</span><span class="n">processor_name</span><span class="p">,</span>
+                                                                               <span class="bp">self</span><span class="o">.</span><span class="n">sid</span><span class="p">,</span>
+                                                                               <span class="bp">self</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+                                                                               <span class="n">port</span><span class="p">,</span>
+                                                                               <span class="s1">&#39;v1&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">health_servicer</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_runner</span><span class="o">.</span><span class="n">processor_id</span><span class="p">,</span> <span class="s1">&#39;NOT_SERVING&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">health_servicer</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_runner</span><span class="o">.</span><span class="n">processor_name</span><span class="p">,</span> <span class="s1">&#39;NOT_SERVING&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deregister</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_deregister</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_runner</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -321,8 +353,8 @@
         <span class="n">event_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">event_id</span>
         <span class="n">event_service_instance_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">event_service_instance_id</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-            <span class="s1">&#39;processor_id: </span><span class="si">%s</span><span class="s1"> received process request on event_id: </span><span class="si">%s</span><span class="s1"> with event_service_instance_id: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_runner</span><span class="o">.</span><span class="n">processor_id</span><span class="p">,</span> <span class="n">event_id</span><span class="p">,</span> <span class="n">event_service_instance_id</span><span class="p">)</span>
+            <span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> received process request on event: (</span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1">)&#39;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_runner</span><span class="o">.</span><span class="n">processor_name</span><span class="p">,</span> <span class="n">event_id</span><span class="p">,</span> <span class="n">event_service_instance_id</span><span class="p">)</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">_structs</span><span class="o">.</span><span class="n">copy_struct_to_dict</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
@@ -382,7 +414,7 @@
 <span class="sd">        events_address (~typing.Optional[str]):</span>
 <span class="sd">            The address of the events server, or omitted / None if the events service should be</span>
 <span class="sd">            discovered.</span>
-<span class="sd">        processor_id (~typing.Optional[str]):</span>
+<span class="sd">        processor_name (~typing.Optional[str]):</span>
 <span class="sd">            The identifier to register the processor under, if omitted the processor name will be</span>
 <span class="sd">            used.</span>
 <span class="sd">        workers (~typing.Optional[int]):</span>
@@ -399,13 +431,14 @@
                  <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                  <span class="o">*</span><span class="p">,</span>
+                 <span class="n">sid</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">register</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                  <span class="n">workers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">write_address</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                  <span class="n">config</span><span class="p">:</span> <span class="s1">&#39;Optional[mtap.Config]&#39;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_port</span> <span class="o">=</span> <span class="n">port</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">processor_id</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">processor_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">processor_name</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">processor_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sid</span> <span class="o">=</span> <span class="n">sid</span> <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write_address</span> <span class="o">=</span> <span class="n">write_address</span>
 
         <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -413,20 +446,24 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_health_servicer</span> <span class="o">=</span> <span class="n">health</span><span class="o">.</span><span class="n">HealthServicer</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_health_servicer</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;SERVING&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_health_servicer</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">processor_name</span><span class="p">,</span> <span class="s1">&#39;SERVING&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_servicer</span> <span class="o">=</span> <span class="n">_ProcessorServicer</span><span class="p">(</span>
             <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
             <span class="n">address</span><span class="o">=</span><span class="n">host</span><span class="p">,</span>
+            <span class="n">sid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sid</span><span class="p">,</span>
             <span class="n">runner</span><span class="o">=</span><span class="n">runner</span><span class="p">,</span>
             <span class="n">health_servicer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_health_servicer</span><span class="p">,</span>
             <span class="n">register</span><span class="o">=</span><span class="n">register</span>
         <span class="p">)</span>
         <span class="n">workers</span> <span class="o">=</span> <span class="n">workers</span> <span class="ow">or</span> <span class="mi">10</span>
         <span class="n">thread_pool</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">workers</span><span class="p">)</span>
-        <span class="n">options</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;grpc.processor_server_options&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;grpc.processor_options&quot;</span><span class="p">,</span> <span class="p">{})</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_server</span> <span class="o">=</span> <span class="n">grpc</span><span class="o">.</span><span class="n">server</span><span class="p">(</span><span class="n">thread_pool</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
         <span class="n">health_pb2_grpc</span><span class="o">.</span><span class="n">add_HealthServicer_to_server</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_health_servicer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="p">)</span>
         <span class="n">processing_pb2_grpc</span><span class="o">.</span><span class="n">add_ProcessorServicer_to_server</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_servicer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">add_insecure_port</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">add_insecure_port</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">port</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_port</span> <span class="o">!=</span> <span class="n">port</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to bind on port </span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2">, likely in use.&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_stopped_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_address_file</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -442,9 +479,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_servicer</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_address</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_address_file</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">write_address_file</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">))</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Started processor server with id: &quot;</span><span class="si">%s</span><span class="s1">&quot;  on address: &quot;</span><span class="si">%s</span><span class="s1">:</span><span class="si">%d</span><span class="s1">&quot;&#39;</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">processor_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_address_file</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">write_address_file</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">sid</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Started processor server with name: &quot;</span><span class="si">%s</span><span class="s1">&quot;  on address: &quot;</span><span class="si">%s</span><span class="s1">:</span><span class="si">%d</span><span class="s1">&quot;&#39;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">processor_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ProcessorServer.stop"><a class="viewcode-back" href="../../../mtap.html#mtap.ProcessorServer.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">grace</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;De-registers (if registered with service discovery) the service and immediately stops</span>
@@ -462,8 +499,8 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            threading.Event: A shutdown event for the server.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Shutting down processor server with id: &quot;</span><span class="si">{}</span><span class="s1">&quot;  on address: &quot;</span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">processor_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Shutting down processor server with name: &quot;</span><span class="si">{}</span><span class="s1">&quot;  on address: &quot;</span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">processor_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">))</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_address_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_address_file</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_servicer</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
@@ -481,7 +518,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../mtap.html">mtap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../deployment.html">mtap.deployment</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html">mtap.io</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../serialization.html">mtap.serialization</a></li>
 </ul>
 
 <div id="searchbox" style="display: none" role="search">
@@ -507,14 +544,14 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">MTAP 1.0.0rc2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">MTAP 1.0.0rc6.dev2+gfcbe98d.d20230221 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">mtap.processing._service</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Regents of the University of Minnesota..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>
 </html>

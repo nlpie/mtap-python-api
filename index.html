@@ -4,9 +4,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Welcome to MTAP’s documentation! &#8212; MTAP 1.0.0rc2 documentation</title>
+    <title>Welcome to MTAP’s documentation! &#8212; MTAP 1.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
@@ -14,6 +14,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="mtap" href="mtap.html" /> 
@@ -30,7 +31,7 @@
         <li class="right" >
           <a href="mtap.html" title="mtap"
              accesskey="N">next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">MTAP 1.0.0rc2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="#">MTAP 1.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Welcome to MTAP’s documentation!</a></li> 
       </ul>
     </div>  
@@ -46,27 +47,23 @@
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="mtap.html">mtap</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="mtap.html#command-line-utility">Command-Line Utility</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="mtap.html#running-events-service">Running Events Service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mtap.html#command-line-utility">Command-Line Utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mtap.html#api-documentation">API Documentation</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="mtap.html#api-documentation">API Documentation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="mtap.html#events-service-client-documents">Events service client, documents</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mtap.html#labels">Labels</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mtap.html#label-indices">Label Indices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mtap.html#custom-label-types">Custom Label Types</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mtap.html#creating-processors">Creating Processors</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mtap.html#processor-description-decorators">Processor Description Decorators</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mtap.html#running-services">Running Services</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mtap.html#running-a-pipeline">Running a pipeline</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mtap.html#configuration">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">mtap.deployment</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#mtap.deployment.Deployment"><code class="docutils literal notranslate"><span class="pre">Deployment</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#mtap.deployment.GlobalSettings"><code class="docutils literal notranslate"><span class="pre">GlobalSettings</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#mtap.deployment.SharedProcessorConfig"><code class="docutils literal notranslate"><span class="pre">SharedProcessorConfig</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#mtap.deployment.EventsDeployment"><code class="docutils literal notranslate"><span class="pre">EventsDeployment</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#mtap.deployment.ServiceDeployment"><code class="docutils literal notranslate"><span class="pre">ServiceDeployment</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#mtap.deployment.ProcessorDeployment"><code class="docutils literal notranslate"><span class="pre">ProcessorDeployment</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#mtap.deployment.deployment_parser"><code class="docutils literal notranslate"><span class="pre">deployment_parser()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#mtap.deployment.ServiceDeploymentException"><code class="docutils literal notranslate"><span class="pre">ServiceDeploymentException</span></code></a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">mtap.deployment</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html">mtap.io</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="io.html#module-mtap.io.serialization">Serialization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serialization.html">mtap.serialization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="serialization.html#module-mtap.serialization">Serialization</a></li>
 </ul>
 </li>
 </ul>
@@ -97,7 +94,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="mtap.html">mtap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="deployment.html">mtap.deployment</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html">mtap.io</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serialization.html">mtap.serialization</a></li>
 </ul>
 
   <div>
@@ -138,13 +135,13 @@
         <li class="right" >
           <a href="mtap.html" title="mtap"
              >next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">MTAP 1.0.0rc2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="#">MTAP 1.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Welcome to MTAP’s documentation!</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Regents of the University of Minnesota..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>
 </html>

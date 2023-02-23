@@ -4,9 +4,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>mtap.deployment &#8212; MTAP 1.0.0rc2 documentation</title>
+    <title>mtap.deployment &#8212; MTAP 1.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
@@ -14,9 +14,10 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="mtap.io" href="io.html" />
+    <link rel="next" title="mtap.serialization" href="serialization.html" />
     <link rel="prev" title="mtap" href="mtap.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -29,12 +30,12 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="io.html" title="mtap.io"
+          <a href="serialization.html" title="mtap.serialization"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="mtap.html" title="mtap"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">MTAP 1.0.0rc2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">MTAP 1.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">mtap.deployment</a></li> 
       </ul>
     </div>  
@@ -48,6 +49,8 @@
 <span id="mtap-deployment"></span><h1>mtap.deployment<a class="headerlink" href="#module-mtap.deployment" title="Permalink to this heading">¶</a></h1>
 <p>Module for deploying a set of processing services and the events server all at once.</p>
 <p class="rubric">Examples</p>
+<p>See python/mtap/examples/exampleDeploymentConfiguration.yml for an example of the yaml deployment configuration
+which can be loaded using <a class="reference internal" href="#mtap.deployment.Deployment.from_yaml_file" title="mtap.deployment.Deployment.from_yaml_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_yaml_file()</span></code></a></p>
 <p>An example configuration</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deploy</span> <span class="o">=</span> <span class="n">Deployment</span><span class="p">(</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">GlobalSettings</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">),</span>
@@ -68,24 +71,68 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="mtap.deployment.Deployment">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mtap.deployment.</span></span><span class="sig-name descname"><span class="pre">Deployment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_settings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">events_deployment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shared_processor_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">processors</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/deployment.html#Deployment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mtap.deployment.Deployment" title="Permalink to this definition">¶</a></dt>
-<dd><p>A automatic deployment configuration which launches a configurable set of MTAP services.</p>
+<dd><p>An automatic deployment configuration which launches a configurable set of MTAP services.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>global_settings</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference internal" href="#mtap.deployment.GlobalSettings" title="mtap.deployment.GlobalSettings"><em>GlobalSettings</em></a><em>]</em>) – Settings shared among all services.</p></li>
-<li><p><strong>events_deployment</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference internal" href="#mtap.deployment.EventsDeployment" title="mtap.deployment.EventsDeployment"><em>EventsDeployment</em></a><em>]</em>) – Deployment settings for the events service.</p></li>
-<li><p><strong>shared_processor_config</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference internal" href="#mtap.deployment.SharedProcessorConfig" title="mtap.deployment.SharedProcessorConfig"><em>SharedProcessorConfig</em></a><em>]</em>) – Shared configuration settings for all processors.</p></li>
-<li><p><strong>processors</strong> (<em>vararg ProcessorDeployment</em>) – Configurations for individual processors.</p></li>
+<li><p><strong>global_settings</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference internal" href="#mtap.deployment.GlobalSettings" title="mtap.deployment.GlobalSettings"><em>GlobalSettings</em></a><em>]</em>) – Settings shared among all services.</p></li>
+<li><p><strong>events_deployment</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference internal" href="#mtap.deployment.EventsDeployment" title="mtap.deployment.EventsDeployment"><em>EventsDeployment</em></a><em>]</em>) – Deployment settings for the events service.</p></li>
+<li><p><strong>shared_processor_config</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference internal" href="#mtap.deployment.SharedProcessorConfig" title="mtap.deployment.SharedProcessorConfig"><em>SharedProcessorConfig</em></a><em>]</em>) – Shared configuration settings for all processors.</p></li>
+<li><p><strong>*processors</strong> (<a class="reference internal" href="#mtap.deployment.ProcessorDeployment" title="mtap.deployment.ProcessorDeployment"><em>ProcessorDeployment</em></a>) – Configurations for individual processors.</p></li>
 </ul>
 </dd>
 </dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mtap.deployment.Deployment.global_settings">
+<span class="sig-name descname"><span class="pre">global_settings</span></span><a class="headerlink" href="#mtap.deployment.Deployment.global_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Settings shared among all services.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference internal" href="#mtap.deployment.GlobalSettings" title="mtap.deployment.GlobalSettings">GlobalSettings</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mtap.deployment.Deployment.events_deployment">
+<span class="sig-name descname"><span class="pre">events_deployment</span></span><a class="headerlink" href="#mtap.deployment.Deployment.events_deployment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deployment settings for the events service.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference internal" href="#mtap.deployment.EventsDeployment" title="mtap.deployment.EventsDeployment">EventsDeployment</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mtap.deployment.Deployment.shared_processor_config">
+<span class="sig-name descname"><span class="pre">shared_processor_config</span></span><a class="headerlink" href="#mtap.deployment.Deployment.shared_processor_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shared configuration settings for all processors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference internal" href="#mtap.deployment.SharedProcessorConfig" title="mtap.deployment.SharedProcessorConfig">SharedProcessorConfig</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mtap.deployment.Deployment.processors">
+<span class="sig-name descname"><span class="pre">processors</span></span><a class="headerlink" href="#mtap.deployment.Deployment.processors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configurations for individual processors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><em>List</em></a>[<a class="reference internal" href="#mtap.deployment.ProcessorDeployment" title="mtap.deployment.ProcessorDeployment">ProcessorDeployment</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="mtap.deployment.Deployment.load_configuration">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_configuration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">conf</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/deployment.html#Deployment.load_configuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mtap.deployment.Deployment.load_configuration" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a deployment object from a configuration dictionary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>conf</strong> (<em>Dict</em>) – The configuration dictionary.</p>
+<dd class="field-odd"><p><strong>conf</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><em>Dict</em></a>) – The configuration dictionary.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Deployment object created.</p>
@@ -99,7 +146,7 @@
 <dd><p>Loads a deployment configuration from a yaml file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>conf_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.10)"><em>pathlib.Path</em></a>) – The path to the yaml configuration file.</p>
+<dd class="field-odd"><p><strong>conf_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.11)"><em>pathlib.Path</em></a>) – The path to the yaml configuration file.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Deployment object created from the configuration.</p>
@@ -110,12 +157,32 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="mtap.deployment.Deployment.run_servers">
 <span class="sig-name descname"><span class="pre">run_servers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/deployment.html#Deployment.run_servers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mtap.deployment.Deployment.run_servers" title="Permalink to this definition">¶</a></dt>
-<dd><p>Starts all of the configured services.</p>
+<dd><p>A context manager that starts all the configured services in subprocesses and returns.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#mtap.deployment.ServiceDeploymentException" title="mtap.deployment.ServiceDeploymentException"><strong>ServiceDeploymentException</strong></a> – If one of the services fails to launch.</p>
+<dd class="field-odd"><p><a class="reference internal" href="#mtap.deployment.ServiceDeploymentException" title="mtap.deployment.ServiceDeploymentException"><strong>ServiceDeploymentException</strong></a> – If one or more of the services fails to launch.</p>
 </dd>
 </dl>
+<p>Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deploy</span> <span class="o">=</span> <span class="n">Deployment</span><span class="o">.</span><span class="n">from_yaml_file</span><span class="p">(</span><span class="s1">&#39;deploy_config.yml&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">deploy</span><span class="o">.</span><span class="n">run_servers</span><span class="p">():</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="c1"># do something that requires the servers.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># servers are automatically shutdown / terminated when the block is exited</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mtap.deployment.Deployment.run_servers_and_wait">
+<span class="sig-name descname"><span class="pre">run_servers_and_wait</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/deployment.html#Deployment.run_servers_and_wait"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mtap.deployment.Deployment.run_servers_and_wait" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts the specified servers and blocks until KeyboardInterrupt, SIGINT, or SIGTERM are received.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mtap.deployment.Deployment.shutdown">
+<span class="sig-name descname"><span class="pre">shutdown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/deployment.html#Deployment.shutdown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mtap.deployment.Deployment.shutdown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shuts down all processors.</p>
+<p>Returns:</p>
 </dd></dl>
 
 </dd></dl>
@@ -127,20 +194,20 @@
 <dl class="field-list simple">
 <dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>host</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – The global host, by default will use “127.0.0.1”.</p></li>
-<li><p><strong>mtap_config</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – The path to an MTAP config file to load for all services.</p></li>
-<li><p><strong>log_level</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – A python logging level to pass to all services.</p></li>
-<li><p><strong>register</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – Whether services should register with service discovery.</p></li>
+<li><p><strong>host</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>]</em>) – The global host override, forces all services to use a specific host name.</p></li>
+<li><p><strong>mtap_config</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>]</em>) – The path to an MTAP config file to load for all services.</p></li>
+<li><p><strong>log_level</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>]</em>) – A python logging level to pass to all services.</p></li>
+<li><p><strong>register</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a><em>]</em>) – Whether services should register with service discovery.</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="mtap.deployment.GlobalSettings.host">
 <span class="sig-name descname"><span class="pre">host</span></span><a class="headerlink" href="#mtap.deployment.GlobalSettings.host" title="Permalink to this definition">¶</a></dt>
-<dd><p>The global host, by default will use “127.0.0.1”.</p>
+<dd><p>The global host override, forces all services to use a specific host name.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -151,7 +218,7 @@
 <dd><p>The path to an MTAP config file to load for all services.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -162,7 +229,7 @@
 <dd><p>A python logging level to pass to all services.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -173,7 +240,7 @@
 <dd><p>Whether services should register with service discovery.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)">bool</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -184,7 +251,7 @@
 <dd><p>Creates a global settings object from a configuration dictionary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>conf</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>]</em>) – The configuration dictionary.</p>
+<dd class="field-odd"><p><strong>conf</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><em>Dict</em></a><em>]</em>) – The configuration dictionary.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The global settings object.</p>
@@ -199,23 +266,23 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="mtap.deployment.SharedProcessorConfig">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mtap.deployment.</span></span><span class="sig-name descname"><span class="pre">SharedProcessorConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events_addresses</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jvm_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_classpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">startup_timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mp_spawn_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/deployment.html#SharedProcessorConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mtap.deployment.SharedProcessorConfig" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mtap.deployment.</span></span><span class="sig-name descname"><span class="pre">SharedProcessorConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">events_addresses</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jvm_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_classpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_additional_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">startup_timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mp_spawn_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/deployment.html#SharedProcessorConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mtap.deployment.SharedProcessorConfig" title="Permalink to this definition">¶</a></dt>
 <dd><p>Configuration that is shared between multiple processor services.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>events_addresses</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – An optional GRPC-compatible target for the events
+<li><p><strong>events_addresses</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>]</em><em>]</em>) – An optional GRPC-compatible target for the events
 service to be used by all processors.</p></li>
-<li><p><strong>workers</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – The default number of worker threads which will perform
+<li><p><strong>workers</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>]</em>) – The default number of worker threads which will perform
 processing.</p></li>
-<li><p><strong>additional_args</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em><em>]</em>) – a list of additional arguments that
+<li><p><strong>additional_args</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>]</em><em>]</em>) – a list of additional arguments that
 should be appended to every processor.</p></li>
-<li><p><strong>jvm_args</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em><em>]</em>) – a list of JVM arguments for all java
+<li><p><strong>jvm_args</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>]</em><em>]</em>) – a list of JVM arguments for all java
 processors.</p></li>
-<li><p><strong>java_classpath</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – A classpath string that will be passed to all java
+<li><p><strong>java_classpath</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>]</em>) – A classpath string that will be passed to all java
 processors.</p></li>
-<li><p><strong>startup_timeout</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – The default startup timeout for processors.</p></li>
-<li><p><strong>mp_spawn_method</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – A <code class="xref py py-meth docutils literal notranslate"><span class="pre">multiprocessing.get_context()</span></code> argument to create
+<li><p><strong>startup_timeout</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>]</em>) – The default startup timeout for processors.</p></li>
+<li><p><strong>mp_spawn_method</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>]</em>) – A <code class="xref py py-meth docutils literal notranslate"><span class="pre">multiprocessing.get_context()</span></code> argument to create
 the multiprocessing context.</p></li>
 </ul>
 </dd>
@@ -227,7 +294,7 @@ the multiprocessing context.</p></li>
 service to be used by all processors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional[List[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a>]]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><em>List</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -239,7 +306,7 @@ service to be used by all processors.</p>
 processing.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)">int</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -251,7 +318,7 @@ processing.</p>
 should be appended to every processor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional[List[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a>]]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><em>List</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -263,7 +330,7 @@ should be appended to every processor.</p>
 processors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional[List[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a>]]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><em>List</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -275,7 +342,7 @@ processors.</p>
 processors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -286,7 +353,7 @@ processors.</p>
 <dd><p>The default startup timeout for processors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)">int</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -298,7 +365,7 @@ processors.</p>
 the multiprocessing context.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -309,7 +376,7 @@ the multiprocessing context.</p>
 <dd><p>Builds a configuration from a dictionary representation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>conf</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>]</em>) – The configuration dictionary.</p>
+<dd class="field-odd"><p><strong>conf</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><em>Dict</em></a><em>]</em>) – The configuration dictionary.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>SharedProcessorConfig object.</p>
@@ -326,22 +393,55 @@ the multiprocessing context.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>enabled</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether an events service should be created.</p></li>
-<li><p><strong>addresses</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.10)"><em>Sequence</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em><em>]</em>) – The host address of the events service.</p></li>
-<li><p><strong>workers</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – The number of worker threads the events service should use.</p></li>
-<li><p><strong>register</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>]</em>) – Whether to register the events service with discovery.</p></li>
-<li><p><strong>mtap_config</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – Path to an mtap configuration file.</p></li>
-<li><p><strong>log_level</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – The log level for the events service.</p></li>
+<li><p><strong>enabled</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – Whether an events service should be created.</p></li>
+<li><p><strong>addresses</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.11)"><em>Sequence</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>]</em><em>]</em>) – The host address of the events service.</p></li>
+<li><p><strong>workers</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>]</em>) – The number of worker threads the events service should use.</p></li>
+<li><p><strong>register</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a><em>]</em>) – Whether to register the events service with discovery.</p></li>
+<li><p><strong>mtap_config</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>]</em>) – Path to an mtap configuration file.</p></li>
+<li><p><strong>log_level</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>]</em>) – The log level for the events service.</p></li>
 </ul>
 </dd>
 </dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mtap.deployment.EventsDeployment.enabled">
+<span class="sig-name descname"><span class="pre">enabled</span></span><a class="headerlink" href="#mtap.deployment.EventsDeployment.enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether an events service should be created.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mtap.deployment.EventsDeployment.addresses">
+<span class="sig-name descname"><span class="pre">addresses</span></span><a class="headerlink" href="#mtap.deployment.EventsDeployment.addresses" title="Permalink to this definition">¶</a></dt>
+<dd><p>The host address of the events service.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.11)"><em>Sequence</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mtap.deployment.EventsDeployment.service_deployment">
+<span class="sig-name descname"><span class="pre">service_deployment</span></span><a class="headerlink" href="#mtap.deployment.EventsDeployment.service_deployment" title="Permalink to this definition">¶</a></dt>
+<dd><p>The service deployment settings (workers, registration, config, logging).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#mtap.deployment.ServiceDeployment" title="mtap.deployment.ServiceDeployment">ServiceDeployment</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="mtap.deployment.EventsDeployment.from_conf">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_conf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">conf</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/deployment.html#EventsDeployment.from_conf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mtap.deployment.EventsDeployment.from_conf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates the EventsDeployment configuration option from a configuration dictionary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>conf</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>]</em>) – The configuration dictionary</p>
+<dd class="field-odd"><p><strong>conf</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><em>Dict</em></a><em>]</em>) – The configuration dictionary</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>EventsDeployment or None from the configuration dictionary.</p>
@@ -352,8 +452,68 @@ the multiprocessing context.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="mtap.deployment.ServiceDeployment">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mtap.deployment.</span></span><span class="sig-name descname"><span class="pre">ServiceDeployment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">register</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mtap_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_level</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/deployment.html#ServiceDeployment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mtap.deployment.ServiceDeployment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shared configuration for services, both events and processors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>workers</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>]</em>) – The number of workers.</p></li>
+<li><p><strong>register</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a><em>]</em>) – Whether to use service discovery.</p></li>
+<li><p><strong>mtap_config</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>]</em>) – A path to the mtap configuration.</p></li>
+<li><p><strong>log_level</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>]</em>) – The log level.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mtap.deployment.ServiceDeployment.workers">
+<span class="sig-name descname"><span class="pre">workers</span></span><a class="headerlink" href="#mtap.deployment.ServiceDeployment.workers" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of workers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)">int</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mtap.deployment.ServiceDeployment.register">
+<span class="sig-name descname"><span class="pre">register</span></span><a class="headerlink" href="#mtap.deployment.ServiceDeployment.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether to use service discovery.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)">bool</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mtap.deployment.ServiceDeployment.mtap_config">
+<span class="sig-name descname"><span class="pre">mtap_config</span></span><a class="headerlink" href="#mtap.deployment.ServiceDeployment.mtap_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>A path to the mtap configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mtap.deployment.ServiceDeployment.log_level">
+<span class="sig-name descname"><span class="pre">log_level</span></span><a class="headerlink" href="#mtap.deployment.ServiceDeployment.log_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>The log level.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="mtap.deployment.ProcessorDeployment">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mtap.deployment.</span></span><span class="sig-name descname"><span class="pre">ProcessorDeployment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">implementation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">entry_point</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">instances</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">register</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mtap_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identifier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">startup_timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mp_spawn_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/deployment.html#ProcessorDeployment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mtap.deployment.ProcessorDeployment" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mtap.deployment.</span></span><span class="sig-name descname"><span class="pre">ProcessorDeployment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">implementation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">entry_point</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">instances</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">register</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mtap_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique_service_identifier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">startup_timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mp_spawn_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/deployment.html#ProcessorDeployment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mtap.deployment.ProcessorDeployment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Deployment configuration for an MTAP processor.</p>
 <p>Used to construct the command for launching the processor. The processor should be a Java Class
 with a main method or a Python module with a main block. It should accept the standard MTAP
@@ -362,35 +522,161 @@ the equivalent Java method.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>implementation</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Either “java” or “python”.</p></li>
-<li><p><strong>entry_point</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Either the java main class, or the python main module.</p></li>
-<li><p><strong>enabled</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>]</em>) – Whether the processor should be launched as part of
+<li><p><strong>implementation</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – Either “java” or “python”.</p></li>
+<li><p><strong>entry_point</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – Either the java main class, or the python main module.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>enabled</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a><em>]</em>) – Whether the processor should be launched as part of
 deployment. Default is <cite>True</cite> if <cite>None</cite>.</p></li>
-<li><p><strong>instances</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – The number of instances of the processor to launch.
+<li><p><strong>instances</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>]</em>) – The number of instances of the processor to launch.
 Default is <cite>1</cite> if <cite>None</cite>.</p></li>
-<li><p><strong>host</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – The listening host for the processor service.</p></li>
-<li><p><strong>port</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – The listening port for the processor service.</p></li>
-<li><p><strong>workers</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – The number of worker threads per instance.</p></li>
-<li><p><strong>register</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>]</em>) – Whether the processor should register with the discovery service specified in the MTAP
+<li><p><strong>host</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>]</em>) – The listening host for the processor service.</p></li>
+<li><p><strong>port</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>]</em>) – The listening port for the processor service.</p></li>
+<li><p><strong>workers</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>]</em>) – The number of worker threads per instance.</p></li>
+<li><p><strong>register</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a><em>]</em>) – Whether the processor should register with the discovery service specified in the MTAP
 configuration</p></li>
-<li><p><strong>mtap_config</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – Path to the MTAP configuration file.</p></li>
-<li><p><strong>log_level</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – The log level for the processor.</p></li>
-<li><p><strong>identifier</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – An optional identifier override to use for registration.</p></li>
-<li><p><strong>pre_args</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em><em>]</em>) – Arguments that occur prior to the MTAP service arguments (like host, port, etc).</p></li>
-<li><p><strong>additional_args</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em><em>]</em>) – Arguments that occur after the MTAP service arguments.</p></li>
-<li><p><strong>startup_timeout</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – Optional override startup timeout.</p></li>
-<li><p><strong>mp_spawn_method</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – A <code class="xref py py-meth docutils literal notranslate"><span class="pre">multiprocessing.get_context()</span></code> argument to create
+<li><p><strong>mtap_config</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>]</em>) – Path to the MTAP configuration file.</p></li>
+<li><p><strong>log_level</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>]</em>) – The log level for the processor.</p></li>
+<li><p><strong>identifier</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>]</em>) – An optional identifier override to use for registration.</p></li>
+<li><p><strong>pre_args</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>]</em><em>]</em>) – Arguments that occur prior to the MTAP service arguments (like host, port, etc).</p></li>
+<li><p><strong>additional_args</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>]</em><em>]</em>) – Arguments that occur after the MTAP service arguments.</p></li>
+<li><p><strong>startup_timeout</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>]</em>) – Optional override startup timeout.</p></li>
+<li><p><strong>mp_spawn_method</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>]</em>) – A <code class="xref py py-meth docutils literal notranslate"><span class="pre">multiprocessing.get_context()</span></code> argument to create
 the multiprocessing context.</p></li>
 </ul>
 </dd>
 </dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mtap.deployment.ProcessorDeployment.implementation">
+<span class="sig-name descname"><span class="pre">implementation</span></span><a class="headerlink" href="#mtap.deployment.ProcessorDeployment.implementation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Either “java” or “python”.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mtap.deployment.ProcessorDeployment.entry_point">
+<span class="sig-name descname"><span class="pre">entry_point</span></span><a class="headerlink" href="#mtap.deployment.ProcessorDeployment.entry_point" title="Permalink to this definition">¶</a></dt>
+<dd><p>Either the java main class, or the python main module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mtap.deployment.ProcessorDeployment.enabled">
+<span class="sig-name descname"><span class="pre">enabled</span></span><a class="headerlink" href="#mtap.deployment.ProcessorDeployment.enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether the processor should be launched as part of deployment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mtap.deployment.ProcessorDeployment.instances">
+<span class="sig-name descname"><span class="pre">instances</span></span><a class="headerlink" href="#mtap.deployment.ProcessorDeployment.instances" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of instances of the processor to launch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mtap.deployment.ProcessorDeployment.host">
+<span class="sig-name descname"><span class="pre">host</span></span><a class="headerlink" href="#mtap.deployment.ProcessorDeployment.host" title="Permalink to this definition">¶</a></dt>
+<dd><p>The listening host for the processor service.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mtap.deployment.ProcessorDeployment.port">
+<span class="sig-name descname"><span class="pre">port</span></span><a class="headerlink" href="#mtap.deployment.ProcessorDeployment.port" title="Permalink to this definition">¶</a></dt>
+<dd><p>The listening port for the processor service.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)">int</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mtap.deployment.ProcessorDeployment.service_deployment">
+<span class="sig-name descname"><span class="pre">service_deployment</span></span><a class="headerlink" href="#mtap.deployment.ProcessorDeployment.service_deployment" title="Permalink to this definition">¶</a></dt>
+<dd><p>The service deployment settings (workers, registration, config, logging).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#mtap.deployment.ServiceDeployment" title="mtap.deployment.ServiceDeployment">ServiceDeployment</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mtap.deployment.ProcessorDeployment.pre_args">
+<span class="sig-name descname"><span class="pre">pre_args</span></span><a class="headerlink" href="#mtap.deployment.ProcessorDeployment.pre_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Arguments that occur prior to the MTAP service arguments (like host, port, etc).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><em>List</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mtap.deployment.ProcessorDeployment.additional_args">
+<span class="sig-name descname"><span class="pre">additional_args</span></span><a class="headerlink" href="#mtap.deployment.ProcessorDeployment.additional_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Arguments that occur after the MTAP service arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><em>List</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mtap.deployment.ProcessorDeployment.startup_timeout">
+<span class="sig-name descname"><span class="pre">startup_timeout</span></span><a class="headerlink" href="#mtap.deployment.ProcessorDeployment.startup_timeout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional override startup timeout.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)">int</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mtap.deployment.ProcessorDeployment.mp_spawn_method">
+<span class="sig-name descname"><span class="pre">mp_spawn_method</span></span><a class="headerlink" href="#mtap.deployment.ProcessorDeployment.mp_spawn_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <code class="xref py py-meth docutils literal notranslate"><span class="pre">multiprocessing.get_context()</span></code> argument to create
+the multiprocessing context.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><em>Optional</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="mtap.deployment.ProcessorDeployment.from_conf">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_conf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">conf</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mtap/deployment.html#ProcessorDeployment.from_conf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mtap.deployment.ProcessorDeployment.from_conf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates an MTAP processor deployment configuration from a configuration dictionary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>conf</strong> (<em>Dict</em>) – The configuration dictionary.</p>
+<dd class="field-odd"><p><strong>conf</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><em>Dict</em></a>) – The configuration dictionary.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>ProcessorDeployment object that can be used to constuct the call for the processor.</p>
@@ -410,7 +696,7 @@ the multiprocessing context.</p></li>
 be passed to <code class="xref py py-func docutils literal notranslate"><span class="pre">main()</span></code>.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser" title="(in Python v3.10)"><em>ArgumentParser</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser" title="(in Python v3.11)"><em>ArgumentParser</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -434,8 +720,18 @@ be passed to <code class="xref py py-func docutils literal notranslate"><span cl
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="mtap.html">mtap</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">mtap.deployment</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html">mtap.io</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">mtap.deployment</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#mtap.deployment.Deployment"><code class="docutils literal notranslate"><span class="pre">Deployment</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mtap.deployment.GlobalSettings"><code class="docutils literal notranslate"><span class="pre">GlobalSettings</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mtap.deployment.SharedProcessorConfig"><code class="docutils literal notranslate"><span class="pre">SharedProcessorConfig</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mtap.deployment.EventsDeployment"><code class="docutils literal notranslate"><span class="pre">EventsDeployment</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mtap.deployment.ServiceDeployment"><code class="docutils literal notranslate"><span class="pre">ServiceDeployment</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mtap.deployment.ProcessorDeployment"><code class="docutils literal notranslate"><span class="pre">ProcessorDeployment</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mtap.deployment.deployment_parser"><code class="docutils literal notranslate"><span class="pre">deployment_parser()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mtap.deployment.ServiceDeploymentException"><code class="docutils literal notranslate"><span class="pre">ServiceDeploymentException</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="serialization.html">mtap.serialization</a></li>
 </ul>
 
   <div>
@@ -445,8 +741,8 @@ be passed to <code class="xref py py-func docutils literal notranslate"><span cl
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="io.html"
-                          title="next chapter">mtap.io</a></p>
+    <p class="topless"><a href="serialization.html"
+                          title="next chapter">mtap.serialization</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -479,18 +775,18 @@ be passed to <code class="xref py py-func docutils literal notranslate"><span cl
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="io.html" title="mtap.io"
+          <a href="serialization.html" title="mtap.serialization"
              >next</a> |</li>
         <li class="right" >
           <a href="mtap.html" title="mtap"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">MTAP 1.0.0rc2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">MTAP 1.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">mtap.deployment</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Regents of the University of Minnesota..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>
 </html>

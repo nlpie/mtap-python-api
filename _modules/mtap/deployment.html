@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>mtap.deployment &#8212; MTAP 1.0.0rc2 documentation</title>
+    <title>mtap.deployment &#8212; MTAP 1.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinxdoc.css" />
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
@@ -13,6 +13,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
@@ -25,7 +26,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">MTAP 1.0.0rc2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MTAP 1.0.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">mtap.deployment</a></li> 
       </ul>
@@ -53,6 +54,8 @@
 <span class="sd">&quot;&quot;&quot;Module for deploying a set of processing services and the events server all at once.</span>
 
 <span class="sd">Examples:</span>
+<span class="sd">    See python/mtap/examples/exampleDeploymentConfiguration.yml for an example of the yaml deployment configuration</span>
+<span class="sd">    which can be loaded using :py:meth:`~mtap.deployment.Deployment.from_yaml_file`</span>
 
 <span class="sd">    An example configuration</span>
 
@@ -79,10 +82,13 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">pathlib</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">signal</span>
 <span class="kn">import</span> <span class="nn">subprocess</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">threading</span>
 <span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">grpc</span>
@@ -90,11 +96,11 @@
 <span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">utilities</span><span class="p">,</span> <span class="n">_config</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s1">&#39;Deployment&#39;</span><span class="p">,</span> <span class="s1">&#39;GlobalSettings&#39;</span><span class="p">,</span> <span class="s1">&#39;SharedProcessorConfig&#39;</span><span class="p">,</span> <span class="s1">&#39;EventsDeployment&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Deployment&#39;</span><span class="p">,</span> <span class="s1">&#39;GlobalSettings&#39;</span><span class="p">,</span> <span class="s1">&#39;SharedProcessorConfig&#39;</span><span class="p">,</span> <span class="s1">&#39;EventsDeployment&#39;</span><span class="p">,</span> <span class="s1">&#39;ServiceDeployment&#39;</span><span class="p">,</span>
     <span class="s1">&#39;ProcessorDeployment&#39;</span><span class="p">,</span> <span class="s1">&#39;main&#39;</span><span class="p">,</span> <span class="s1">&#39;deployment_parser&#39;</span><span class="p">,</span> <span class="s1">&#39;ServiceDeploymentException&#39;</span><span class="p">,</span>
 <span class="p">]</span>
 
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;mtap.deployment&#39;</span><span class="p">)</span>
 
 <span class="n">PYTHON_EXE</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">executable</span>
 
@@ -128,16 +134,16 @@
     <span class="sd">&quot;&quot;&quot;Settings shared by event service and all processors.</span>
 
 <span class="sd">    Keyword Args:</span>
-<span class="sd">        host (Optional[str]): The global host, by default will use &quot;127.0.0.1&quot;.</span>
-<span class="sd">        mtap_config (Optional[str]): The path to an MTAP config file to load for all services.</span>
-<span class="sd">        log_level (Optional[str]): A python logging level to pass to all services.</span>
-<span class="sd">        register (Optional[str]): Whether services should register with service discovery.</span>
+<span class="sd">        host (~typing.Optional[str]): The global host override, forces all services to use a specific host name.</span>
+<span class="sd">        mtap_config (~typing.Optional[str]): The path to an MTAP config file to load for all services.</span>
+<span class="sd">        log_level (~typing.Optional[str]): A python logging level to pass to all services.</span>
+<span class="sd">        register (~typing.Optional[bool]): Whether services should register with service discovery.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        host (Optional[str]): The global host, by default will use &quot;127.0.0.1&quot;.</span>
-<span class="sd">        mtap_config (Optional[str]): The path to an MTAP config file to load for all services.</span>
-<span class="sd">        log_level (Optional[str]): A python logging level to pass to all services.</span>
-<span class="sd">        register (Optional[str]): Whether services should register with service discovery.</span>
+<span class="sd">        host (~typing.Optional[str]): The global host override, forces all services to use a specific host name.</span>
+<span class="sd">        mtap_config (~typing.Optional[str]): The path to an MTAP config file to load for all services.</span>
+<span class="sd">        log_level (~typing.Optional[str]): A python logging level to pass to all services.</span>
+<span class="sd">        register (~typing.Optional[bool]): Whether services should register with service discovery.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -156,7 +162,7 @@
         <span class="sd">&quot;&quot;&quot;Creates a global settings object from a configuration dictionary.</span>
 
 <span class="sd">        Keyword Args:</span>
-<span class="sd">            conf (Optional[Dict]): The configuration dictionary.</span>
+<span class="sd">            conf (~typing.Optional[~typing.Dict]): The configuration dictionary.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            GlobalSettings: The global settings object.</span>
@@ -171,43 +177,44 @@
     <span class="sd">&quot;&quot;&quot;Configuration that is shared between multiple processor services.</span>
 
 <span class="sd">    Keyword Args:</span>
-<span class="sd">        events_addresses (Optional[str]): An optional GRPC-compatible target for the events</span>
+<span class="sd">        events_addresses (~typing.Optional[~typing.List[str]]): An optional GRPC-compatible target for the events</span>
 <span class="sd">            service to be used by all processors.</span>
-<span class="sd">        workers (Optional[int]): The default number of worker threads which will perform</span>
+<span class="sd">        workers (~typing.Optional[int]): The default number of worker threads which will perform</span>
 <span class="sd">            processing.</span>
-<span class="sd">        additional_args (Optional[List[str]]): a list of additional arguments that</span>
+<span class="sd">        additional_args (~typing.Optional[~typing.List[str]]): a list of additional arguments that</span>
 <span class="sd">            should be appended to every processor.</span>
-<span class="sd">        jvm_args (Optional[List[str]]): a list of JVM arguments for all java</span>
+<span class="sd">        jvm_args (~typing.Optional[~typing.List[str]]): a list of JVM arguments for all java</span>
 <span class="sd">            processors.</span>
-<span class="sd">        java_classpath (Optional[str]): A classpath string that will be passed to all java</span>
+<span class="sd">        java_classpath (~typing.Optional[str]): A classpath string that will be passed to all java</span>
 <span class="sd">            processors.</span>
-<span class="sd">        startup_timeout (Optional[int]): The default startup timeout for processors.</span>
-<span class="sd">        mp_spawn_method (Optional[str]): A :meth:`multiprocessing.get_context` argument to create</span>
+<span class="sd">        startup_timeout (~typing.Optional[int]): The default startup timeout for processors.</span>
+<span class="sd">        mp_spawn_method (~typing.Optional[str]): A :meth:`multiprocessing.get_context` argument to create</span>
 <span class="sd">            the multiprocessing context.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        events_addresses (Optional[List[str]]): An optional GRPC-compatible target for the events</span>
+<span class="sd">        events_addresses (~typing.Optional[~typing.List[str]]): An optional GRPC-compatible target for the events</span>
 <span class="sd">            service to be used by all processors.</span>
-<span class="sd">        workers (Optional[int]): The default number of worker threads which will perform</span>
+<span class="sd">        workers (~typing.Optional[int]): The default number of worker threads which will perform</span>
 <span class="sd">            processing.</span>
-<span class="sd">        additional_args (Optional[List[str]]): a list of additional arguments that</span>
+<span class="sd">        additional_args (~typing.Optional[~typing.List[str]]): a list of additional arguments that</span>
 <span class="sd">            should be appended to every processor.</span>
-<span class="sd">        jvm_args (Optional[List[str]]): a list of JVM arguments for all java</span>
+<span class="sd">        jvm_args (~typing.Optional[~typing.List[str]]): a list of JVM arguments for all java</span>
 <span class="sd">            processors.</span>
-<span class="sd">        java_classpath (Optional[str]): A classpath string that will be passed to all java</span>
+<span class="sd">        java_classpath (~typing.Optional[str]): A classpath string that will be passed to all java</span>
 <span class="sd">            processors.</span>
-<span class="sd">        startup_timeout (Optional[int]): The default startup timeout for processors.</span>
-<span class="sd">        mp_spawn_method (Optional[str]): A :meth:`multiprocessing.get_context` argument to create</span>
+<span class="sd">        startup_timeout (~typing.Optional[int]): The default startup timeout for processors.</span>
+<span class="sd">        mp_spawn_method (~typing.Optional[str]): A :meth:`multiprocessing.get_context` argument to create</span>
 <span class="sd">            the multiprocessing context.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
                  <span class="n">events_addresses</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">workers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">additional_args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">jvm_args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">java_classpath</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">java_additional_args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">startup_timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">mp_spawn_method</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">events_addresses</span> <span class="o">=</span> <span class="n">events_addresses</span>
@@ -215,6 +222,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">additional_args</span> <span class="o">=</span> <span class="n">additional_args</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">jvm_args</span> <span class="o">=</span> <span class="n">jvm_args</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">java_classpath</span> <span class="o">=</span> <span class="n">java_classpath</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">java_additional_args</span> <span class="o">=</span> <span class="n">java_additional_args</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">startup_timeout</span> <span class="o">=</span> <span class="n">startup_timeout</span> <span class="ow">or</span> <span class="mi">30</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mp_spawn_method</span> <span class="o">=</span> <span class="n">mp_spawn_method</span>
 
@@ -223,7 +231,7 @@
         <span class="sd">&quot;&quot;&quot;Builds a configuration from a dictionary representation.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            conf (Optional[Dict]): The configuration dictionary.</span>
+<span class="sd">            conf (~typing.Optional[~typing.Dict]): The configuration dictionary.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            SharedProcessorConfig object.</span>
@@ -233,8 +241,22 @@
         <span class="k">return</span> <span class="n">SharedProcessorConfig</span><span class="p">(</span><span class="o">**</span><span class="n">conf</span><span class="p">)</span></div></div>
 
 
-<span class="k">class</span> <span class="nc">_ServiceDeployment</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<div class="viewcode-block" id="ServiceDeployment"><a class="viewcode-back" href="../../deployment.html#mtap.deployment.ServiceDeployment">[docs]</a><span class="k">class</span> <span class="nc">ServiceDeployment</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Shared configuration for services, both events and processors.</span>
+
+<span class="sd">    Keyword Args:</span>
+<span class="sd">        workers (~typing.Optional[int]): The number of workers.</span>
+<span class="sd">        register (~typing.Optional[bool]): Whether to use service discovery.</span>
+<span class="sd">        mtap_config (~typing.Optional[str]): A path to the mtap configuration.</span>
+<span class="sd">        log_level (~typing.Optional[str]): The log level.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        workers (~typing.Optional[int]): The number of workers.</span>
+<span class="sd">        register (~typing.Optional[bool]): Whether to use service discovery.</span>
+<span class="sd">        mtap_config (~typing.Optional[str]): A path to the mtap configuration.</span>
+<span class="sd">        log_level (~typing.Optional[str]): The log level.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
                  <span class="n">workers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
                  <span class="n">register</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span>
                  <span class="n">mtap_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
@@ -244,17 +266,18 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">mtap_config</span> <span class="o">=</span> <span class="n">mtap_config</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_level</span> <span class="o">=</span> <span class="n">log_level</span>
 
-    <span class="k">def</span> <span class="nf">service_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                     <span class="n">host</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                     <span class="n">port</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                     <span class="n">register_default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                     <span class="n">host_default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                     <span class="n">workers_default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                     <span class="n">mtap_config_default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                     <span class="n">log_level_default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_service_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                      <span class="n">host</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">port</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">unique_service_identifier</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">register_default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">global_host</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">workers_default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">mtap_config_default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">log_level_default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="n">call</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="n">host</span> <span class="o">=</span> <span class="n">host</span> <span class="ow">or</span> <span class="n">host_default</span>
+        <span class="n">host</span> <span class="o">=</span> <span class="n">global_host</span> <span class="ow">or</span> <span class="n">host</span>
         <span class="k">if</span> <span class="n">host</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;--host&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">host</span><span class="p">)])</span>
 
@@ -263,6 +286,9 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">register</span> <span class="ow">or</span> <span class="n">register_default</span><span class="p">:</span>
             <span class="n">call</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--register&#39;</span><span class="p">)</span>
+
+        <span class="n">sid</span> <span class="o">=</span> <span class="n">unique_service_identifier</span> <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+        <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;--sid&quot;</span><span class="p">,</span> <span class="n">sid</span><span class="p">])</span>
 
         <span class="n">workers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">workers</span> <span class="ow">or</span> <span class="n">workers_default</span>
         <span class="k">if</span> <span class="n">workers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -277,7 +303,7 @@
             <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;--log-level&#39;</span><span class="p">,</span> <span class="n">log_level</span><span class="p">])</span>
 
         <span class="n">call</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--write-address&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">call</span>
+        <span class="k">return</span> <span class="n">call</span><span class="p">,</span> <span class="n">sid</span></div>
 
 
 <div class="viewcode-block" id="EventsDeployment"><a class="viewcode-back" href="../../deployment.html#mtap.deployment.EventsDeployment">[docs]</a><span class="k">class</span> <span class="nc">EventsDeployment</span><span class="p">:</span>
@@ -291,6 +317,11 @@
 <span class="sd">        mtap_config (~typing.Optional[str]): Path to an mtap configuration file.</span>
 <span class="sd">        log_level (~typing.Optional[str]): The log level for the events service.</span>
 
+<span class="sd">    Attributes:</span>
+<span class="sd">        enabled (bool): Whether an events service should be created.</span>
+<span class="sd">        addresses (~typing.Optional[~typing.Sequence[str]]): The host address of the events service.</span>
+<span class="sd">        service_deployment (ServiceDeployment):</span>
+<span class="sd">            The service deployment settings (workers, registration, config, logging).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
@@ -302,9 +333,10 @@
                  <span class="n">log_level</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">enabled</span> <span class="o">=</span> <span class="n">enabled</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">addresses</span> <span class="o">=</span> <span class="n">addresses</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">service_deployment</span> <span class="o">=</span> <span class="n">_ServiceDeployment</span><span class="p">(</span><span class="n">workers</span><span class="p">,</span> <span class="n">register</span><span class="p">,</span> <span class="n">mtap_config</span><span class="p">,</span> <span class="n">log_level</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">service_deployment</span> <span class="o">=</span> <span class="n">ServiceDeployment</span><span class="p">(</span><span class="n">workers</span><span class="o">=</span><span class="n">workers</span><span class="p">,</span> <span class="n">register</span><span class="o">=</span><span class="n">register</span><span class="p">,</span> <span class="n">mtap_config</span><span class="o">=</span><span class="n">mtap_config</span><span class="p">,</span>
+                                                    <span class="n">log_level</span><span class="o">=</span><span class="n">log_level</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">create_calls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_settings</span><span class="p">:</span> <span class="n">GlobalSettings</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+    <span class="k">def</span> <span class="nf">create_calls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_settings</span><span class="p">:</span> <span class="n">GlobalSettings</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]:</span>
         <span class="k">for</span> <span class="n">address</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">addresses</span><span class="p">:</span>
             <span class="n">host</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">port</span> <span class="o">=</span> <span class="kc">None</span>
@@ -317,23 +349,23 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">host</span> <span class="o">=</span> <span class="n">splits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">call</span> <span class="o">=</span> <span class="p">[</span><span class="n">PYTHON_EXE</span><span class="p">,</span> <span class="s1">&#39;-m&#39;</span><span class="p">,</span> <span class="s1">&#39;mtap&#39;</span><span class="p">,</span> <span class="s1">&#39;events&#39;</span><span class="p">]</span>
-            <span class="n">service_args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service_deployment</span><span class="o">.</span><span class="n">service_args</span><span class="p">(</span>
+            <span class="n">service_args</span><span class="p">,</span> <span class="n">sid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service_deployment</span><span class="o">.</span><span class="n">_service_args</span><span class="p">(</span>
                 <span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">,</span>
                 <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span>
                 <span class="n">register_default</span><span class="o">=</span><span class="n">global_settings</span><span class="o">.</span><span class="n">register</span><span class="p">,</span>
-                <span class="n">host_default</span><span class="o">=</span><span class="n">global_settings</span><span class="o">.</span><span class="n">host</span><span class="p">,</span>
+                <span class="n">global_host</span><span class="o">=</span><span class="n">global_settings</span><span class="o">.</span><span class="n">host</span><span class="p">,</span>
                 <span class="n">mtap_config_default</span><span class="o">=</span><span class="n">global_settings</span><span class="o">.</span><span class="n">mtap_config</span><span class="p">,</span>
                 <span class="n">log_level_default</span><span class="o">=</span><span class="n">global_settings</span><span class="o">.</span><span class="n">log_level</span>
             <span class="p">)</span>
             <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">service_args</span><span class="p">)</span>
-            <span class="k">yield</span> <span class="n">call</span>
+            <span class="k">yield</span> <span class="n">call</span><span class="p">,</span> <span class="n">sid</span>
 
 <div class="viewcode-block" id="EventsDeployment.from_conf"><a class="viewcode-back" href="../../deployment.html#mtap.deployment.EventsDeployment.from_conf">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">from_conf</span><span class="p">(</span><span class="n">conf</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s1">&#39;EventsDeployment&#39;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Creates the EventsDeployment configuration option from a configuration dictionary.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            conf (Optional[Dict]): The configuration dictionary</span>
+<span class="sd">            conf (~typing.Optional[~typing.Dict]): The configuration dictionary</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            EventsDeployment or None from the configuration dictionary.</span>
@@ -371,6 +403,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        implementation (str): Either &quot;java&quot; or &quot;python&quot;.</span>
 <span class="sd">        entry_point (str): Either the java main class, or the python main module.</span>
+
+<span class="sd">    Keyword Args:</span>
 <span class="sd">        enabled (~typing.Optional[bool]): Whether the processor should be launched as part of</span>
 <span class="sd">            deployment. Default is `True` if `None`.</span>
 <span class="sd">        instances (~typing.Optional[int]): The number of instances of the processor to launch.</span>
@@ -392,6 +426,23 @@
 <span class="sd">        mp_spawn_method (~typing.Optional[str]): A :meth:`multiprocessing.get_context` argument to create</span>
 <span class="sd">            the multiprocessing context.</span>
 
+<span class="sd">    Attributes:</span>
+<span class="sd">        implementation (str): Either &quot;java&quot; or &quot;python&quot;.</span>
+<span class="sd">        entry_point (str): Either the java main class, or the python main module.</span>
+<span class="sd">        enabled (bool): Whether the processor should be launched as part of deployment.</span>
+<span class="sd">        instances (int): The number of instances of the processor to launch.</span>
+<span class="sd">        host (~typing.Optional[str]): The listening host for the processor service.</span>
+<span class="sd">        port (~typing.Optional[int]): The listening port for the processor service.</span>
+<span class="sd">        service_deployment (ServiceDeployment):</span>
+<span class="sd">            The service deployment settings (workers, registration, config, logging).</span>
+<span class="sd">        pre_args (~typing.Optional[~typing.List[str]]):</span>
+<span class="sd">            Arguments that occur prior to the MTAP service arguments (like host, port, etc).</span>
+<span class="sd">        additional_args (~typing.Optional[~typing.List[str]]):</span>
+<span class="sd">            Arguments that occur after the MTAP service arguments.</span>
+<span class="sd">        startup_timeout (~typing.Optional[int]): Optional override startup timeout.</span>
+<span class="sd">        mp_spawn_method (~typing.Optional[str]): A :meth:`multiprocessing.get_context` argument to create</span>
+<span class="sd">            the multiprocessing context.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -405,23 +456,26 @@
                  <span class="n">register</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">mtap_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">log_level</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">identifier</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">unique_service_identifier</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">pre_args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">additional_args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">startup_timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">mp_spawn_method</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">enabled</span> <span class="o">=</span> <span class="n">enabled</span> <span class="k">if</span> <span class="n">enabled</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">implementation</span> <span class="o">=</span> <span class="n">implementation</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">entry_point</span> <span class="o">=</span> <span class="n">entry_point</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enabled</span> <span class="o">=</span> <span class="n">enabled</span> <span class="k">if</span> <span class="n">enabled</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">instances</span> <span class="o">=</span> <span class="n">instances</span> <span class="ow">or</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Instances must be strictly positive integer.&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span> <span class="o">=</span> <span class="n">identifier</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unique_service_identifier</span> <span class="o">=</span> <span class="n">unique_service_identifier</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pre_args</span> <span class="o">=</span> <span class="n">pre_args</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">additional_args</span> <span class="o">=</span> <span class="n">additional_args</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">service_deployment</span> <span class="o">=</span> <span class="n">_ServiceDeployment</span><span class="p">(</span><span class="n">workers</span><span class="p">,</span> <span class="n">register</span><span class="p">,</span> <span class="n">mtap_config</span><span class="p">,</span> <span class="n">log_level</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">service_deployment</span> <span class="o">=</span> <span class="n">ServiceDeployment</span><span class="p">(</span><span class="n">workers</span><span class="o">=</span><span class="n">workers</span><span class="p">,</span> <span class="n">register</span><span class="o">=</span><span class="n">register</span><span class="p">,</span> <span class="n">mtap_config</span><span class="o">=</span><span class="n">mtap_config</span><span class="p">,</span>
+                                                    <span class="n">log_level</span><span class="o">=</span><span class="n">log_level</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">startup_timeout</span> <span class="o">=</span> <span class="n">startup_timeout</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mp_spawn_method</span> <span class="o">=</span> <span class="n">mp_spawn_method</span>
 
@@ -430,7 +484,7 @@
         <span class="sd">&quot;&quot;&quot;Creates an MTAP processor deployment configuration from a configuration dictionary.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            conf (Dict): The configuration dictionary.</span>
+<span class="sd">            conf (~typing.Dict): The configuration dictionary.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            ProcessorDeployment object that can be used to constuct the call for the processor.</span>
@@ -440,7 +494,7 @@
 
     <span class="k">def</span> <span class="nf">create_calls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                      <span class="n">global_settings</span><span class="p">:</span> <span class="n">GlobalSettings</span><span class="p">,</span>
-                     <span class="n">shared_config</span><span class="p">:</span> <span class="n">SharedProcessorConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+                     <span class="n">shared_config</span><span class="p">:</span> <span class="n">SharedProcessorConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="n">ports</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -468,19 +522,20 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pre_args</span><span class="p">)</span>
 
-            <span class="n">service_args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service_deployment</span><span class="o">.</span><span class="n">service_args</span><span class="p">(</span>
+            <span class="n">service_args</span><span class="p">,</span> <span class="n">sid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service_deployment</span><span class="o">.</span><span class="n">_service_args</span><span class="p">(</span>
                 <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span>
                 <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span>
+                <span class="n">unique_service_identifier</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unique_service_identifier</span><span class="p">,</span>
                 <span class="n">register_default</span><span class="o">=</span><span class="n">global_settings</span><span class="o">.</span><span class="n">register</span><span class="p">,</span>
-                <span class="n">host_default</span><span class="o">=</span><span class="n">global_settings</span><span class="o">.</span><span class="n">host</span><span class="p">,</span>
+                <span class="n">global_host</span><span class="o">=</span><span class="n">global_settings</span><span class="o">.</span><span class="n">host</span><span class="p">,</span>
                 <span class="n">mtap_config_default</span><span class="o">=</span><span class="n">global_settings</span><span class="o">.</span><span class="n">mtap_config</span><span class="p">,</span>
                 <span class="n">log_level_default</span><span class="o">=</span><span class="n">global_settings</span><span class="o">.</span><span class="n">log_level</span><span class="p">,</span>
                 <span class="n">workers_default</span><span class="o">=</span><span class="n">shared_config</span><span class="o">.</span><span class="n">workers</span>
             <span class="p">)</span>
             <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">service_args</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;--identifier&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">])</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;--name&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
 
             <span class="n">events_addresses</span> <span class="o">=</span> <span class="n">shared_config</span><span class="o">.</span><span class="n">events_addresses</span>
             <span class="k">if</span> <span class="n">events_addresses</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -492,11 +547,14 @@
             <span class="k">if</span> <span class="n">shared_config</span><span class="o">.</span><span class="n">additional_args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">shared_config</span><span class="o">.</span><span class="n">additional_args</span><span class="p">)</span>
 
-            <span class="k">yield</span> <span class="n">call</span></div>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">implementation</span> <span class="o">==</span> <span class="s1">&#39;java&#39;</span> <span class="ow">and</span> <span class="n">shared_config</span><span class="o">.</span><span class="n">java_additional_args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">call</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">shared_config</span><span class="o">.</span><span class="n">java_additional_args</span><span class="p">)</span>
+
+            <span class="k">yield</span> <span class="n">call</span><span class="p">,</span> <span class="n">sid</span></div>
 
 
 <div class="viewcode-block" id="Deployment"><a class="viewcode-back" href="../../deployment.html#mtap.deployment.Deployment">[docs]</a><span class="k">class</span> <span class="nc">Deployment</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;A automatic deployment configuration which launches a configurable set of MTAP services.</span>
+    <span class="sd">&quot;&quot;&quot;An automatic deployment configuration which launches a configurable set of MTAP services.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">         global_settings (~typing.Optional[GlobalSettings]): Settings shared among all services.</span>
@@ -504,8 +562,15 @@
 <span class="sd">            Deployment settings for the events service.</span>
 <span class="sd">         shared_processor_config (~typing.Optional[SharedProcessorConfig]):</span>
 <span class="sd">            Shared configuration settings for all processors.</span>
-<span class="sd">         processors (vararg ProcessorDeployment): Configurations for individual processors.</span>
+<span class="sd">         *processors (ProcessorDeployment): Configurations for individual processors.</span>
 
+<span class="sd">    Attributes:</span>
+<span class="sd">        global_settings (~typing.Optional[GlobalSettings]): Settings shared among all services.</span>
+<span class="sd">        events_deployment (~typing.Optional[EventsDeployment]):</span>
+<span class="sd">            Deployment settings for the events service.</span>
+<span class="sd">        shared_processor_config (~typing.Optional[SharedProcessorConfig]):</span>
+<span class="sd">            Shared configuration settings for all processors.</span>
+<span class="sd">        processors (~typing.List[ProcessorDeployment]): Configurations for individual processors.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -516,14 +581,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">global_settings</span> <span class="o">=</span> <span class="n">global_settings</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">events_deployment</span> <span class="o">=</span> <span class="n">events_deployment</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">shared_processor_config</span> <span class="o">=</span> <span class="n">shared_processor_config</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">processors</span> <span class="o">=</span> <span class="n">processors</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">processors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">processors</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_processor_listeners</span> <span class="o">=</span> <span class="p">[]</span>
 
 <div class="viewcode-block" id="Deployment.load_configuration"><a class="viewcode-back" href="../../deployment.html#mtap.deployment.Deployment.load_configuration">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">load_configuration</span><span class="p">(</span><span class="n">conf</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Deployment&#39;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Creates a deployment object from a configuration dictionary.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            conf (Dict): The configuration dictionary.</span>
+<span class="sd">            conf (~typing.Dict): The configuration dictionary.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Deployment object created.</span>
@@ -557,84 +623,117 @@
             <span class="n">conf</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">Loader</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Deployment</span><span class="o">.</span><span class="n">load_configuration</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Deployment.run_servers"><a class="viewcode-back" href="../../deployment.html#mtap.deployment.Deployment.run_servers">[docs]</a>    <span class="k">def</span> <span class="nf">run_servers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Starts all of the configured services.</span>
+<div class="viewcode-block" id="Deployment.run_servers"><a class="viewcode-back" href="../../deployment.html#mtap.deployment.Deployment.run_servers">[docs]</a>    <span class="nd">@contextmanager</span>
+    <span class="k">def</span> <span class="nf">run_servers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A context manager that starts all the configured services in subprocesses and returns.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ServiceDeploymentException: If one of the services fails to launch.</span>
+<span class="sd">            ServiceDeploymentException: If one or more of the services fails to launch.</span>
+
+<span class="sd">        Examples</span>
+
+<span class="sd">        &gt;&gt;&gt; deploy = Deployment.from_yaml_file(&#39;deploy_config.yml&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; with deploy.run_servers():</span>
+<span class="sd">        &gt;&gt;&gt;     # do something that requires the servers.</span>
+<span class="sd">        &gt;&gt;&gt; # servers are automatically shutdown / terminated when the block is exited</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_do_launch_all_processors</span><span class="p">()</span>
+            <span class="k">yield</span> <span class="bp">self</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Deployment.run_servers_and_wait"><a class="viewcode-back" href="../../deployment.html#mtap.deployment.Deployment.run_servers_and_wait">[docs]</a>    <span class="k">def</span> <span class="nf">run_servers_and_wait</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Starts the specified servers and blocks until KeyboardInterrupt, SIGINT, or SIGTERM are received.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">_</span><span class="p">:</span> <span class="n">e</span><span class="o">.</span><span class="n">set</span><span class="p">())</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">,</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">_</span><span class="p">:</span> <span class="n">e</span><span class="o">.</span><span class="n">set</span><span class="p">())</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_servers</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">e</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+                <span class="k">pass</span></div>
+
+    <span class="k">def</span> <span class="nf">_do_launch_all_processors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">_config</span><span class="o">.</span><span class="n">Config</span><span class="p">()</span>
+        <span class="n">enable_proxy</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;grpc.enable_proxy&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">events_addresses</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># deploy events service</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">events_deployment</span><span class="o">.</span><span class="n">enabled</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">call</span><span class="p">,</span> <span class="n">sid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">events_deployment</span><span class="o">.</span><span class="n">create_calls</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">global_settings</span><span class="p">):</span>
+                <span class="c1"># Start new session here because otherwise subprocesses get hit with signals meant for parent</span>
+                <span class="n">events_address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_subprocess</span><span class="p">(</span><span class="n">call</span><span class="p">,</span> <span class="s2">&quot;events&quot;</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="n">enable_proxy</span><span class="p">)</span>
+                <span class="n">events_addresses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">events_address</span><span class="p">)</span>
+
+        <span class="c1"># attach deployed events service addresses if it&#39;s not already specified or will be picked up by service disc.</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_settings</span><span class="o">.</span><span class="n">register</span>
+                <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">events_deployment</span><span class="o">.</span><span class="n">service_deployment</span><span class="o">.</span><span class="n">register</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_processor_config</span><span class="o">.</span><span class="n">events_addresses</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shared_processor_config</span><span class="o">.</span><span class="n">events_addresses</span> <span class="o">=</span> <span class="n">events_addresses</span>
+
+        <span class="c1"># deploy processors</span>
+        <span class="k">for</span> <span class="n">processor_deployment</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">processors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">processor_deployment</span><span class="o">.</span><span class="n">enabled</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">call</span><span class="p">,</span> <span class="n">sid</span> <span class="ow">in</span> <span class="n">processor_deployment</span><span class="o">.</span><span class="n">create_calls</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">global_settings</span><span class="p">,</span>
+                                                                   <span class="bp">self</span><span class="o">.</span><span class="n">shared_processor_config</span><span class="p">):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Launching processor with call: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">call</span><span class="p">)</span>
+                    <span class="c1"># Start new session here because otherwise subprocesses get hit with signals meant for parent</span>
+                    <span class="n">startup_timeout</span> <span class="o">=</span> <span class="p">(</span><span class="n">processor_deployment</span><span class="o">.</span><span class="n">startup_timeout</span>
+                                       <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_processor_config</span><span class="o">.</span><span class="n">startup_timeout</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_start_subprocess</span><span class="p">(</span><span class="n">call</span><span class="p">,</span> <span class="n">processor_deployment</span><span class="o">.</span><span class="n">entry_point</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">startup_timeout</span><span class="p">,</span> <span class="n">enable_proxy</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Done deploying all servers.&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Deployment.shutdown"><a class="viewcode-back" href="../../deployment.html#mtap.deployment.Deployment.shutdown">[docs]</a>    <span class="k">def</span> <span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Shuts down all processors.</span>
+
+<span class="sd">        Returns:</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">_config</span><span class="o">.</span><span class="n">Config</span><span class="p">()</span> <span class="k">as</span> <span class="n">c</span><span class="p">:</span>
-            <span class="n">enable_proxy</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;grpc.enable_proxy&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-            <span class="n">processes_listeners</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">events_addresses</span> <span class="o">=</span> <span class="p">[]</span>
-
-            <span class="k">def</span> <span class="nf">shutdown</span><span class="p">(</span><span class="n">kill</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Shutting down all processors&quot;</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">listener</span> <span class="ow">in</span> <span class="n">processes_listeners</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">kill</span><span class="p">:</span>
-                        <span class="n">p</span><span class="o">.</span><span class="n">kill</span><span class="p">()</span>
-                    <span class="n">listener</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">events_deployment</span><span class="o">.</span><span class="n">enabled</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">call</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">events_deployment</span><span class="o">.</span><span class="n">create_calls</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">global_settings</span><span class="p">):</span>
-                    <span class="n">p</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">call</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">)</span>
-                    <span class="n">listener</span><span class="p">,</span> <span class="n">events_address</span> <span class="o">=</span> <span class="n">_listen_test_connectivity</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">&quot;events&quot;</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="n">enable_proxy</span><span class="p">)</span>
-                    <span class="n">events_addresses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">events_address</span><span class="p">)</span>
-                    <span class="n">processes_listeners</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">p</span><span class="p">,</span> <span class="n">listener</span><span class="p">))</span>
-
-            <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_settings</span><span class="o">.</span><span class="n">register</span>
-                    <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">events_deployment</span><span class="o">.</span><span class="n">service_deployment</span><span class="o">.</span><span class="n">register</span>
-                    <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_processor_config</span><span class="o">.</span><span class="n">events_addresses</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">shared_processor_config</span><span class="o">.</span><span class="n">events_addresses</span> <span class="o">=</span> <span class="n">events_addresses</span>
-
-            <span class="k">for</span> <span class="n">processor_deployment</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">processors</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">processor_deployment</span><span class="o">.</span><span class="n">enabled</span><span class="p">:</span>
-                    <span class="k">for</span> <span class="n">call</span> <span class="ow">in</span> <span class="n">processor_deployment</span><span class="o">.</span><span class="n">create_calls</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">global_settings</span><span class="p">,</span>
-                                                                  <span class="bp">self</span><span class="o">.</span><span class="n">shared_processor_config</span><span class="p">):</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Launching processor with call: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">call</span><span class="p">)</span>
-                        <span class="n">p</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">call</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">)</span>
-                        <span class="n">startup_timeout</span> <span class="o">=</span> <span class="p">(</span><span class="n">processor_deployment</span><span class="o">.</span><span class="n">startup_timeout</span>
-                                           <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_processor_config</span><span class="o">.</span><span class="n">startup_timeout</span><span class="p">)</span>
-                        <span class="k">try</span><span class="p">:</span>
-                            <span class="n">listener</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_listen_test_connectivity</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">call</span><span class="p">,</span> <span class="n">startup_timeout</span><span class="p">,</span>
-                                                                    <span class="n">enable_proxy</span><span class="p">)</span>
-                        <span class="k">except</span> <span class="n">ServiceDeploymentException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
-                            <span class="k">return</span> <span class="n">shutdown</span><span class="p">(</span><span class="n">kill</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                        <span class="n">processes_listeners</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">p</span><span class="p">,</span> <span class="n">listener</span><span class="p">))</span>
-
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Done deploying all servers.&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Shutting down all processors&quot;</span><span class="p">)</span>
+        <span class="n">excs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">listener</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processor_listeners</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">24</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">shutdown</span><span class="p">()</span></div></div>
+                <span class="n">p</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+                <span class="n">listener</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mf">15.0</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">listener</span><span class="o">.</span><span class="n">is_alive</span><span class="p">():</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unsuccessfully terminated processor </span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">args</span><span class="si">}</span><span class="s1">... killing.&#39;</span><span class="p">)</span>
+                    <span class="n">p</span><span class="o">.</span><span class="n">kill</span><span class="p">()</span>
+                    <span class="n">listener</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to properly shutdown processor </span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">excs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
 
-
-<span class="k">def</span> <span class="nf">_listen_test_connectivity</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">,</span>
-                              <span class="n">name</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-                              <span class="n">startup_timeout</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                              <span class="n">enable_proxy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-    <span class="n">listener</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">_listen</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">p</span><span class="p">,))</span>
-    <span class="n">listener</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-    <span class="n">address</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">startup_timeout</span><span class="p">):</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">address</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">read_address</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">pid</span><span class="p">))</span>
-            <span class="k">break</span>
-        <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
-            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">address</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">ServiceDeploymentException</span><span class="p">(</span><span class="s1">&#39;Timed out waiting for </span><span class="si">{}</span><span class="s1"> to launch&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
-    <span class="k">with</span> <span class="n">grpc</span><span class="o">.</span><span class="n">insecure_channel</span><span class="p">(</span><span class="n">address</span><span class="p">,</span>
-                               <span class="n">options</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;grpc.enable_http_proxy&#39;</span><span class="p">,</span> <span class="n">enable_proxy</span><span class="p">)])</span> <span class="k">as</span> <span class="n">channel</span><span class="p">:</span>
-        <span class="n">future</span> <span class="o">=</span> <span class="n">grpc</span><span class="o">.</span><span class="n">channel_ready_future</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">startup_timeout</span><span class="p">)</span>
-        <span class="k">except</span> <span class="n">grpc</span><span class="o">.</span><span class="n">FutureTimeoutError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ServiceDeploymentException</span><span class="p">(</span><span class="s1">&#39;Failed to launch: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">listener</span><span class="p">,</span> <span class="n">address</span>
+    <span class="k">def</span> <span class="nf">_start_subprocess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                          <span class="n">call</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+                          <span class="n">name</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+                          <span class="n">sid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                          <span class="n">startup_timeout</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                          <span class="n">enable_proxy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># starts process and listener, stores for later cleanup, returns address.</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">call</span><span class="p">,</span> <span class="n">start_new_session</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">)</span>
+        <span class="n">listener</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">_listen</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">p</span><span class="p">,))</span>
+        <span class="n">listener</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_processor_listeners</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">p</span><span class="p">,</span> <span class="n">listener</span><span class="p">))</span>  <span class="c1"># Adding early so it gets cleaned up on failure</span>
+        <span class="n">address</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">startup_timeout</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">address</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">read_address</span><span class="p">(</span><span class="n">sid</span><span class="p">)</span>
+                <span class="k">break</span>
+            <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">address</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ServiceDeploymentException</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Failed to launch, timed out waiting: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">grpc</span><span class="o">.</span><span class="n">insecure_channel</span><span class="p">(</span><span class="n">address</span><span class="p">,</span>
+                                   <span class="n">options</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;grpc.enable_http_proxy&#39;</span><span class="p">,</span> <span class="n">enable_proxy</span><span class="p">)])</span> <span class="k">as</span> <span class="n">channel</span><span class="p">:</span>
+            <span class="n">future</span> <span class="o">=</span> <span class="n">grpc</span><span class="o">.</span><span class="n">channel_ready_future</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">startup_timeout</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">grpc</span><span class="o">.</span><span class="n">FutureTimeoutError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ServiceDeploymentException</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Failed to launch, unresponsive: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">address</span></div>
 
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -642,7 +741,7 @@
     <span class="k">if</span> <span class="n">conf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">conf</span> <span class="o">=</span> <span class="n">deployment_parser</span><span class="p">()</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">conf</span><span class="o">.</span><span class="n">log_level</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="n">conf</span><span class="o">.</span><span class="n">log_level</span><span class="p">))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">conf</span><span class="o">.</span><span class="n">log_level</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">conf</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;run_servers&#39;</span><span class="p">:</span>
         <span class="n">deployment</span> <span class="o">=</span> <span class="n">Deployment</span><span class="o">.</span><span class="n">from_yaml_file</span><span class="p">(</span><span class="n">conf</span><span class="o">.</span><span class="n">deploy_config</span><span class="p">)</span>
         <span class="n">deployment</span><span class="o">.</span><span class="n">run_servers</span><span class="p">()</span>
@@ -691,7 +790,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../mtap.html">mtap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../deployment.html">mtap.deployment</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../io.html">mtap.io</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../serialization.html">mtap.serialization</a></li>
 </ul>
 
 <div id="searchbox" style="display: none" role="search">
@@ -717,14 +816,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">MTAP 1.0.0rc2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MTAP 1.0.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">mtap.deployment</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Regents of the University of Minnesota..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>
 </html>

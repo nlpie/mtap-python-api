@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; MTAP 1.0.0rc2 documentation</title>
+    <title>Index &#8212; MTAP 1.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
@@ -13,6 +13,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" /> 
   </head><body>
@@ -25,7 +26,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">MTAP 1.0.0rc2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">MTAP 1.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
       </ul>
     </div>  
@@ -67,32 +68,6 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mtap.html#mtap.data.Labeler.__call__">__call__() (mtap.data.Labeler method)</a>
 </li>
-      <li><a href="mtap.html#mtap.data.LabelIndexInfo.__getnewargs__">__getnewargs__() (mtap.data.LabelIndexInfo method)</a>
-
-      <ul>
-        <li><a href="mtap.html#mtap.processing.ProcessingResult.__getnewargs__">(mtap.processing.ProcessingResult method)</a>
-</li>
-        <li><a href="mtap.html#mtap.processing.TimerStats.__getnewargs__">(mtap.processing.TimerStats method)</a>
-</li>
-      </ul></li>
-      <li><a href="mtap.html#mtap.data.LabelIndexInfo.__new__">__new__() (mtap.data.LabelIndexInfo static method)</a>
-
-      <ul>
-        <li><a href="mtap.html#mtap.processing.ProcessingResult.__new__">(mtap.processing.ProcessingResult static method)</a>
-</li>
-        <li><a href="mtap.html#mtap.processing.TimerStats.__new__">(mtap.processing.TimerStats static method)</a>
-</li>
-      </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="mtap.html#mtap.data.LabelIndexInfo.__repr__">__repr__() (mtap.data.LabelIndexInfo method)</a>
-
-      <ul>
-        <li><a href="mtap.html#mtap.processing.ProcessingResult.__repr__">(mtap.processing.ProcessingResult method)</a>
-</li>
-        <li><a href="mtap.html#mtap.processing.TimerStats.__repr__">(mtap.processing.TimerStats method)</a>
-</li>
-      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -105,12 +80,18 @@
 </li>
       <li><a href="mtap.html#mtap.data.ProtoLabelAdapter.add_to_message">add_to_message() (mtap.data.ProtoLabelAdapter method)</a>
 </li>
-      <li><a href="deployment.html#mtap.deployment.SharedProcessorConfig.additional_args">additional_args (mtap.deployment.SharedProcessorConfig attribute)</a>
+      <li><a href="deployment.html#mtap.deployment.ProcessorDeployment.additional_args">additional_args (mtap.deployment.ProcessorDeployment attribute)</a>
+
+      <ul>
+        <li><a href="deployment.html#mtap.deployment.SharedProcessorConfig.additional_args">(mtap.deployment.SharedProcessorConfig attribute)</a>
 </li>
+      </ul></li>
       <li><a href="mtap.html#mtap.RemoteProcessor.address">address (mtap.RemoteProcessor attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="deployment.html#mtap.deployment.EventsDeployment.addresses">addresses (mtap.deployment.EventsDeployment attribute)</a>
+</li>
       <li><a href="mtap.html#mtap.data.LabelIndex.after">after() (mtap.data.LabelIndex method)</a>
 </li>
       <li><a href="mtap.html#mtap.processing.AggregateTimingInfo">AggregateTimingInfo (class in mtap.processing)</a>
@@ -141,8 +122,6 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="mtap.html#mtap.LocalProcessor.client">client (mtap.LocalProcessor attribute)</a>
-</li>
       <li><a href="mtap.html#mtap.DocumentProcessor.close">close() (mtap.DocumentProcessor method)</a>
 
       <ul>
@@ -188,7 +167,7 @@
       <ul>
         <li><a href="mtap.html#mtap.Event.created_indices">(mtap.Event property)</a>
 </li>
-        <li><a href="mtap.html#mtap.processing.ProcessingResult.created_indices">(mtap.processing.ProcessingResult property)</a>
+        <li><a href="mtap.html#mtap.processing.ProcessingResult.created_indices">(mtap.processing.ProcessingResult attribute)</a>
 </li>
       </ul></li>
       <li><a href="mtap.html#mtap.processing.AggregateTimingInfo.csv_header">csv_header() (mtap.processing.AggregateTimingInfo static method)</a>
@@ -243,6 +222,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mtap.html#mtap.processing.PipelineResult.elapsed_time">elapsed_time (mtap.processing.PipelineResult attribute)</a>
 </li>
+      <li><a href="deployment.html#mtap.deployment.EventsDeployment.enabled">enabled (mtap.deployment.EventsDeployment attribute)</a>
+
+      <ul>
+        <li><a href="deployment.html#mtap.deployment.ProcessorDeployment.enabled">(mtap.deployment.ProcessorDeployment attribute)</a>
+</li>
+      </ul></li>
       <li><a href="mtap.html#mtap.data.Label.end_index">end_index (mtap.data.Label property)</a>
 
       <ul>
@@ -251,21 +236,25 @@
         <li><a href="mtap.html#mtap.GenericLabel.end_index">(mtap.GenericLabel property)</a>
 </li>
       </ul></li>
+      <li><a href="deployment.html#mtap.deployment.ProcessorDeployment.entry_point">entry_point (mtap.deployment.ProcessorDeployment attribute)</a>
+</li>
       <li><a href="mtap.html#mtap.Event">Event (class in mtap)</a>
 </li>
       <li><a href="mtap.html#mtap.Document.event">event (mtap.Document property)</a>
 </li>
-      <li><a href="mtap.html#mtap.Event.event_id">event_id (mtap.Event property)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mtap.html#mtap.Event.event_id">event_id (mtap.Event property)</a>
+</li>
       <li><a href="mtap.html#mtap.Event.event_service_instance_id">event_service_instance_id (mtap.Event property)</a>
 </li>
-      <li><a href="io.html#mtap.io.serialization.Serializer.event_to_file">event_to_file() (mtap.io.serialization.Serializer method)</a>
+      <li><a href="serialization.html#mtap.serialization.Serializer.event_to_file">event_to_file() (mtap.serialization.Serializer method)</a>
 </li>
       <li><a href="mtap.html#mtap.EventProcessor">EventProcessor (class in mtap)</a>
 </li>
       <li><a href="deployment.html#mtap.deployment.SharedProcessorConfig.events_addresses">events_addresses (mtap.deployment.SharedProcessorConfig attribute)</a>
+</li>
+      <li><a href="deployment.html#mtap.deployment.Deployment.events_deployment">events_deployment (mtap.deployment.Deployment attribute)</a>
 </li>
       <li><a href="mtap.html#mtap.EventsClient">EventsClient (class in mtap)</a>
 </li>
@@ -273,7 +262,7 @@
 </li>
       <li><a href="mtap.html#mtap.EventsServer">EventsServer (class in mtap)</a>
 </li>
-      <li><a href="io.html#mtap.io.serialization.Serializer.extension">extension (mtap.io.serialization.Serializer property)</a>
+      <li><a href="serialization.html#mtap.serialization.Serializer.extension">extension (mtap.serialization.Serializer property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -281,7 +270,7 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="io.html#mtap.io.serialization.Serializer.file_to_event">file_to_event() (mtap.io.serialization.Serializer method)</a>
+      <li><a href="serialization.html#mtap.serialization.Serializer.file_to_event">file_to_event() (mtap.serialization.Serializer method)</a>
 </li>
       <li><a href="mtap.html#mtap.data.LabelIndex.filter">filter() (mtap.data.LabelIndex method)</a>
 </li>
@@ -313,11 +302,13 @@
 </li>
       <li><a href="mtap.html#mtap.GenericLabel">GenericLabel (class in mtap)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mtap.html#mtap.Document.get_label_index">get_label_index() (mtap.Document method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mtap.html#mtap.Document.get_labeler">get_labeler() (mtap.Document method)</a>
+</li>
+      <li><a href="deployment.html#mtap.deployment.Deployment.global_settings">global_settings (mtap.deployment.Deployment attribute)</a>
 </li>
       <li><a href="deployment.html#mtap.deployment.GlobalSettings">GlobalSettings (class in mtap.deployment)</a>
 </li>
@@ -328,7 +319,11 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="deployment.html#mtap.deployment.GlobalSettings.host">host (mtap.deployment.GlobalSettings attribute)</a>
+
+      <ul>
+        <li><a href="deployment.html#mtap.deployment.ProcessorDeployment.host">(mtap.deployment.ProcessorDeployment attribute)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -342,14 +337,18 @@
 </li>
         <li><a href="mtap.html#mtap.processing.AggregateTimingInfo.identifier">(mtap.processing.AggregateTimingInfo attribute)</a>
 </li>
-        <li><a href="mtap.html#mtap.processing.ProcessingResult.identifier">(mtap.processing.ProcessingResult property)</a>
+        <li><a href="mtap.html#mtap.processing.ProcessingResult.identifier">(mtap.processing.ProcessingResult attribute)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="mtap.html#mtap.data.LabelIndexInfo.index_name">index_name (mtap.data.LabelIndexInfo property)</a>
+      <li><a href="deployment.html#mtap.deployment.ProcessorDeployment.implementation">implementation (mtap.deployment.ProcessorDeployment attribute)</a>
+</li>
+      <li><a href="mtap.html#mtap.data.LabelIndexInfo.index_name">index_name (mtap.data.LabelIndexInfo attribute)</a>
 </li>
       <li><a href="mtap.html#mtap.data.LabelIndex.inside">inside() (mtap.data.LabelIndex method)</a>
+</li>
+      <li><a href="deployment.html#mtap.deployment.ProcessorDeployment.instances">instances (mtap.deployment.ProcessorDeployment attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -361,8 +360,6 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="io.html#mtap.io.serialization.JsonSerializer">JsonSerializer (in module mtap.io.serialization)</a>
-</li>
       <li><a href="deployment.html#mtap.deployment.SharedProcessorConfig.jvm_args">jvm_args (mtap.deployment.SharedProcessorConfig attribute)</a>
 </li>
   </ul></td>
@@ -389,10 +386,10 @@
 </li>
       <li><a href="mtap.html#mtap.data.LabelIndex">LabelIndex (class in mtap.data)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mtap.html#mtap.data.LabelIndexInfo">LabelIndexInfo (class in mtap.data)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mtap.html#mtap.data.LabelIndexType">LabelIndexType (class in mtap.data)</a>
 </li>
       <li><a href="mtap.html#mtap.processing.descriptions.labels">labels() (in module mtap.processing.descriptions)</a>
@@ -410,20 +407,24 @@
       <li><a href="mtap.html#mtap.data.Label.location">location (mtap.data.Label property)</a>
 </li>
       <li><a href="deployment.html#mtap.deployment.GlobalSettings.log_level">log_level (mtap.deployment.GlobalSettings attribute)</a>
+
+      <ul>
+        <li><a href="deployment.html#mtap.deployment.ServiceDeployment.log_level">(mtap.deployment.ServiceDeployment attribute)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="mtap.html#mtap.processing.TimerStats.max">max (mtap.processing.TimerStats property)</a>
+      <li><a href="mtap.html#mtap.processing.TimerStats.max">max (mtap.processing.TimerStats attribute)</a>
 </li>
-      <li><a href="mtap.html#mtap.processing.TimerStats.mean">mean (mtap.processing.TimerStats property)</a>
+      <li><a href="mtap.html#mtap.processing.TimerStats.mean">mean (mtap.processing.TimerStats attribute)</a>
 </li>
       <li><a href="mtap.html#mtap.Event.metadata">metadata (mtap.Event property)</a>
 </li>
-      <li><a href="mtap.html#mtap.processing.TimerStats.min">min (mtap.processing.TimerStats property)</a>
+      <li><a href="mtap.html#mtap.processing.TimerStats.min">min (mtap.processing.TimerStats attribute)</a>
 </li>
       <li>
     module
@@ -433,15 +434,17 @@
 </li>
         <li><a href="deployment.html#module-mtap.deployment">mtap.deployment</a>
 </li>
-        <li><a href="io.html#module-mtap.io">mtap.io</a>
+        <li><a href="serialization.html#module-mtap.serialization">mtap.serialization</a>
 </li>
-        <li><a href="io.html#module-mtap.io.serialization">mtap.io.serialization</a>
+      </ul></li>
+      <li><a href="deployment.html#mtap.deployment.ProcessorDeployment.mp_spawn_method">mp_spawn_method (mtap.deployment.ProcessorDeployment attribute)</a>
+
+      <ul>
+        <li><a href="deployment.html#mtap.deployment.SharedProcessorConfig.mp_spawn_method">(mtap.deployment.SharedProcessorConfig attribute)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="deployment.html#mtap.deployment.SharedProcessorConfig.mp_spawn_method">mp_spawn_method (mtap.deployment.SharedProcessorConfig attribute)</a>
-</li>
       <li>
     mtap
 
@@ -457,21 +460,18 @@
 </li>
       </ul></li>
       <li>
-    mtap.io
+    mtap.serialization
 
       <ul>
-        <li><a href="io.html#module-mtap.io">module</a>
-</li>
-      </ul></li>
-      <li>
-    mtap.io.serialization
-
-      <ul>
-        <li><a href="io.html#module-mtap.io.serialization">module</a>
+        <li><a href="serialization.html#module-mtap.serialization">module</a>
 </li>
       </ul></li>
       <li><a href="deployment.html#mtap.deployment.GlobalSettings.mtap_config">mtap_config (mtap.deployment.GlobalSettings attribute)</a>
+
+      <ul>
+        <li><a href="deployment.html#mtap.deployment.ServiceDeployment.mtap_config">(mtap.deployment.ServiceDeployment attribute)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -524,12 +524,16 @@
 </li>
       <li><a href="mtap.html#mtap.processing.PipelineResult">PipelineResult (class in mtap.processing)</a>
 </li>
-      <li><a href="mtap.html#mtap.EventsServer.port">port (mtap.EventsServer property)</a>
+      <li><a href="deployment.html#mtap.deployment.ProcessorDeployment.port">port (mtap.deployment.ProcessorDeployment attribute)</a>
 
       <ul>
+        <li><a href="mtap.html#mtap.EventsServer.port">(mtap.EventsServer property)</a>
+</li>
         <li><a href="mtap.html#mtap.ProcessorServer.port">(mtap.ProcessorServer property)</a>
 </li>
       </ul></li>
+      <li><a href="deployment.html#mtap.deployment.ProcessorDeployment.pre_args">pre_args (mtap.deployment.ProcessorDeployment attribute)</a>
+</li>
       <li><a href="mtap.html#mtap.Pipeline.print_times">print_times() (mtap.Pipeline method)</a>
 
       <ul>
@@ -552,11 +556,13 @@
 </li>
       <li><a href="mtap.html#mtap.processor">processor() (in module mtap)</a>
 </li>
-      <li><a href="mtap.html#mtap.RemoteProcessor.processor_id">processor_id (mtap.RemoteProcessor attribute)</a>
+      <li><a href="mtap.html#mtap.RemoteProcessor.processor_name">processor_name (mtap.RemoteProcessor attribute)</a>
 </li>
       <li><a href="mtap.html#mtap.processor_parser">processor_parser() (in module mtap)</a>
 </li>
       <li><a href="deployment.html#mtap.deployment.ProcessorDeployment">ProcessorDeployment (class in mtap.deployment)</a>
+</li>
+      <li><a href="deployment.html#mtap.deployment.Deployment.processors">processors (mtap.deployment.Deployment attribute)</a>
 </li>
       <li><a href="mtap.html#mtap.ProcessorServer">ProcessorServer (class in mtap)</a>
 </li>
@@ -579,14 +585,18 @@
       <li><a href="mtap.html#mtap.processing.descriptions.reference">reference (in module mtap.processing.descriptions)</a>
 </li>
       <li><a href="deployment.html#mtap.deployment.GlobalSettings.register">register (mtap.deployment.GlobalSettings attribute)</a>
+
+      <ul>
+        <li><a href="deployment.html#mtap.deployment.ServiceDeployment.register">(mtap.deployment.ServiceDeployment attribute)</a>
 </li>
+      </ul></li>
       <li><a href="mtap.html#mtap.data.Location.relative_to">relative_to() (mtap.data.Location method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mtap.html#mtap.RemoteProcessor">RemoteProcessor (class in mtap)</a>
 </li>
-      <li><a href="mtap.html#mtap.processing.ProcessingResult.result_dict">result_dict (mtap.processing.ProcessingResult property)</a>
+      <li><a href="mtap.html#mtap.processing.ProcessingResult.result_dict">result_dict (mtap.processing.ProcessingResult attribute)</a>
 </li>
       <li><a href="mtap.html#mtap.Pipeline.run">run() (mtap.Pipeline method)</a>
 </li>
@@ -596,15 +606,25 @@
 </li>
       <li><a href="deployment.html#mtap.deployment.Deployment.run_servers">run_servers() (mtap.deployment.Deployment method)</a>
 </li>
+      <li><a href="deployment.html#mtap.deployment.Deployment.run_servers_and_wait">run_servers_and_wait() (mtap.deployment.Deployment method)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="io.html#mtap.io.serialization.SerializationProcessor">SerializationProcessor (class in mtap.io.serialization)</a>
+      <li><a href="serialization.html#mtap.serialization.SerializationProcessor">SerializationProcessor (class in mtap.serialization)</a>
 </li>
-      <li><a href="io.html#mtap.io.serialization.Serializer">Serializer (class in mtap.io.serialization)</a>
+      <li><a href="serialization.html#mtap.serialization.Serializer">Serializer (class in mtap.serialization)</a>
+</li>
+      <li><a href="deployment.html#mtap.deployment.EventsDeployment.service_deployment">service_deployment (mtap.deployment.EventsDeployment attribute)</a>
+
+      <ul>
+        <li><a href="deployment.html#mtap.deployment.ProcessorDeployment.service_deployment">(mtap.deployment.ProcessorDeployment attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="deployment.html#mtap.deployment.ServiceDeployment">ServiceDeployment (class in mtap.deployment)</a>
 </li>
       <li><a href="deployment.html#mtap.deployment.ServiceDeploymentException">ServiceDeploymentException</a>
 </li>
@@ -614,7 +634,11 @@
         <li><a href="mtap.html#mtap.GenericLabel.shallow_fields_equal">(mtap.GenericLabel method)</a>
 </li>
       </ul></li>
+      <li><a href="deployment.html#mtap.deployment.Deployment.shared_processor_config">shared_processor_config (mtap.deployment.Deployment attribute)</a>
+</li>
       <li><a href="deployment.html#mtap.deployment.SharedProcessorConfig">SharedProcessorConfig (class in mtap.deployment)</a>
+</li>
+      <li><a href="deployment.html#mtap.deployment.Deployment.shutdown">shutdown() (mtap.deployment.Deployment method)</a>
 </li>
       <li><a href="mtap.html#mtap.EventsServer.start">start() (mtap.EventsServer method)</a>
 
@@ -624,6 +648,8 @@
         <li><a href="mtap.html#mtap.ProcessorServer.start">(mtap.ProcessorServer method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mtap.html#mtap.data.Label.start_index">start_index (mtap.data.Label property)</a>
 
       <ul>
@@ -632,13 +658,15 @@
         <li><a href="mtap.html#mtap.GenericLabel.start_index">(mtap.GenericLabel property)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mtap.html#mtap.processing.Processor.started_stopwatch">started_stopwatch() (mtap.processing.Processor static method)</a>
 </li>
-      <li><a href="deployment.html#mtap.deployment.SharedProcessorConfig.startup_timeout">startup_timeout (mtap.deployment.SharedProcessorConfig attribute)</a>
+      <li><a href="deployment.html#mtap.deployment.ProcessorDeployment.startup_timeout">startup_timeout (mtap.deployment.ProcessorDeployment attribute)</a>
+
+      <ul>
+        <li><a href="deployment.html#mtap.deployment.SharedProcessorConfig.startup_timeout">(mtap.deployment.SharedProcessorConfig attribute)</a>
 </li>
-      <li><a href="mtap.html#mtap.processing.TimerStats.std">std (mtap.processing.TimerStats property)</a>
+      </ul></li>
+      <li><a href="mtap.html#mtap.processing.TimerStats.std">std (mtap.processing.TimerStats attribute)</a>
 </li>
       <li><a href="mtap.html#mtap.EventsServer.stop">stop() (mtap.EventsServer method)</a>
 
@@ -652,7 +680,7 @@
 </li>
       <li><a href="mtap.html#mtap.data.ProtoLabelAdapter.store_references">store_references() (mtap.data.ProtoLabelAdapter method)</a>
 </li>
-      <li><a href="mtap.html#mtap.processing.TimerStats.sum">sum (mtap.processing.TimerStats property)</a>
+      <li><a href="mtap.html#mtap.processing.TimerStats.sum">sum (mtap.processing.TimerStats attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -675,12 +703,12 @@
       <li><a href="mtap.html#mtap.processing.AggregateTimingInfo.timing_info">timing_info (mtap.processing.AggregateTimingInfo attribute)</a>
 
       <ul>
-        <li><a href="mtap.html#mtap.processing.ProcessingResult.timing_info">(mtap.processing.ProcessingResult property)</a>
+        <li><a href="mtap.html#mtap.processing.ProcessingResult.timing_info">(mtap.processing.ProcessingResult attribute)</a>
 </li>
       </ul></li>
       <li><a href="mtap.html#mtap.processing.ProcessingSource.total">total (mtap.processing.ProcessingSource property)</a>
 </li>
-      <li><a href="mtap.html#mtap.data.LabelIndexInfo.type">type (mtap.data.LabelIndexInfo property)</a>
+      <li><a href="mtap.html#mtap.data.LabelIndexInfo.type">type (mtap.data.LabelIndexInfo attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -706,8 +734,12 @@
 <h2 id="W">W</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="deployment.html#mtap.deployment.SharedProcessorConfig.workers">workers (mtap.deployment.SharedProcessorConfig attribute)</a>
+      <li><a href="deployment.html#mtap.deployment.ServiceDeployment.workers">workers (mtap.deployment.ServiceDeployment attribute)</a>
+
+      <ul>
+        <li><a href="deployment.html#mtap.deployment.SharedProcessorConfig.workers">(mtap.deployment.SharedProcessorConfig attribute)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -724,7 +756,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="mtap.html">mtap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="deployment.html">mtap.deployment</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html">mtap.io</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serialization.html">mtap.serialization</a></li>
 </ul>
 
 <div id="searchbox" style="display: none" role="search">
@@ -750,13 +782,13 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">MTAP 1.0.0rc2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">MTAP 1.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Regents of the University of Minnesota..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>
 </html>

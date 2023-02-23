@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>mtap.processing._base &#8212; MTAP 1.0.0rc2 documentation</title>
+    <title>mtap.processing._base &#8212; MTAP 1.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinxdoc.css" />
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
@@ -13,6 +13,7 @@
     <script src="../../../_static/underscore.js"></script>
     <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
@@ -25,7 +26,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">MTAP 1.0.0rc2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">MTAP 1.0.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">mtap.processing._base</a></li> 
       </ul>
@@ -37,7 +38,7 @@
           <div class="body" role="main">
             
   <h1>Source code for mtap.processing._base</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright 2019 Regents of the University of Minnesota.</span>
+<span></span><span class="c1"># Copyright 2022 Regents of the University of Minnesota.</span>
 <span class="c1">#</span>
 <span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
@@ -52,12 +53,22 @@
 <span class="c1"># limitations under the License.</span>
 <span class="sd">&quot;&quot;&quot;Internal processors and pipelines functionality.&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">contextlib</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">threading</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span><span class="p">,</span> <span class="n">ABC</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Callable</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">datetime</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">ContextManager</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> \
-    <span class="n">Tuple</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">ContextManager</span><span class="p">,</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">NamedTuple</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Mapping</span><span class="p">,</span>
+    <span class="n">Generator</span><span class="p">,</span>
+    <span class="n">Tuple</span><span class="p">,</span>
+    <span class="n">TYPE_CHECKING</span><span class="p">,</span>
+    <span class="n">Callable</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">mtap</span> <span class="kn">import</span> <span class="n">data</span>
 
@@ -108,7 +119,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_key</span> <span class="o">=</span> <span class="n">key</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_context</span> <span class="o">=</span> <span class="n">context</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_running</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="Stopwatch.start"><a class="viewcode-back" href="../../../mtap.html#mtap.processing.Stopwatch.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -116,14 +127,14 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_running</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Stopwatch.stop"><a class="viewcode-back" href="../../../mtap.html#mtap.processing.Stopwatch.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Stops / pauses the timer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_running</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="o">+=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="o">+=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span></div>
 
     <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span>
@@ -291,8 +302,8 @@
 <span class="sd">        ...     def process(self, document, params):</span>
 <span class="sd">        ...         # do processing on document</span>
 <span class="sd">        ...         ...</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
+
+
 <span class="sd">        &gt;&gt;&gt; class ExampleProcessor(mtap.DocumentProcessor):</span>
 <span class="sd">        ...     def process(self, document, params):</span>
 <span class="sd">        ...          with self.started_stopwatch(&#39;key&#39;):</span>
@@ -335,41 +346,32 @@
     <span class="k">pass</span>
 
 
-<span class="n">ProcessingResult</span> <span class="o">=</span> <span class="n">NamedTuple</span><span class="p">(</span><span class="s1">&#39;ProcessingResult&#39;</span><span class="p">,</span>
-                              <span class="p">[(</span><span class="s1">&#39;identifier&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span>
-                               <span class="p">(</span><span class="s1">&#39;result_dict&#39;</span><span class="p">,</span> <span class="n">Dict</span><span class="p">),</span>
-                               <span class="p">(</span><span class="s1">&#39;timing_info&#39;</span><span class="p">,</span> <span class="n">Dict</span><span class="p">),</span>
-                               <span class="p">(</span><span class="s1">&#39;created_indices&#39;</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]])])</span>
-
-<span class="n">ProcessingResult</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;The result of processing one document or event.&quot;&quot;&quot;</span>
-<span class="n">ProcessingResult</span><span class="o">.</span><span class="n">identifier</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;The id of the processor with respect to the pipeline.&quot;&quot;&quot;</span>
-<span class="n">ProcessingResult</span><span class="o">.</span><span class="n">result_dict</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;The json object returned by the processor as its results.&quot;&quot;&quot;</span>
-<span class="n">ProcessingResult</span><span class="o">.</span><span class="n">timing_info</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;A dictionary of the times taken processing this </span>
-<span class="s2">document&quot;&quot;&quot;</span>
-<span class="n">ProcessingResult</span><span class="o">.</span><span class="n">created_indices</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Any indices that have been added to documents by this </span>
-<span class="s2">processor.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="ProcessingResult"><a class="viewcode-back" href="../../../mtap.html#mtap.processing.ProcessingResult">[docs]</a><span class="k">class</span> <span class="nc">ProcessingResult</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The result of processing one document or event.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">result_dict</span><span class="p">:</span> <span class="n">Dict</span>
+    <span class="n">timing_info</span><span class="p">:</span> <span class="n">Dict</span>
+    <span class="n">created_indices</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span></div>
 
 
-<div class="viewcode-block" id="PipelineResult"><a class="viewcode-back" href="../../../mtap.html#mtap.processing.PipelineResult">[docs]</a><span class="k">class</span> <span class="nc">PipelineResult</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">(</span><span class="s1">&#39;PipelineResult&#39;</span><span class="p">,</span>
-                                <span class="p">[(</span><span class="s1">&#39;component_results&#39;</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">ProcessingResult</span><span class="p">]),</span>
-                                 <span class="p">(</span><span class="s1">&#39;elapsed_time&#39;</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">)])):</span>
+<span class="n">ProcessingResult</span><span class="o">.</span><span class="n">identifier</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;str: The id of the processor with respect to the pipeline.&quot;</span>
+<span class="n">ProcessingResult</span><span class="o">.</span><span class="n">result_dict</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;Dict: The json object returned by the processor as its results.&quot;</span>
+<span class="n">ProcessingResult</span><span class="o">.</span><span class="n">timing_info</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;Dict: A dictionary of the times taken processing this document.&quot;</span>
+<span class="n">ProcessingResult</span><span class="o">.</span><span class="n">created_indices</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;Dict[str, List[str]]: Any indices that have been added to documents by &quot;</span> \
+                                           <span class="s2">&quot;this processor.&quot;</span>
+
+<div class="viewcode-block" id="PipelineResult"><a class="viewcode-back" href="../../../mtap.html#mtap.processing.PipelineResult">[docs]</a><span class="k">class</span> <span class="nc">PipelineResult</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;The result of processing an event or document in a pipeline.</span>
-
-<span class="sd">    Attributes:</span>
-<span class="sd">        component_results (List[ProcessingResult]): The processing results for each individual</span>
-<span class="sd">            component</span>
-<span class="sd">        elapsed_time (timedelta): The elapsed time for the entire pipeline.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        component_results (List[ProcessingResult]): The processing results for each individual</span>
 <span class="sd">            component</span>
-<span class="sd">        elapsed_time (timedelta): The elapsed time for the entire pipeline.</span>
+<span class="sd">        elapsed_time (~datetime.timedelta): The elapsed time for the entire pipeline.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
-
-    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">component_results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ProcessingResult</span><span class="p">]</span>
+    <span class="n">elapsed_time</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span>
 
 <div class="viewcode-block" id="PipelineResult.component_result"><a class="viewcode-back" href="../../../mtap.html#mtap.processing.PipelineResult.component_result">[docs]</a>    <span class="k">def</span> <span class="nf">component_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProcessingResult</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Returns the component result for a specific identifier.</span>
@@ -387,33 +389,33 @@
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;No result for identifier: &#39;</span> <span class="o">+</span> <span class="n">identifier</span><span class="p">)</span></div></div>
 
 
-<span class="n">TimerStats</span> <span class="o">=</span> <span class="n">NamedTuple</span><span class="p">(</span><span class="s1">&#39;TimerStats&#39;</span><span class="p">,</span>
-                        <span class="p">[(</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">),</span>
-                         <span class="p">(</span><span class="s1">&#39;std&#39;</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">),</span>
-                         <span class="p">(</span><span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">),</span>
-                         <span class="p">(</span><span class="s1">&#39;max&#39;</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">),</span>
-                         <span class="p">(</span><span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">)])</span>
-<span class="n">TimerStats</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Statistics about a specific keyed measured duration recorded by a </span>
-<span class="s2">:obj:`~mtap.processing.base.Stopwatch`.&quot;&quot;&quot;</span>
-<span class="n">TimerStats</span><span class="o">.</span><span class="n">mean</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;The sample mean of all measured durations.&quot;&quot;&quot;</span>
-<span class="n">TimerStats</span><span class="o">.</span><span class="n">std</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;The sample standard deviation of all measured </span>
-<span class="s2">durations.&quot;&quot;&quot;</span>
-<span class="n">TimerStats</span><span class="o">.</span><span class="n">max</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;The minimum of all measured durations.&quot;&quot;&quot;</span>
-<span class="n">TimerStats</span><span class="o">.</span><span class="n">min</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;The maximum of all measured durations.&quot;&quot;&quot;</span>
-<span class="n">TimerStats</span><span class="o">.</span><span class="n">sum</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;The sum of all measured durations.&quot;&quot;&quot;</span>
+<span class="n">PipelineResult</span><span class="o">.</span><span class="n">component_results</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;List[ProcessingResult]: The processing results for each individual &quot;</span> \
+                                           <span class="s2">&quot;component&quot;</span>
+<span class="n">PipelineResult</span><span class="o">.</span><span class="n">elapsed_time</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;~datetime.timedelta: The elapsed time for the entire pipeline.&quot;</span>
 
 
-<div class="viewcode-block" id="AggregateTimingInfo"><a class="viewcode-back" href="../../../mtap.html#mtap.processing.AggregateTimingInfo">[docs]</a><span class="k">class</span> <span class="nc">AggregateTimingInfo</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">(</span><span class="s1">&#39;AggregateTimingInfo&#39;</span><span class="p">,</span>
-                                     <span class="p">[(</span><span class="s1">&#39;identifier&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span>
-                                      <span class="p">(</span><span class="s1">&#39;timing_info&#39;</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s1">&#39;processing.TimerStats&#39;</span><span class="p">])])):</span>
-    <span class="sd">&quot;&quot;&quot;Collection of all of the timing info for a specific processor.</span>
-
-<span class="sd">    Attributes:</span>
-<span class="sd">        identifier (str): The ID of the processor with respect to the pipeline.</span>
-<span class="sd">        timing_info (dict[str, TimerStats]):</span>
-<span class="sd">            A map from all of the timer keys for the processor to the aggregated duration statistics.</span>
+<div class="viewcode-block" id="TimerStats"><a class="viewcode-back" href="../../../mtap.html#mtap.processing.TimerStats">[docs]</a><span class="k">class</span> <span class="nc">TimerStats</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Statistics about a specific keyed measured duration recorded by a :obj:`~mtap.processing.base.Stopwatch`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="n">mean</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span>
+    <span class="n">std</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span>
+    <span class="nb">min</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span>
+    <span class="nb">max</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span>
+    <span class="nb">sum</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span></div>
+
+
+<span class="n">TimerStats</span><span class="o">.</span><span class="n">mean</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;~datetime.timedelta: The sample mean of all measured durations.&quot;</span>
+<span class="n">TimerStats</span><span class="o">.</span><span class="n">std</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;~datetime.timedelta: The sample standard deviation of all measured durations.&quot;</span>
+<span class="n">TimerStats</span><span class="o">.</span><span class="n">min</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;~datetime.timedelta: The minimum of all measured durations.&quot;</span>
+<span class="n">TimerStats</span><span class="o">.</span><span class="n">max</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;~datetime.timedelta: The maximum of all measured durations.&quot;</span>
+<span class="n">TimerStats</span><span class="o">.</span><span class="n">sum</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;~datetime.timedelta: The sum of all measured durations.&quot;</span>
+
+
+<div class="viewcode-block" id="AggregateTimingInfo"><a class="viewcode-back" href="../../../mtap.html#mtap.processing.AggregateTimingInfo">[docs]</a><span class="k">class</span> <span class="nc">AggregateTimingInfo</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Collection of all the timing info for a specific processor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">timing_info</span><span class="p">:</span> <span class="s1">&#39;Dict[str, processing.TimerStats]&#39;</span>
 
 <div class="viewcode-block" id="AggregateTimingInfo.print_times"><a class="viewcode-back" href="../../../mtap.html#mtap.processing.AggregateTimingInfo.print_times">[docs]</a>    <span class="k">def</span> <span class="nf">print_times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Prints the aggregate timing info for all processing components using ``print``.</span>
@@ -450,10 +452,25 @@
                                                   <span class="n">stats</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">stats</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">stats</span><span class="o">.</span><span class="n">sum</span><span class="p">)</span></div></div>
 
 
+<span class="n">AggregateTimingInfo</span><span class="o">.</span><span class="n">identifier</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;str: The ID of the processor with respect to the pipeline.&quot;</span>
+<span class="n">AggregateTimingInfo</span><span class="o">.</span><span class="n">timing_info</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;dict[str, TimerStats]: A map from all the timer keys for the processor to &quot;</span> \
+                                          <span class="s2">&quot;the aggregated duration statistics.&quot;</span>
+
+
 <span class="k">class</span> <span class="nc">ProcessingComponent</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
     <span class="n">metadata</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">processor_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">component_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="o">...</span>
 
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">call_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">event_instance_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -461,19 +478,13 @@
         <span class="sd">&quot;&quot;&quot;Calls a processor.</span>
 
 <span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        event_id: str</span>
-<span class="sd">            The event to process.</span>
-<span class="sd">        event_instance_id: str</span>
-<span class="sd">            The service instance the event is stored on.</span>
-<span class="sd">        params: Dict</span>
-<span class="sd">            The processor parameters.</span>
+<span class="sd">            event_id (str): The event to process.</span>
+<span class="sd">            event_instance_id (str): The service instance the event is stored on.</span>
+<span class="sd">            params (Dict): The processor parameters.</span>
 
 <span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        tuple of dict, dict, dict</span>
-<span class="sd">            A tuple of the processing result dictionary, the processor times dictionary, and the</span>
-<span class="sd">            created indices dictionary.</span>
+<span class="sd">            Tuple[Dict, Dict, Dict]: A tuple of the processing result dictionary, the processor times dictionary, and</span>
+<span class="sd">                the &quot;created indices&quot; dictionary.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="o">...</span>
@@ -508,7 +519,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../mtap.html">mtap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../deployment.html">mtap.deployment</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io.html">mtap.io</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../serialization.html">mtap.serialization</a></li>
 </ul>
 
 <div id="searchbox" style="display: none" role="search">
@@ -534,14 +545,14 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">MTAP 1.0.0rc2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">MTAP 1.0.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">mtap.processing._base</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Regents of the University of Minnesota..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>
 </html>

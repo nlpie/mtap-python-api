@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>mtap._events_service &#8212; MTAP 1.0.0rc2 documentation</title>
+    <title>mtap._events_service &#8212; MTAP 1.0.0rc6.dev2+gfcbe98d.d20230221 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinxdoc.css" />
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
@@ -13,6 +13,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
@@ -25,7 +26,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">MTAP 1.0.0rc2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MTAP 1.0.0rc6.dev2+gfcbe98d.d20230221 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">mtap._events_service</a></li> 
       </ul>
@@ -70,7 +71,7 @@
 <span class="k">if</span> <span class="n">typing</span><span class="o">.</span><span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">mtap</span>
 
-<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;mtap.events&#39;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="EventsServer"><a class="viewcode-back" href="../../mtap.html#mtap.EventsServer">[docs]</a><span class="k">class</span> <span class="nc">EventsServer</span><span class="p">:</span>
@@ -78,8 +79,6 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        host (str): The address / hostname / IP to host the server on.</span>
-
-<span class="sd">    Keyword Args:</span>
 <span class="sd">        port (int): The port to host the server on.</span>
 <span class="sd">        register (bool): Whether to register the service with service discovery.</span>
 <span class="sd">        workers (int): The number of workers that should handle requests.</span>
@@ -88,24 +87,28 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">register</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
-                 <span class="n">write_address</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="s1">&#39;Optional[mtap.Config]&#39;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+                 <span class="n">sid</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">write_address</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="s1">&#39;Optional[mtap.Config]&#39;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">host</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">host</span> <span class="o">=</span> <span class="s1">&#39;127.0.0.1&#39;</span>
         <span class="k">if</span> <span class="n">port</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">port</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sid</span> <span class="o">=</span> <span class="n">sid</span> <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write_address</span> <span class="o">=</span> <span class="n">write_address</span>
         <span class="n">thread_pool</span> <span class="o">=</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">workers</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">config</span> <span class="o">=</span> <span class="n">_config</span><span class="o">.</span><span class="n">Config</span><span class="p">()</span>
-        <span class="n">options</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;grpc.events_server_options&#39;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;grpc.events_options&#39;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Events service using options &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">options</span><span class="p">))</span>
         <span class="n">server</span> <span class="o">=</span> <span class="n">grpc</span><span class="o">.</span><span class="n">server</span><span class="p">(</span><span class="n">thread_pool</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
-        <span class="n">servicer</span> <span class="o">=</span> <span class="n">EventsServicer</span><span class="p">()</span>
+        <span class="n">servicer</span> <span class="o">=</span> <span class="n">EventsServicer</span><span class="p">(</span><span class="n">instance_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sid</span><span class="p">)</span>
         <span class="n">events_pb2_grpc</span><span class="o">.</span><span class="n">add_EventsServicer_to_server</span><span class="p">(</span><span class="n">servicer</span><span class="p">,</span> <span class="n">server</span><span class="p">)</span>
         <span class="n">health_servicer</span> <span class="o">=</span> <span class="n">health</span><span class="o">.</span><span class="n">HealthServicer</span><span class="p">()</span>
         <span class="n">health_servicer</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;SERVING&#39;</span><span class="p">)</span>
         <span class="n">health_servicer</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">EVENTS_SERVICE_NAME</span><span class="p">,</span> <span class="s1">&#39;SERVING&#39;</span><span class="p">)</span>
         <span class="n">health_pb2_grpc</span><span class="o">.</span><span class="n">add_HealthServicer_to_server</span><span class="p">(</span><span class="n">health_servicer</span><span class="p">,</span> <span class="n">server</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_port</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_insecure_port</span><span class="p">(</span><span class="n">host</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">port</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_port</span> <span class="o">!=</span> <span class="n">port</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unable to bind on port </span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_server</span> <span class="o">=</span> <span class="n">server</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_address</span> <span class="o">=</span> <span class="n">host</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">_config</span><span class="o">.</span><span class="n">Config</span><span class="p">()</span>
@@ -120,16 +123,18 @@
 <div class="viewcode-block" id="EventsServer.start"><a class="viewcode-back" href="../../mtap.html#mtap.EventsServer.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Starts the service.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Starting events server on address: &quot;</span><span class="si">%s</span><span class="s1">:</span><span class="si">%d</span><span class="s1">&quot;&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_port</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Starting events server (%s) on address: &quot;%s:%d&quot;&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_port</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_address</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_address_file</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">write_address_file</span><span class="p">(</span>
-                <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">)</span>
+                <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sid</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_register</span><span class="p">:</span>
             <span class="kn">from</span> <span class="nn">mtap._discovery</span> <span class="kn">import</span> <span class="n">Discovery</span>
             <span class="n">service_registration</span> <span class="o">=</span> <span class="n">Discovery</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_deregister</span> <span class="o">=</span> <span class="n">service_registration</span><span class="o">.</span><span class="n">register_events_service</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_address</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_deregister</span> <span class="o">=</span> <span class="n">service_registration</span><span class="o">.</span><span class="n">register_events_service</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sid</span><span class="p">,</span>
+                                                                            <span class="bp">self</span><span class="o">.</span><span class="n">_address</span><span class="p">,</span>
                                                                             <span class="bp">self</span><span class="o">.</span><span class="n">_port</span><span class="p">,</span>
                                                                             <span class="s1">&#39;v1&#39;</span><span class="p">)</span></div>
 
@@ -161,10 +166,10 @@
 
 
 <span class="k">class</span> <span class="nc">EventsServicer</span><span class="p">(</span><span class="n">events_pb2_grpc</span><span class="o">.</span><span class="n">EventsServicer</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">events</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">instance_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">instance_id</span> <span class="o">=</span> <span class="n">instance_id</span> <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">_get_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">event_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">event_id</span>
@@ -189,11 +194,11 @@
         <span class="k">return</span> <span class="n">document</span>
 
     <span class="k">def</span> <span class="nf">GetEventsInstanceId</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;GetEventsInstanceId&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;GetEventsInstanceId&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">events_pb2</span><span class="o">.</span><span class="n">GetEventsInstanceIdResponse</span><span class="p">(</span><span class="n">instance_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">instance_id</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">OpenEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;OpenEvent: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">event_id</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;OpenEvent: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">event_id</span><span class="p">)</span>
         <span class="n">event_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">event_id</span>
         <span class="k">if</span> <span class="n">event_id</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;event_id was not set.&quot;</span>
@@ -219,7 +224,7 @@
         <span class="k">return</span> <span class="n">events_pb2</span><span class="o">.</span><span class="n">OpenEventResponse</span><span class="p">(</span><span class="n">created</span><span class="o">=</span><span class="n">created_event</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">CloseEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;CloseEvent: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">event_id</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;CloseEvent: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">event_id</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">event</span><span class="p">,</span> <span class="n">event_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_event</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -283,7 +288,7 @@
         <span class="k">return</span> <span class="n">events_pb2</span><span class="o">.</span><span class="n">GetBinaryDataResponse</span><span class="p">(</span><span class="n">binary_data</span><span class="o">=</span><span class="n">event</span><span class="o">.</span><span class="n">binaries</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
 
     <span class="k">def</span> <span class="nf">AddDocument</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;AddDocument: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">event_id</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;AddDocument: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">event_id</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">event</span><span class="p">,</span> <span class="n">event_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_event</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -304,7 +309,7 @@
         <span class="k">return</span> <span class="n">events_pb2</span><span class="o">.</span><span class="n">AddDocumentResponse</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">GetAllDocumentNames</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;GetAllDocumentNames: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">event_id</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;GetAllDocumentNames: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">event_id</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">event</span><span class="p">,</span> <span class="n">event_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_event</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -313,7 +318,7 @@
         <span class="k">return</span> <span class="n">events_pb2</span><span class="o">.</span><span class="n">GetAllDocumentNamesResponse</span><span class="p">(</span><span class="n">document_names</span><span class="o">=</span><span class="n">names</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">GetDocumentText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;GetDocumentText: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">event_id</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;GetDocumentText: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">event_id</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">document</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_document</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -419,7 +424,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../mtap.html">mtap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../deployment.html">mtap.deployment</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../io.html">mtap.io</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../serialization.html">mtap.serialization</a></li>
 </ul>
 
 <div id="searchbox" style="display: none" role="search">
@@ -445,14 +450,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">MTAP 1.0.0rc2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MTAP 1.0.0rc6.dev2+gfcbe98d.d20230221 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">mtap._events_service</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Regents of the University of Minnesota..
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
   </body>
 </html>
